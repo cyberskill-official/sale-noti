@@ -21,7 +21,12 @@ jobs:
         with:
           node-version-file: .nvmrc
       - run: corepack enable
-      - run: pnpm install --frozen-lockfile
+      # pnpm 11+ requires the build-script allowlist to be recorded in the lockfile's
+      # settings: block. Until the lockfile is regenerated locally (pnpm install
+      # --lockfile-only) to bake in onlyBuiltDependencies, we pass the allowlist
+      # explicitly on the CLI via --allow-build. The list MUST stay in sync with
+      # pnpm-workspace.yaml's onlyBuiltDependencies.
+      - run: pnpm install --frozen-lockfile --allow-build="@nestjs/core,@sentry/cli,core-js,esbuild,msgpackr-extract,protobufjs,sharp"
       - name: FR authoring conformance
         run: pnpm fr:check
       - name: Legal disclosure conformance
@@ -51,7 +56,12 @@ jobs:
         with:
           node-version-file: .nvmrc
       - run: corepack enable
-      - run: pnpm install --frozen-lockfile
+      # pnpm 11+ requires the build-script allowlist to be recorded in the lockfile's
+      # settings: block. Until the lockfile is regenerated locally (pnpm install
+      # --lockfile-only) to bake in onlyBuiltDependencies, we pass the allowlist
+      # explicitly on the CLI via --allow-build. The list MUST stay in sync with
+      # pnpm-workspace.yaml's onlyBuiltDependencies.
+      - run: pnpm install --frozen-lockfile --allow-build="@nestjs/core,@sentry/cli,core-js,esbuild,msgpackr-extract,protobufjs,sharp"
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test
