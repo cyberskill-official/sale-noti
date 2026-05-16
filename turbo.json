@@ -1,0 +1,67 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "NODE_ENV",
+    "GIT_COMMIT"
+  ],
+  "globalPassThroughEnv": [
+    "DOPPLER_TOKEN",
+    "SENTRY_DSN_WEB",
+    "SENTRY_DSN_API",
+    "POSTHOG_KEY",
+    "POSTHOG_HOST",
+    "POSTHOG_PII_SALT",
+    "MONGODB_URI",
+    "TIMESCALE_DB_URL",
+    "REDIS_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "AUTH_SECRET",
+    "APP_URL",
+    "RESEND_API_KEY",
+    "VAPID_PUBLIC_KEY",
+    "VAPID_PRIVATE_KEY",
+    "SHOPEE_AFFILIATE_APP_ID",
+    "SHOPEE_AFFILIATE_APP_SECRET",
+    "SHOPEE_RATE_LIMIT_PER_MIN",
+    "DEEPLINK_SALT",
+    "REFERRAL_SALT",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_LINK_SALT",
+    "STRIPE_SECRET_KEY",
+    "STRIPE_WEBHOOK_SECRET",
+    "VNPAY_TMN_CODE",
+    "VNPAY_HASH_SECRET",
+    "MOMO_PARTNER_CODE",
+    "MOMO_ACCESS_KEY",
+    "MOMO_SECRET_KEY",
+    "BULL_BOARD_USER",
+    "BULL_BOARD_PASS",
+    "BETTER_STACK_TOKEN",
+    "SLACK_OBS_WEBHOOK",
+    "EXT_ID"
+  ],
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "dist/**"]
+    },
+    "lint": {
+      "outputs": []
+    },
+    "typecheck": {
+      "outputs": []
+    },
+    "test": {
+      "outputs": ["coverage/**"]
+    },
+    "test:integration": {
+      "cache": false,
+      "outputs": []
+    }
+  }
+}

@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+.next/
+dist/
+build/
+*.tsbuildinfo
+
+# Environment (Doppler-only; never commit secrets)
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Test output
+coverage/
+.nyc_output/
+*.log
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+
+# Trashed leftovers (cleanup orphans)
+.trash-*
+*.brokensymlink
+*.orig
+*.bak
+*~
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Turbo
+.turbo/
+
+# Extension build output
+extension/dist/
+*.crx
+*.zip
+
+# Logs
+logs/
+*.log
+
+# Doppler & secret manager local cache (just in case)
+.doppler/
+
+# Output of pdftoppm / scratch
+*.tmp.glb
+*.raw.glb

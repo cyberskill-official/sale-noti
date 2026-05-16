@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>SaleNoti</title>
+  <style>
+    body { width: 300px; margin: 0; padding: 16px;
+           font-family: -apple-system, system-ui, sans-serif; color: #1a1a1a; }
+    h1 { font-size: 16px; margin: 0 0 8px; color: #C05621; }
+    .row { margin: 8px 0; font-size: 13px; }
+    a { color: #C05621; }
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 4px;
+             font-size: 11px; font-weight: 600; }
+    .badge-ok { background: #C6F6D5; color: #22543D; }
+    .badge-warn { background: #FEEBC8; color: #7B341E; }
+  </style>
+</head>
+<body>
+  <h1>SaleNoti</h1>
+  <div class="row" id="state-row">
+    <span class="badge badge-warn" id="state-badge">Loading…</span>
+  </div>
+  <hr style="margin: 12px 0; border: none; border-top: 1px solid #eee;">
+  <div class="row"><a href="https://salenoti.vn/dashboard" target="_blank">Open dashboard →</a></div>
+  <div class="row"><a href="https://salenoti.vn/legal/affiliate" target="_blank">Affiliate disclosure</a></div>
+  <div class="row"><a href="https://salenoti.vn/privacy" target="_blank">Privacy Policy</a></div>
+  <hr style="margin: 12px 0; border: none; border-top: 1px solid #eee;">
+  <div class="row" style="color: #666; font-size: 11px;">
+    SaleNoti là price-tracker affiliate. Click → hoa hồng. Bạn không trả thêm.
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

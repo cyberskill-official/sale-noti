@@ -1,0 +1,46 @@
+// FR-WORKER-001 §1 #5 — Bull Board mount behind basic auth.
+// Wires the API ExpressAdapter into NestJS.
+import { Module } from "@nestjs/common";
+import { BullBoardModule } from "@bull-board/nestjs";
+import { ExpressAdapter } from "@bull-board/express";
+import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
+import { BullModule } from "@nestjs/bullmq";
+import basicAuth from "express-basic-auth";
+import type { NestExpressApplication } from "@nestjs/platform-express";
+
+@Module({
+  imports: [
+    BullBoardModule.forRoot({
+      route: "/admin/queues",
+      adapter: ExpressAdapter,
+    }),
+    BullBoardModule.forFeature(
+      { name: "price-check", adapter: BullMQAdapter },
+      { name: "alert-dispatch", adapter: BullMQAdapter },
+      { name: "commission-reconcile", adapter: BullMQAdapter },
+      { name: "housekeeping", adapter: BullMQAdapter }
+    ),
+    BullModule.registerQueue(
+      { name: "price-check" },
+      { name: "alert-dispatch" },
+      { name: "commission-reconcile" },
+      { name: "housekeeping" }
+    ),
+  ],
+})
+export class BullBoardWrapperModule {}
+
+/**
+ * Call this from main.ts after `app = NestFactory.create()` to gate /admin/queues with basic auth.
+ */
+export function installBullBoardAuth(app: NestExpressApplication) {
+  const user = process.env.BULL_BOARD_USER;
+  const pass = process.env.BULL_BOARD_PASS;
+  if (!user || !pass) {
+    console.warn("[bull-board] BULL_BOARD_USER/PASS missing — /admin/queues route is unprotected. Refusing to expose.");
+    // Block the route entirely if creds are missing.
+    app.use("/admin/queues", (_req: any, res: any) => res.status(503).send("Bull Board disabled: no auth configured."));
+    return;
+  }
+  app.use("/admin/queues", basicAuth({ users: { [user]: pass }, challenge: true, realm: "SaleNoti Ops" }));
+}

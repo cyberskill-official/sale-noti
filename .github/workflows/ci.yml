@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  drift-catchers:
+    name: Drift catchers (fr-check + legal-check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.11.1
+      - run: corepack enable
+      - run: corepack prepare pnpm@9.12.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - name: FR authoring conformance
+        run: pnpm fr:check
+      - name: Legal disclosure conformance
+        run: pnpm legal:check
+
+  pin-check:
+    name: Pin check (FR-AUTH-001 §1 #1 + workflow §11)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Auth.js v5.0.0-beta.25 exact pin
+        run: |
+          if [ -f apps/web/package.json ]; then
+            if ! grep -q '"next-auth": "5.0.0-beta.25"' apps/web/package.json; then
+              echo "::error::FR-AUTH-001 §1 #1 violated — next-auth must be pinned to exact 5.0.0-beta.25"
+              exit 1
+            fi
+          fi
+
+  build:
+    name: Build + typecheck + test
+    runs-on: ubuntu-latest
+    needs: [drift-catchers, pin-check]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.11.1
+      - run: corepack enable
+      - run: corepack prepare pnpm@9.12.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test

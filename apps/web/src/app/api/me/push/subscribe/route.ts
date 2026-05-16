@@ -1,0 +1,54 @@
+// FR-NOTIF-002 §1 #3 — POST /v1/me/push/subscribe
+import { z } from "zod";
+import { mongo } from "@/server/db/mongo";
+import { ObjectId } from "mongodb";
+
+export const runtime = "nodejs";
+
+const Body = z.object({
+  endpoint: z.string().url(),
+  keys: z.object({ p256dh: z.string(), auth: z.string() }),
+});
+
+function readUserId(req: Request): string | null {
+  return req.headers.get("x-user-id");
+}
+
+export async function POST(req: Request) {
+  const userId = readUserId(req);
+  if (!userId) return Response.json({ ok: false, error: "unauthenticated" }, { status: 401 });
+  const body = await req.json().catch(() => null);
+  const parsed = Body.safeParse(body);
+  if (!parsed.success) return Response.json({ ok: false, error: "validation_failed" }, { status: 400 });
+
+  const userOid = (() => {
+    try {
+      return new ObjectId(userId);
+    } catch {
+      return null;
+    }
+  })();
+  if (!userOid) return Response.json({ ok: false, error: "invalid_user_id" }, { status: 400 });
+
+  // Cap 5 subscriptions per user; replace by endpoint if same.
+  await mongo.db("salenoti").collection("users").updateOne(
+    { _id: userOid },
+    {
+      $pull: { pushSubscriptions: { endpoint: parsed.data.endpoint } },
+    }
+  );
+  await mongo.db("salenoti").collection("users").updateOne(
+    { _id: userOid },
+    {
+      $push: {
+        pushSubscriptions: {
+          $each: [{ ...parsed.data, addedAt: new Date() }],
+          $slice: -5, // keep most-recent 5
+        },
+      },
+      $set: { "notificationChannels.webPush": true, updatedAt: new Date() },
+    }
+  );
+
+  return Response.json({ ok: true });
+}
