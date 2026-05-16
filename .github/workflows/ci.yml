@@ -21,12 +21,17 @@ jobs:
         with:
           node-version-file: .nvmrc
       - run: corepack enable
-      # pnpm 11+ requires the build-script allowlist to be recorded in the lockfile's
-      # settings: block. Until the lockfile is regenerated locally (pnpm install
-      # --lockfile-only) to bake in onlyBuiltDependencies, we pass the allowlist
-      # explicitly on the CLI via --allow-build. The list MUST stay in sync with
-      # pnpm-workspace.yaml's onlyBuiltDependencies.
-      - run: pnpm install --frozen-lockfile --allow-build="@nestjs/core,@sentry/cli,core-js,esbuild,msgpackr-extract,protobufjs,sharp"
+      # --ignore-scripts: skip dependency postinstall scripts at CI install time.
+      # Why this is safe for our pipeline:
+      #   - fr-check + legal-check + typecheck + lint + vitest don't need any
+      #     native binaries produced by postinstall (esbuild/sharp ship native
+      #     binaries via per-platform packages like @esbuild/linux-x64, NOT via
+      #     postinstall in modern versions).
+      #   - This works around pnpm 11's policy that --frozen-lockfile rejects
+      #     ignored builds. The proper fix is to regenerate pnpm-lock.yaml locally
+      #     so it records onlyBuiltDependencies under settings:, after which we
+      #     can drop --ignore-scripts and let postinstall scripts run.
+      - run: pnpm install --frozen-lockfile --ignore-scripts
       - name: FR authoring conformance
         run: pnpm fr:check
       - name: Legal disclosure conformance
@@ -56,12 +61,17 @@ jobs:
         with:
           node-version-file: .nvmrc
       - run: corepack enable
-      # pnpm 11+ requires the build-script allowlist to be recorded in the lockfile's
-      # settings: block. Until the lockfile is regenerated locally (pnpm install
-      # --lockfile-only) to bake in onlyBuiltDependencies, we pass the allowlist
-      # explicitly on the CLI via --allow-build. The list MUST stay in sync with
-      # pnpm-workspace.yaml's onlyBuiltDependencies.
-      - run: pnpm install --frozen-lockfile --allow-build="@nestjs/core,@sentry/cli,core-js,esbuild,msgpackr-extract,protobufjs,sharp"
+      # --ignore-scripts: skip dependency postinstall scripts at CI install time.
+      # Why this is safe for our pipeline:
+      #   - fr-check + legal-check + typecheck + lint + vitest don't need any
+      #     native binaries produced by postinstall (esbuild/sharp ship native
+      #     binaries via per-platform packages like @esbuild/linux-x64, NOT via
+      #     postinstall in modern versions).
+      #   - This works around pnpm 11's policy that --frozen-lockfile rejects
+      #     ignored builds. The proper fix is to regenerate pnpm-lock.yaml locally
+      #     so it records onlyBuiltDependencies under settings:, after which we
+      #     can drop --ignore-scripts and let postinstall scripts run.
+      - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test
