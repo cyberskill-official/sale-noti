@@ -3,12 +3,15 @@ id: FR-GROW-003
 title: "Mega Sale Mode — event-themed UI · 7-day-pre teaser push · day-of leaderboard · auto-post to Zalo/Telegram channels"
 module: GROW
 priority: SHOULD
-phase: P2
 status: SPEC_READY
-template: engineering-spec@1
+verify: T
+phase: P2
+slice: 2
 owner: growth-team
-reviewers: [legal, eng-web, eng-api, marketing]
+created: 2026-05-16
 last_revised: 2026-05-16
+template: engineering-spec@1
+reviewers: [legal, eng-web, eng-api, marketing]
 plan_anchors: [§F2 #7, §F4 mega-sale-spike, §F5 marketing-calendar]
 depends_on: [FR-PRICE-001, FR-NOTIF-001, FR-NOTIF-002, FR-AFF-002, FR-AFF-004]
 blocked_by: []

@@ -15,14 +15,20 @@ const ROOT = join(__dirname, "..");
 const CANONICAL_VI = "SaleNoti là price-tracker affiliate. Khi bạn click vào deal trong alert hoặc trang public, chúng tôi nhận hoa hồng từ Shopee Affiliate Open API";
 const CANONICAL_FRAGMENT_VI = "KHÔNG: tự áp coupon";
 
+// Per FR-LEGAL-002 §1 #2: surfaces SHOULD import the canonical constant rather than re-type the copy.
+// A file is conformant if it EITHER (a) contains the literal canonical text (markdown / listing surfaces) OR
+// (b) imports AFFILIATE_DISCLOSURE_VI / AFFILIATE_DISCLOSURE_EN from the canonical module and references it.
+const CANONICAL_IMPORT_RE = /import\s*\{[^}]*\bAFFILIATE_DISCLOSURE_(?:VI|EN)\b[^}]*\}\s*from\s*["'][^"']*\/disclosure["']/;
+const CANONICAL_REFERENCE_RE = /\bAFFILIATE_DISCLOSURE_(?:VI|EN)\b/;
+
 const errors = [];
 
-// Targets that MUST contain the canonical disclosure (per FR-LEGAL-002 §1 #2-5)
+// Targets that MUST render the canonical disclosure (per FR-LEGAL-002 §1 #2-5)
 const targets = [
-  { name: "Chrome Web Store listing", path: "extension/public/store-listing.md", optional: true },
-  { name: "Magic-link email template", path: "apps/web/src/server/email/templates/magic-link.tsx", optional: true },
-  { name: "Alert email template", path: "apps/web/src/server/email/templates/alert.tsx", optional: true },
-  { name: "Disclosure copy constant", path: "apps/web/src/lib/disclosure.ts", optional: true },
+  { name: "Chrome Web Store listing", path: "extension/public/store-listing.md", optional: true, importAllowed: false },
+  { name: "Magic-link email template", path: "apps/web/src/server/email/templates/magic-link.tsx", optional: true, importAllowed: true },
+  { name: "Alert email template", path: "apps/web/src/server/email/templates/alert.tsx", optional: true, importAllowed: true },
+  { name: "Disclosure copy constant", path: "apps/web/src/lib/disclosure.ts", optional: true, importAllowed: false },
 ];
 
 for (const t of targets) {
@@ -32,8 +38,10 @@ for (const t of targets) {
     continue;
   }
   const text = readFileSync(fullPath, "utf8");
-  if (!text.includes(CANONICAL_VI) && !text.includes(CANONICAL_FRAGMENT_VI)) {
-    errors.push(`${t.name} (${t.path}): missing canonical disclosure paragraph`);
+  const hasLiteral = text.includes(CANONICAL_VI) || text.includes(CANONICAL_FRAGMENT_VI);
+  const hasImport = t.importAllowed && CANONICAL_IMPORT_RE.test(text) && CANONICAL_REFERENCE_RE.test(text);
+  if (!hasLiteral && !hasImport) {
+    errors.push(`${t.name} (${t.path}): missing canonical disclosure paragraph (literal text or import of AFFILIATE_DISCLOSURE_VI from /disclosure required)`);
   }
 }
 

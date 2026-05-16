@@ -3,12 +3,15 @@ id: FR-ADMIN-001
 title: "Public B2B contact form — lead capture for Mall/Brand sellers wanting price-intel dashboard"
 module: ADMIN
 priority: SHOULD
-phase: P2
 status: SPEC_READY
-template: engineering-spec@1
+verify: T
+phase: P2
+slice: 2
 owner: growth-team
-reviewers: [legal, eng-web, eng-api, sales]
+created: 2026-05-16
 last_revised: 2026-05-16
+template: engineering-spec@1
+reviewers: [legal, eng-web, eng-api, sales]
 plan_anchors: [§F6 b2b-monetization, §F2 #8]
 depends_on: [FR-LEGAL-002, FR-OBS-001]
 blocked_by: []

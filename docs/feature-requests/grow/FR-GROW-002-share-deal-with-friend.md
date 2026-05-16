@@ -3,12 +3,15 @@ id: FR-GROW-002
 title: "'Chia deal cho bạn' — copy-share user-tagged Affiliate deeplink + landing page with 'Theo dõi giá' CTA"
 module: GROW
 priority: MUST
-phase: P2
 status: SPEC_READY
-template: engineering-spec@1
+verify: T
+phase: P2
+slice: 1
 owner: growth-team
-reviewers: [legal, eng-web, eng-api, eng-affiliate]
+created: 2026-05-16
 last_revised: 2026-05-16
+template: engineering-spec@1
+reviewers: [legal, eng-web, eng-api, eng-affiliate]
 plan_anchors: [§F2 #6, §F4 share-virality, ethics #4]
 depends_on: [FR-AFF-002, FR-WATCH-001, FR-AUTH-001]
 blocked_by: []
