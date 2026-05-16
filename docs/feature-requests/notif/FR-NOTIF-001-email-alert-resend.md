@@ -8,7 +8,7 @@ verify: T
 phase: P1
 milestone: P1 · slice 1 · MVP Core
 slice: 1
-owner: Intern #2 (BE) supervised by Senior Tech Lead
+owner: "Intern #2 (BE) supervised by Senior Tech Lead"
 created: 2026-05-16
 last_revised: 2026-05-16
 related_frs: [FR-WATCH-002, FR-AFF-002, FR-LEGAL-002, FR-WORKER-001, FR-NOTIF-002, FR-NOTIF-003]

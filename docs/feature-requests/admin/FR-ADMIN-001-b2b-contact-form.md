@@ -12,10 +12,11 @@ created: 2026-05-16
 last_revised: 2026-05-16
 template: engineering-spec@1
 reviewers: [legal, eng-web, eng-api, sales]
-plan_anchors: [§F6 b2b-monetization, §F2 #8]
+plan_anchors: ["§F6 b2b-monetization", "§F2 #8"]
 depends_on: [FR-LEGAL-002, FR-OBS-001]
 blocked_by: []
 unlocks: []
+effort_hours: 8
 ---
 
 ## §1 — Description (normative)

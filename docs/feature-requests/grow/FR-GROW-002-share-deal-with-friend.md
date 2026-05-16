@@ -12,10 +12,11 @@ created: 2026-05-16
 last_revised: 2026-05-16
 template: engineering-spec@1
 reviewers: [legal, eng-web, eng-api, eng-affiliate]
-plan_anchors: [§F2 #6, §F4 share-virality, ethics #4]
+plan_anchors: ["§F2 #6", "§F4 share-virality", "ethics #4"]
 depends_on: [FR-AFF-002, FR-WATCH-001, FR-AUTH-001]
 blocked_by: []
-unlocks: [FR-NOTIF-001, FR-GROW-001 (sharer often becomes referrer)]
+unlocks: ["FR-NOTIF-001", "FR-GROW-001 (sharer often becomes referrer)"]
+effort_hours: 10
 ---
 
 ## §1 — Description (normative)

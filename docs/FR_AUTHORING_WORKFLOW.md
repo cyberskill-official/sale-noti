@@ -290,8 +290,86 @@ Mechanical enforcement that the workflow is followed:
 | 10/10 before accepted | `status: accepted` requires `score_post_revision_2: 10/10` in audit | `pnpm fr:check` |
 | BCP-14 keywords | each §1 clause has at least one MUST/SHOULD/MAY | `pnpm fr:check` |
 | Manifest sync | `last_fr_id_per_module.<MOD>` matches highest FR-ID in folder | `pnpm fr:check` |
+| Effort hours populated | every FR has `effort_hours: <integer>` (≥ 1) | `pnpm fr:check` |
+| Audit ≥ 6 issues | every audit's `issues_resolved` is ≥ 6 (round-1 + round-2 combined) | `pnpm fr:check` |
+| Failure modes ≥ 10 | every FR's §10 table has ≥ 10 rows | `pnpm fr:check` |
+| YAML-safe frontmatter | no unquoted `#` inside flow-array values or unquoted scalars (would be parsed as comment) | `pnpm fr:check` |
 
-(`pnpm fr:check` script lands as part of P0 OBS setup — `apps/api/scripts/fr-check.ts`.)
+(`pnpm fr:check` script lives at the repo root in `scripts/fr-check.mjs`.)
+
+---
+
+## §12 — Loop-to-10/10 master rule (load-bearing)
+
+This rule is normative for every author and supersedes every other guidance below.
+
+> **After creating one FR, loop audit rounds on it until it reaches *perfect* — before starting the next FR.**
+
+### What "perfect" means
+
+Perfect = **highly detailed** AND **perfectly matched to core requirements** AND **complete** AND **no truncation**.
+
+- **Highly detailed**: every architectural decision is named, every contract surface is enumerated, every failure mode is listed.
+- **Perfectly matched to core requirements**: the spec covers what the FR is *for* — no scope creep, no scope under-coverage. The §1 normative clauses fully express the contract that downstream FRs and engineers depend on.
+- **Complete**: all 11 sections present and substantive. No `(elided)`, no `(see other FR)` cross-references that hide the contract.
+- **No truncation**: no "summary form," no "compact form due to context budget," no "abridged for brevity." If the author runs into a budget limit, the right action is to **stop, save state, and resume later** — never to ship a truncated FR.
+
+### The Loop
+
+1. **First-pass author** the FR per the 11-section template (§4 above).
+2. **Author the audit file** at `<spec-stem>.audit.md` — find at least **6 ISS findings**; score the spec honestly.
+3. **If `score_post_revision_2 < 10/10`**: revise the FR addressing every finding.
+4. **Re-audit** the revised spec.
+5. **Repeat** steps 3-4 until `score_post_revision_2: 10/10`.
+6. **Only then** start the next FR.
+
+### Two sanctioned exceptions to the size target
+
+Both must be explicit in the FR title AND the audit file:
+
+1. **Stub FRs.** An FR whose explicit purpose is to reserve an API namespace / route prefix / job-queue tag for a later phase. The stub MUST fully spec the no-op behavior. Acceptable ≤ 300 lines.
+2. **Pure-infrastructure / Terraform / config FRs.** Where the contract surface is small. Acceptable ≤ 400 lines.
+
+Neither exception authorises *truncation* — both still require all 11 sections, just at smaller scale.
+
+### Spec-depth calibration
+
+- **Target 400-700 lines** per substantive FR.
+- Below 300 (excluding sanctioned stubs/infra above) suggests under-specification.
+- Above 1,000 suggests prose padding that obscures the spec.
+
+---
+
+## §13 — Frontmatter YAML hygiene (hard rules)
+
+These rules prevent silent data loss when parsers consume the FR frontmatter:
+
+1. **No unquoted `#` inside frontmatter values.** YAML treats unquoted `#` after whitespace as a comment marker. Affected patterns:
+   - `owner: Intern #1 (FE)` — parsed as `owner: 'Intern'`, dropping the rest. **MUST** quote: `owner: "Intern #1 (FE) ..."`
+   - `plan_anchors: [§F2 #6, §F4 share]` — flow-array parse error. **MUST** quote each element: `plan_anchors: ["§F2 #6", "§F4 share"]`
+   - `risk_if_skipped: "Plan §B2 #3 ..."` — quoted strings preserve `#`. OK as-is.
+2. **No trailing `#` comments on value lines.** Use standalone comment lines above the field instead:
+   ```yaml
+   # BCP-14 priority
+   priority: MUST
+   ```
+   not `priority: MUST   # BCP-14 priority`.
+3. **`depends_on` and `blocks` MUST be reciprocal.** If FR-X has `depends_on: [FR-Y]`, FR-Y MUST list FR-X in `blocks`. A post-authoring sweep validates this.
+4. **Placeholder FR references** in `depends_on:` / `blocks:` MUST carry an inline comment `# placeholder — not yet specified` so coherence sweeps know to skip them.
+
+---
+
+## §14 — Audit-file hard floor
+
+Per the master rule (§12), every audit file MUST:
+
+1. Have a matching `<spec-stem>.audit.md` companion file for the FR.
+2. Report `score_post_revision_2: 10/10` as the only acceptable shipping score.
+3. Enumerate ≥ **6 ISS findings** total across round-1 and round-2 (`issues_resolved: ≥ 6` in frontmatter).
+4. Cite the resolution location for every ISS finding (§N #M reference, AC reference, or §10 row reference).
+5. Never delete an audit when superseding a spec — append a new audit row.
+
+A `score_post_revision_2: 10/10` without ≥ 6 resolved issues is a red flag — the author didn't pressure-test the spec enough.
 
 ---
 

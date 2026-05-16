@@ -104,6 +104,90 @@ for (const mod of MODULES) {
   }
 }
 
+// Check 6: effort_hours populated (FR_AUTHORING_WORKFLOW.md §11 + §13 hard rules)
+for (const mod of MODULES) {
+  const modDir = join(FR_ROOT, mod);
+  if (!existsSync(modDir)) continue;
+  for (const f of readdirSync(modDir).filter((x) => /^FR-/.test(x) && !x.endsWith(".audit.md"))) {
+    const text = readFileSync(join(modDir, f), "utf8");
+    const fmMatch = text.match(/^---\n([\s\S]*?)\n---/);
+    if (!fmMatch) continue;
+    const m = fmMatch[1].match(/^effort_hours:\s*(\d+)\s*$/m);
+    if (!m || Number(m[1]) < 1) errors.push(`${mod}/${f}: effort_hours missing or zero (AUTHORING §13 §11 drift catcher)`);
+  }
+}
+
+// Check 7: audit issues_resolved ≥ 6 (FR_AUTHORING_WORKFLOW.md §14)
+for (const mod of MODULES) {
+  const modDir = join(FR_ROOT, mod);
+  if (!existsSync(modDir)) continue;
+  for (const f of readdirSync(modDir).filter((x) => x.endsWith(".audit.md"))) {
+    const text = readFileSync(join(modDir, f), "utf8");
+    const m = text.match(/^issues_resolved:\s*(\d+)\s*$/m);
+    if (!m) {
+      errors.push(`${mod}/${f}: audit missing issues_resolved field`);
+      continue;
+    }
+    if (Number(m[1]) < 6) errors.push(`${mod}/${f}: audit issues_resolved=${m[1]} < 6 (AUTHORING §14 hard floor)`);
+  }
+}
+
+// Check 8: §10 failure-mode table has ≥ 10 rows
+for (const mod of MODULES) {
+  const modDir = join(FR_ROOT, mod);
+  if (!existsSync(modDir)) continue;
+  for (const f of readdirSync(modDir).filter((x) => /^FR-/.test(x) && !x.endsWith(".audit.md"))) {
+    const text = readFileSync(join(modDir, f), "utf8");
+    const sec10 = text.match(/## §10[\s\S]*?(?=## §11)/);
+    if (!sec10) continue;
+    // Count table data rows: pipe-delimited lines, exclude header + separator rows
+    const rows = sec10[0]
+      .split("\n")
+      .filter((l) => /^\|\s*[^|\s-]/.test(l)) // starts with `| ` then a non-pipe, non-whitespace, non-dash char
+      .filter((l) => !/^\|[\s|-]+\|$/.test(l)); // exclude pure-separator rows like `|---|---|`
+    // Drop the header row (first non-separator row)
+    const dataRowCount = Math.max(0, rows.length - 1);
+    if (dataRowCount < 10) {
+      errors.push(`${mod}/${f}: §10 failure-mode table has ${dataRowCount} rows, expected ≥ 10 (AUTHORING §11 drift catcher)`);
+    }
+  }
+}
+
+// Check 9: YAML-safe frontmatter — no unquoted `#` inside unquoted scalar or flow-array values
+for (const mod of MODULES) {
+  const modDir = join(FR_ROOT, mod);
+  if (!existsSync(modDir)) continue;
+  for (const f of readdirSync(modDir).filter((x) => /^FR-/.test(x) && !x.endsWith(".audit.md"))) {
+    const text = readFileSync(join(modDir, f), "utf8");
+    const fmMatch = text.match(/^---\n([\s\S]*?)\n---/);
+    if (!fmMatch) continue;
+    const lines = fmMatch[1].split("\n");
+    for (const line of lines) {
+      // Skip blank, comment-only, or list-item lines
+      if (/^\s*(#|$|-\s)/.test(line)) continue;
+      // Check `key: value` form with an unquoted `#`
+      const m = line.match(/^([a-z_][a-z0-9_]*):\s*(.+)$/i);
+      if (!m) continue;
+      const value = m[2];
+      // Skip quoted scalar values
+      if (/^".*"$/.test(value.trim()) || /^'.*'$/.test(value.trim())) continue;
+      // Strip out any single- or double-quoted substrings (their contents are safe).
+      const stripped = value.replace(/"[^"]*"/g, "").replace(/'[^']*'/g, "");
+      // Flow-array: each element must be quoted if it contains `#`
+      if (/^\[.*\]$/.test(value.trim())) {
+        if (/\s#\S/.test(stripped)) {
+          errors.push(`${mod}/${f}: frontmatter "${m[1]}" has unquoted '#' inside flow-array — YAML parses as comment (AUTHORING §13.1)`);
+        }
+        continue;
+      }
+      // Plain scalar: `#` preceded by whitespace is a comment start
+      if (/\s+#\S/.test(stripped)) {
+        errors.push(`${mod}/${f}: frontmatter "${m[1]}: ${value.slice(0, 50)}..." has unquoted '#' — YAML parses as trailing comment (AUTHORING §13.2)`);
+      }
+    }
+  }
+}
+
 if (errors.length) {
   console.error(`❌ fr-check found ${errors.length} issues:`);
   for (const e of errors) console.error("  - " + e);

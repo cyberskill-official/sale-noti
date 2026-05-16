@@ -7,7 +7,7 @@ score_pre_revision: 8.5/10
 score_post_revision_1: 9.5/10
 score_post_revision_2: 10/10
 issues_open: 0
-issues_resolved: 5
+issues_resolved: 6
 issues_critical: 0
 template: engineering-spec@1
 revised_at: 2026-05-16
@@ -42,6 +42,10 @@ FR-AUTH-002 is ship-grade. Round-1 surfaced 3 issues (single-use atomic guarante
 
 ### ISS-005 — Race condition on parallel tabs
 - **severity:** info · **status:** RESOLVED via §10 row 5 (atomic update guarantees exactly one wins).
+
+### ISS-006 — Email PII could leak into Sentry context when Resend SDK throws
+- **severity:** warning · **rule_id:** pii-correctness
+- **status:** RESOLVED — FR-OBS-001 §1 #5 `beforeSend` pii-redactor scrubs email patterns from all event tags, extras, and contexts before transmission; AUTH-002 §10 row 9 documents the dependency. AC verifies no `@` substring appears in captured Sentry events when the magic-link send path fails.
 
 ## §4 — Strengths preserved
 

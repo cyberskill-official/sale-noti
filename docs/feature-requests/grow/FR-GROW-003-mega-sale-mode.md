@@ -12,10 +12,11 @@ created: 2026-05-16
 last_revised: 2026-05-16
 template: engineering-spec@1
 reviewers: [legal, eng-web, eng-api, marketing]
-plan_anchors: [§F2 #7, §F4 mega-sale-spike, §F5 marketing-calendar]
+plan_anchors: ["§F2 #7", "§F4 mega-sale-spike", "§F5 marketing-calendar"]
 depends_on: [FR-PRICE-001, FR-NOTIF-001, FR-NOTIF-002, FR-AFF-002, FR-AFF-004]
 blocked_by: []
 unlocks: []
+effort_hours: 12
 ---
 
 ## §1 — Description (normative)
