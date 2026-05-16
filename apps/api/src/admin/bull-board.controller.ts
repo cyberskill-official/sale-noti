@@ -14,11 +14,15 @@ import type { NestExpressApplication } from "@nestjs/platform-express";
       route: "/admin/queues",
       adapter: ExpressAdapter,
     }),
+    // Cast: @bull-board/api's BullMQAdapter constructor signature drifted across versions;
+    // the runtime contract is correct but the TS type doesn't unify with the older
+    // BullBoardModule.forFeature signature. Cast keeps the runtime behavior; pin to a
+    // matching @bull-board/api version in a follow-up if the cast becomes load-bearing.
     BullBoardModule.forFeature(
-      { name: "price-check", adapter: BullMQAdapter },
-      { name: "alert-dispatch", adapter: BullMQAdapter },
-      { name: "commission-reconcile", adapter: BullMQAdapter },
-      { name: "housekeeping", adapter: BullMQAdapter }
+      { name: "price-check", adapter: BullMQAdapter as any },
+      { name: "alert-dispatch", adapter: BullMQAdapter as any },
+      { name: "commission-reconcile", adapter: BullMQAdapter as any },
+      { name: "housekeeping", adapter: BullMQAdapter as any }
     ),
     BullModule.registerQueue(
       { name: "price-check" },

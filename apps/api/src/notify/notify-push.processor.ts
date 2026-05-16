@@ -88,9 +88,12 @@ export class NotifyPushProcessor extends WorkerHost {
         } catch (e: any) {
           if (e?.statusCode === 410) {
             // FR-NOTIF-002 §1 #8 — drop expired subscription.
+            // Cast: the `users` collection isn't strongly typed at this layer, so MongoDB's
+            // $pull operator-shape inference rejects nested fields. The runtime semantics
+            // are correct; cast to `any` to bypass the over-strict default-Document inference.
             await mongo.db("salenoti").collection("users").updateOne(
               { _id: this.oid(userId) },
-              { $pull: { pushSubscriptions: { endpoint: sub.endpoint } } }
+              { $pull: { pushSubscriptions: { endpoint: sub.endpoint } } } as any
             );
             removedCount++;
           } else {
@@ -109,11 +112,7 @@ export class NotifyPushProcessor extends WorkerHost {
     });
   }
 
-  private oid(id: string): ObjectId | string {
-    try {
-      return new ObjectId(id);
-    } catch {
-      return id;
-    }
+  private oid(id: string): ObjectId {
+    return new ObjectId(id);
   }
 }

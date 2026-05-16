@@ -132,11 +132,9 @@ export class NotifyEmailProcessor extends WorkerHost {
     });
   }
 
-  private oid(id: string): ObjectId | string {
-    try {
-      return new ObjectId(id);
-    } catch {
-      return id;
-    }
+  private oid(id: string): ObjectId {
+    // Job IDs are persisted as ObjectId hex strings. If the value isn't a valid hex,
+    // we cannot match the row anyway — throwing here surfaces the schema bug fast.
+    return new ObjectId(id);
   }
 }

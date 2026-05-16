@@ -174,7 +174,7 @@ export const timescale = {
   },
 
   /** Raw query escape hatch for migrations / ad-hoc. */
-  query<T = unknown>(sql: string, params: unknown[] = []) {
+  query<T extends Record<string, any> = Record<string, any>>(sql: string, params: unknown[] = []) {
     return getPool().query<T>(sql, params as any[]);
   },
 };

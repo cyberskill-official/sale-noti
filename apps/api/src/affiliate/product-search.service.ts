@@ -32,7 +32,13 @@ export type SearchResult = {
 };
 
 function stripHtml(s: string): string {
-  return s.replace(/<[^>]*>/g, "").trim();
+  // FR-AFF-004 §1 #5 — XSS strip. Remove dangerous-content tags entirely (including inner text),
+  // THEN strip remaining tags but keep their text content. Order matters: `<script>alert(1)</script>OK`
+  // must become `OK`, not `alert(1)OK`. Tags covered: script, style, iframe, object, embed.
+  return s
+    .replace(/<\s*(script|style|iframe|object|embed)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
+    .replace(/<[^>]*>/g, "")
+    .trim();
 }
 
 function scrubKeyword(kw: string): string {

@@ -111,11 +111,7 @@ export class NotifyTelegramProcessor extends WorkerHost {
     });
   }
 
-  private oid(id: string): ObjectId | string {
-    try {
-      return new ObjectId(id);
-    } catch {
-      return id;
-    }
+  private oid(id: string): ObjectId {
+    return new ObjectId(id);
   }
 }

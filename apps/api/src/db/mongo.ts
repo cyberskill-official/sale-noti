@@ -2,7 +2,7 @@
 import { MongoClient, type Db } from "mongodb";
 
 declare global {
-  // eslint-disable-next-line no-var
+  // `var` is required in `declare global` to extend globalThis (let/const can't).
   var __salenotiApiMongo: MongoClient | undefined;
 }
 

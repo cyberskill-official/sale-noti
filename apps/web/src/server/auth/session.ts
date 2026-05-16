@@ -39,8 +39,13 @@ export async function verifyAccessToken(token: string): Promise<AccessClaims | n
   const parts = token.split(".");
   if (parts.length !== 3) return null;
   const [header, payload, sig] = parts;
+  // TS doesn't narrow destructured tuples from .split() — explicit guard for type-soundness.
+  if (!header || !payload || !sig) return null;
   const expected = crypto.createHmac("sha256", secret).update(`${header}.${payload}`).digest("base64url");
-  if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
+  const sigBuf = Buffer.from(sig);
+  const expBuf = Buffer.from(expected);
+  if (sigBuf.length !== expBuf.length) return null;
+  if (!crypto.timingSafeEqual(sigBuf, expBuf)) return null;
   const claims = JSON.parse(Buffer.from(payload, "base64url").toString()) as AccessClaims;
   // Allow ±60s clock skew per FR-AUTH-003 §10 row 10
   const now = Math.floor(Date.now() / 1000);

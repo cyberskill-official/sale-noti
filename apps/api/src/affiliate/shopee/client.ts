@@ -102,7 +102,7 @@ export class ShopeeAffiliateClient {
     let outcome: "success" | "error_429" | "error_5xx" | "error_4xx" | "timeout" = "success";
     let methodSlug = "unknown";
     const methodMatch = query.match(/\b(productOfferV2|shopOfferV2|productSearch|generateShortLink)\b/);
-    if (methodMatch) methodSlug = methodMatch[1];
+    if (methodMatch?.[1]) methodSlug = methodMatch[1];
 
     try {
       const res = await fetch(ENDPOINT, {

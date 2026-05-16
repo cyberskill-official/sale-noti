@@ -1,6 +1,7 @@
 // FR-NOTIF-003 §1 #4 + #7 + #8 — Telegram webhook handler (/start, /unsubscribe, /help, /status).
 import crypto from "node:crypto";
 import { Body, Controller, HttpException, HttpStatus, Post, Query } from "@nestjs/common";
+import { ObjectId } from "mongodb";
 import { mongo } from "../db/mongo";
 
 const TELEGRAM_API = "https://api.telegram.org";
@@ -118,14 +119,11 @@ export class TelegramWebhookController {
     });
   }
 
-  private oid(id: string) {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { ObjectId } = require("mongodb");
-      return new ObjectId(id);
-    } catch {
-      return id;
-    }
+  private oid(id: string): ObjectId {
+    // User IDs persist as ObjectId hex. If the value isn't valid hex, we cannot match
+    // the row anyway — throwing surfaces the schema bug fast (consistent with the
+    // other notify processors).
+    return new ObjectId(id);
   }
 }
 

@@ -9,7 +9,8 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
-const REPORTS = [
+type Report = { slug: string; label: string; publishedAt: string };
+const REPORTS: Report[] = [
   // Populated each quarter by the founder; first report due 2026-Q3 (covering MVP launch quarter).
   // Until then this list is intentionally empty + the page explains why.
 ];
@@ -36,7 +37,7 @@ export default function TransparencyIndex() {
         </section>
       ) : (
         <ul>
-          {REPORTS.map((r: { slug: string; label: string; publishedAt: string }) => (
+          {REPORTS.map((r) => (
             <li key={r.slug}>
               <Link href={`/transparency/${r.slug}`}>{r.label}</Link>
               <span style={{ color: "#999", marginLeft: 8, fontSize: 13 }}>· {r.publishedAt}</span>

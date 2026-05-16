@@ -33,8 +33,11 @@ export type QueueName = (typeof QUEUES)[number];
         };
       },
     }),
+    // FR-WORKER-001 §3 — Note: BullMQ v5 removed queue-level `limiter`; rate-limiting moved to the Worker.
+    // The price-check Worker reads SHOPEE_RATE_LIMIT_PER_MIN and applies it via WorkerOptions.limiter.
+    // See `apps/api/src/affiliate/price-check.processor.ts` for the WorkerOptions where limiter lives.
     BullModule.registerQueue(
-      { name: "price-check", limiter: { max: Number(process.env.SHOPEE_RATE_LIMIT_PER_MIN ?? 1000), duration: 60_000 } },
+      { name: "price-check" },
       { name: "alert-dispatch" },
       { name: "commission-reconcile" },
       { name: "housekeeping" }

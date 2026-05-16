@@ -10,10 +10,10 @@ const Query_ = z.object({
 
 @Controller("v1/products")
 export class HistoryController {
-  constructor(private readonly history: HistoryService) {}
+  constructor(private readonly historyService: HistoryService) {}
 
   @Get(":productId/history")
-  async history(
+  async getHistory(
     @Param("productId") productId: string,
     @Query() raw: unknown,
     @Headers("x-user-id") userIdHeader: string | undefined,
@@ -32,7 +32,7 @@ export class HistoryController {
       | "ext"
       | "deal-page"
       | "web";
-    return this.history.getHistory({
+    return this.historyService.getHistory({
       userId: userIdHeader ?? null,
       productId,
       range,

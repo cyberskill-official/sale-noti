@@ -2,8 +2,12 @@
 import { describe, it, expect } from "vitest";
 
 // Reproduce the inline helpers because the service file's helpers are unexported (intentional).
+// Mirror of `stripHtml` in apps/api/src/affiliate/product-search.service.ts — keep in sync.
 function stripHtml(s: string): string {
-  return s.replace(/<[^>]*>/g, "").trim();
+  return s
+    .replace(/<\s*(script|style|iframe|object|embed)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
+    .replace(/<[^>]*>/g, "")
+    .trim();
 }
 function scrubKeyword(kw: string): string {
   if (/@/.test(kw)) return "[redacted-email]";

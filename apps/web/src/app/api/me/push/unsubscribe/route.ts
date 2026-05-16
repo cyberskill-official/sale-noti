@@ -24,9 +24,10 @@ export async function POST(req: Request) {
   if (!userOid) return Response.json({ ok: false, error: "invalid_user_id" }, { status: 400 });
 
   if (parsed.data.endpoint) {
+    // Cast: untyped collection — see push/subscribe route for context.
     await mongo.db("salenoti").collection("users").updateOne(
       { _id: userOid },
-      { $pull: { pushSubscriptions: { endpoint: parsed.data.endpoint } } }
+      { $pull: { pushSubscriptions: { endpoint: parsed.data.endpoint } } } as any
     );
   } else {
     await mongo.db("salenoti").collection("users").updateOne(

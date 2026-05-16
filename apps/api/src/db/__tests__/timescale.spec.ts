@@ -44,7 +44,7 @@ TEST("FR-PRICE-001 — typed client", () => {
       `SELECT COUNT(*)::TEXT AS count FROM price_history WHERE product_id = $1`,
       [row.productId]
     );
-    expect(Number(r.rows[0].count)).toBe(1);
+    expect(Number(r.rows[0]?.count ?? 0)).toBe(1);
   });
 
   it("AC7: source enum rejects unknown", async () => {

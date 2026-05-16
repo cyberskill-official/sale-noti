@@ -1,4 +1,8 @@
-const status = document.getElementById("ack-status")!;
+// FR-EXT-001 options page — view/reset disclosure acknowledgment.
+// NOTE: `status` is a reserved global on `window` in the DOM lib (window.status: string),
+// so we MUST NOT name local variables `status` at module top-level. Use `statusEl` instead.
+
+const statusEl = document.getElementById("ack-status")!;
 const resetBtn = document.getElementById("reset-btn") as HTMLButtonElement;
 
 async function refresh() {
@@ -8,9 +12,9 @@ async function refresh() {
   ]);
   if (disclosureAcknowledgedAt) {
     const when = new Date(disclosureAcknowledgedAt).toLocaleString("vi-VN");
-    status.textContent = `Đã đồng ý: ${when} (version ${disclosureVersion ?? "v1"})`;
+    statusEl.textContent = `Đã đồng ý: ${when} (version ${disclosureVersion ?? "v1"})`;
   } else {
-    status.textContent = "Chưa đồng ý disclosure.";
+    statusEl.textContent = "Chưa đồng ý disclosure.";
   }
 }
 
@@ -20,3 +24,6 @@ resetBtn?.addEventListener("click", async () => {
 });
 
 refresh();
+
+// Make this a module so future top-level identifiers don't accidentally pollute the global DOM scope.
+export {};

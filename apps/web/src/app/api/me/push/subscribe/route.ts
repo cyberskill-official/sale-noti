@@ -31,11 +31,14 @@ export async function POST(req: Request) {
   if (!userOid) return Response.json({ ok: false, error: "invalid_user_id" }, { status: 400 });
 
   // Cap 5 subscriptions per user; replace by endpoint if same.
+  // Cast: the `users` collection isn't strongly typed at this layer; MongoDB's $pull/$push
+  // operator-shape inference rejects nested fields under the default Document type.
+  // Runtime semantics are correct.
   await mongo.db("salenoti").collection("users").updateOne(
     { _id: userOid },
     {
       $pull: { pushSubscriptions: { endpoint: parsed.data.endpoint } },
-    }
+    } as any
   );
   await mongo.db("salenoti").collection("users").updateOne(
     { _id: userOid },
@@ -47,7 +50,7 @@ export async function POST(req: Request) {
         },
       },
       $set: { "notificationChannels.webPush": true, updatedAt: new Date() },
-    }
+    } as any
   );
 
   return Response.json({ ok: true });
