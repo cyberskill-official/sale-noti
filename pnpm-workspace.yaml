@@ -3,6 +3,15 @@ packages:
   - "extension"
   - "packages/*"
 
+allowBuilds:
+  '@nestjs/core': set this to true or false
+  '@sentry/cli': set this to true or false
+  core-js: set this to true or false
+  esbuild: set this to true or false
+  msgpackr-extract: set this to true or false
+  protobufjs: set this to true or false
+  sharp: set this to true or false
+
 # pnpm 11+ moved settings from package.json into pnpm-workspace.yaml.
 # `onlyBuiltDependencies` is the audited allowlist of packages whose postinstall
 # scripts we trust to run. Each entry must correspond to a package that ships a
