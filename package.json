@@ -23,17 +23,5 @@
     "prettier": "3.8.3",
     "turbo": "2.9.14",
     "typescript": "6.0.3"
-  },
-  "pnpm": {
-    "//": "pnpm 10+ blocks postinstall scripts by default. This is the explicit allowlist of dependencies whose build scripts we audited + trust. Each entry corresponds to a package that ships a native binary or runtime codegen step we genuinely need. To add a new entry: review the package's postinstall, document why we trust it in this comment block, then add it.",
-    "onlyBuiltDependencies": [
-      "@nestjs/core",
-      "@sentry/cli",
-      "core-js",
-      "esbuild",
-      "msgpackr-extract",
-      "protobufjs",
-      "sharp"
-    ]
   }
 }
