@@ -11,7 +11,14 @@ const envSchema = z.object({
   AUTH_SECRET: z.string().min(32, "AUTH_SECRET must be at least 32 chars"),
 });
 
-const env = envSchema.parse(process.env);
+const parsedEnv = envSchema.safeParse(process.env);
+const env = parsedEnv.success
+  ? parsedEnv.data
+  : {
+      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? "__missing_google_client_id__",
+      GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ?? "__missing_google_client_secret__",
+      AUTH_SECRET: process.env.AUTH_SECRET ?? "__missing_auth_secret_for_build_only__",
+    };
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -26,6 +33,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   callbacks: {
     async signIn({ account, profile }) {
+      if (!parsedEnv.success) return false;
       if (account?.provider !== "google") return false;
 
       // FR-AUTH-001 §1 #8 — validate iss + aud

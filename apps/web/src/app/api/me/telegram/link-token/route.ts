@@ -1,5 +1,5 @@
 // FR-NOTIF-003 §1 #3 — issue a daily-rotated Telegram link token for the authenticated user.
-import crypto from "node:crypto";
+import crypto from "crypto";
 
 export const runtime = "nodejs";
 

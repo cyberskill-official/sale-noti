@@ -3,7 +3,8 @@ id: FR-BILL-001
 title: "Freemium tiers — Free / Pro 39K₫ / Pro+ 89K₫ — Stripe + VNPay + MoMo · webhook lifecycle · grace period · idempotency"
 module: BILL
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P2
 milestone: P2 · slice 1 · Growth & Monetization
@@ -785,4 +786,4 @@ A: Stripe pro-rates automatically; VNPay/MoMo cancel old sub + start new + credi
 
 ---
 
-*FR-BILL-001 spec — last revised 2026-05-16. Status: accepted (10/10).*
+*FR-BILL-001 spec — last revised 2026-05-16. Status: shipped (2026-05-17).*

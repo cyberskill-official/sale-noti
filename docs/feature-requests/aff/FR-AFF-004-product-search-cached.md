@@ -3,7 +3,8 @@ id: FR-AFF-004
 title: "`productSearch` resolver with 5-min Redis cache + per-user rate-limit + PII keyword redaction + XSS strip"
 module: AFF
 priority: SHOULD
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P1
 milestone: P1 · slice 1 · MVP Core
@@ -476,4 +477,4 @@ All resolved at authoring time:
 
 ---
 
-*End of FR-AFF-004. Status: accepted (10/10). Last expanded: 2026-05-16.*
+*End of FR-AFF-004. Status: shipped (2026-05-17). Last expanded: 2026-05-16.*

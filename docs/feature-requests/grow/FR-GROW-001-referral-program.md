@@ -3,7 +3,8 @@ id: FR-GROW-001
 title: "Referral program — invite 3 qualified friends → unlock Pro 1 month; fraud-resistant; viral coefficient k≥0.4 target"
 module: GROW
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P2
 milestone: P2 · slice 1 · Growth & Monetization
@@ -399,4 +400,4 @@ All resolved at authoring time:
 
 ---
 
-*End of FR-GROW-001. Status: accepted (10/10). Last expanded: 2026-05-16.*
+*End of FR-GROW-001. Status: shipped (2026-05-17). Last expanded: 2026-05-16.*

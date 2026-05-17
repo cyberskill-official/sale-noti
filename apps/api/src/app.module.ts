@@ -14,11 +14,12 @@ import { BillingModule } from "./billing/billing.module";
 import { GrowthModule } from "./growth/growth.module";
 import { MegaSaleModule } from "./megasale/megasale.module";
 import { AdminModule } from "./admin/admin.module";
+import { LegalModule } from "./legal/legal.module";
 import { HealthController, QueueHealthController } from "./health/health.controller";
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: [".env", "../../.env"] }),
     ScheduleModule.forRoot(),
     ObsModule,
     TimescaleModule,
@@ -33,6 +34,7 @@ import { HealthController, QueueHealthController } from "./health/health.control
     GrowthModule,
     MegaSaleModule,
     AdminModule,
+    LegalModule,
   ],
   controllers: [HealthController, QueueHealthController],
 })

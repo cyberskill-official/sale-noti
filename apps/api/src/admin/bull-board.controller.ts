@@ -7,6 +7,7 @@ import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 import { BullModule } from "@nestjs/bullmq";
 import basicAuth from "express-basic-auth";
 import type { NestExpressApplication } from "@nestjs/platform-express";
+import { QUEUES } from "../queue/queues";
 
 @Module({
   imports: [
@@ -18,18 +19,8 @@ import type { NestExpressApplication } from "@nestjs/platform-express";
     // the runtime contract is correct but the TS type doesn't unify with the older
     // BullBoardModule.forFeature signature. Cast keeps the runtime behavior; pin to a
     // matching @bull-board/api version in a follow-up if the cast becomes load-bearing.
-    BullBoardModule.forFeature(
-      { name: "price-check", adapter: BullMQAdapter as any },
-      { name: "alert-dispatch", adapter: BullMQAdapter as any },
-      { name: "commission-reconcile", adapter: BullMQAdapter as any },
-      { name: "housekeeping", adapter: BullMQAdapter as any }
-    ),
-    BullModule.registerQueue(
-      { name: "price-check" },
-      { name: "alert-dispatch" },
-      { name: "commission-reconcile" },
-      { name: "housekeeping" }
-    ),
+    BullBoardModule.forFeature(...QUEUES.map((name) => ({ name, adapter: BullMQAdapter as any }))),
+    BullModule.registerQueue(...QUEUES.map((name) => ({ name }))),
   ],
 })
 export class BullBoardWrapperModule {}

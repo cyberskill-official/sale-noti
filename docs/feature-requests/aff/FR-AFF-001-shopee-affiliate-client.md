@@ -3,7 +3,8 @@ id: FR-AFF-001
 title: "Shopee Affiliate Open API client — GraphQL POST · SHA256 signed header · rate-limit aware"
 module: AFF
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P1
 milestone: P1 · slice 1 · MVP Core
@@ -337,4 +338,4 @@ All resolved:
 
 ---
 
-*End of FR-AFF-001. Status: accepted (10/10).*
+*End of FR-AFF-001. Status: shipped (2026-05-17).*

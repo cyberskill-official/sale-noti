@@ -3,7 +3,8 @@ id: FR-PRICE-002
 title: "`GET /v1/products/:productId/history` — chart-ready time-series API with server-side downsampling + 5-min cache + watchlist-or-public auth"
 module: PRICE
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P1
 milestone: P1 · slice 1 · MVP Core
@@ -359,4 +360,4 @@ All resolved at authoring time:
 
 ---
 
-*End of FR-PRICE-002. Status: accepted (10/10). Last expanded: 2026-05-16.*
+*End of FR-PRICE-002. Status: shipped (2026-05-17). Last expanded: 2026-05-16.*

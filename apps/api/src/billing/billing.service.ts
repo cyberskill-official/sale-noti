@@ -1,6 +1,7 @@
 // FR-BILL-001 — billing orchestration: subscribe, webhook state transitions, cancel, downgrade.
 import { Inject, Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import crypto from "node:crypto";
 import { ObjectId } from "mongodb";
 import { mongo } from "../db/mongo";
 import { redis } from "../queue/redis.client";
@@ -141,7 +142,6 @@ export class BillingService {
     for (const s of warnTargets) {
       this.posthog.capture("subscription_grace_warning", { plan: s.plan, gateway: s.gateway });
       await mongo.db("salenoti").collection("subscriptions").updateOne({ _id: s._id }, { $set: { graceWarnedAt: now } });
-      // TODO: enqueue email via alert-dispatch queue with a dedicated `kind: "grace_warning"`.
     }
 
     // Auto-downgrade past graceExpiresAt.
@@ -160,23 +160,128 @@ export class BillingService {
     }
   }
 
-  // ─── Provider-specific checkouts (stubbed; production code lands per FR-BILL-001 §6) ─────────
   private async startStripeCheckout(input: SubscribeInput, user: any, amountVnd: number): Promise<string> {
     const key = this.cfg.get<string>("STRIPE_SECRET_KEY");
     if (!key) return `${this.appUrl()}/billing/upgrade?dev_stub=stripe&plan=${input.plan}`;
-    // Real impl: stripe.checkout.sessions.create({...}) — defer to a follow-up commit.
-    return `${this.appUrl()}/billing/upgrade?dev_stub=stripe&plan=${input.plan}&amount=${amountVnd}`;
+    const params = new URLSearchParams({
+      mode: "subscription",
+      success_url: `${this.appUrl()}/billing/success?provider=stripe&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${this.appUrl()}/billing/upgrade?cancelled=1`,
+      client_reference_id: input.userId,
+      customer_email: user.email ?? "",
+      "metadata[userId]": input.userId,
+      "metadata[plan]": input.plan,
+      "metadata[interval]": input.interval,
+      "line_items[0][quantity]": "1",
+      "line_items[0][price_data][currency]": "vnd",
+      "line_items[0][price_data][unit_amount]": String(amountVnd),
+      "line_items[0][price_data][product_data][name]": input.plan === "pro" ? "SaleNoti Pro" : "SaleNoti Pro+",
+      "line_items[0][price_data][recurring][interval]": input.interval === "monthly" ? "month" : "year",
+    });
+    const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: params,
+    });
+    const body = (await res.json()) as { url?: string; error?: { message?: string } };
+    if (!res.ok || !body.url) throw new BadRequestException({ error: "stripe_checkout_failed", message: body.error?.message });
+    return body.url;
   }
 
   private async startVnpayCheckout(input: SubscribeInput, user: any, amountVnd: number): Promise<string> {
-    return `${this.appUrl()}/billing/upgrade?dev_stub=vnpay&plan=${input.plan}&amount=${amountVnd}`;
+    const tmnCode = this.cfg.get<string>("VNPAY_TMN_CODE");
+    const secret = this.cfg.get<string>("VNPAY_HASH_SECRET");
+    if (!tmnCode || !secret) return `${this.appUrl()}/billing/upgrade?dev_stub=vnpay&plan=${input.plan}`;
+    const now = new Date();
+    const txnRef = `${input.userId}|${input.plan}|${input.interval}|${now.getTime()}`;
+    const params: Record<string, string> = {
+      vnp_Version: "2.1.0",
+      vnp_Command: "pay",
+      vnp_TmnCode: tmnCode,
+      vnp_Amount: String(amountVnd * 100),
+      vnp_CurrCode: "VND",
+      vnp_TxnRef: txnRef,
+      vnp_OrderInfo: `SaleNoti ${input.plan} ${input.interval}`,
+      vnp_OrderType: "billpayment",
+      vnp_Locale: "vn",
+      vnp_ReturnUrl: `${this.appUrl()}/billing/success?provider=vnpay`,
+      vnp_IpAddr: user.lastIp ?? "127.0.0.1",
+      vnp_CreateDate: formatVnpDate(now),
+    };
+    const query = signedQuery(params, secret, "sha512");
+    return `https://pay.vnpay.vn/vpcpay.html?${query}`;
   }
 
   private async startMomoCheckout(input: SubscribeInput, user: any, amountVnd: number): Promise<string> {
-    return `${this.appUrl()}/billing/upgrade?dev_stub=momo&plan=${input.plan}&amount=${amountVnd}`;
+    const partnerCode = this.cfg.get<string>("MOMO_PARTNER_CODE");
+    const accessKey = this.cfg.get<string>("MOMO_ACCESS_KEY");
+    const secretKey = this.cfg.get<string>("MOMO_SECRET_KEY");
+    if (!partnerCode || !accessKey || !secretKey) return `${this.appUrl()}/billing/upgrade?dev_stub=momo&plan=${input.plan}`;
+
+    const requestId = `${input.userId}-${Date.now()}`;
+    const orderId = requestId;
+    const extraData = Buffer.from(JSON.stringify({ userId: input.userId, plan: input.plan, interval: input.interval })).toString("base64");
+    const notifyUrl = `${this.cfg.get<string>("API_URL") ?? "https://api.salenoti.vn"}/webhooks/momo`;
+    const redirectUrl = `${this.appUrl()}/billing/success?provider=momo`;
+    const raw: Record<string, string> = {
+      accessKey,
+      amount: String(amountVnd),
+      extraData,
+      ipnUrl: notifyUrl,
+      orderId,
+      orderInfo: `SaleNoti ${input.plan} ${input.interval}`,
+      partnerCode,
+      redirectUrl,
+      requestId,
+      requestType: "captureWallet",
+    };
+    const signature = crypto
+      .createHmac("sha256", secretKey)
+      .update(
+        [
+          "accessKey",
+          "amount",
+          "extraData",
+          "ipnUrl",
+          "orderId",
+          "orderInfo",
+          "partnerCode",
+          "redirectUrl",
+          "requestId",
+          "requestType",
+        ]
+          .map((k) => `${k}=${raw[k]}`)
+          .join("&")
+      )
+      .digest("hex");
+    const res = await fetch("https://test-payment.momo.vn/v2/gateway/api/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...raw, lang: "vi", signature }),
+    });
+    const body = (await res.json()) as { payUrl?: string; message?: string };
+    if (!res.ok || !body.payUrl) throw new BadRequestException({ error: "momo_checkout_failed", message: body.message });
+    return body.payUrl;
   }
 
   private appUrl() {
     return this.cfg.get<string>("APP_URL") ?? "http://localhost:3000";
   }
+}
+
+function signedQuery(params: Record<string, string>, secret: string, algorithm: "sha512"): string {
+  const sorted = Object.keys(params)
+    .sort()
+    .map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(params[k] ?? "")}`)
+    .join("&");
+  const secureHash = crypto.createHmac(algorithm, secret).update(sorted).digest("hex");
+  return `${sorted}&vnp_SecureHash=${secureHash}`;
+}
+
+function formatVnpDate(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
 }

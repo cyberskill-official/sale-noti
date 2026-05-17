@@ -1,5 +1,5 @@
 // FR-AUTH-002 §6 — issue magic-link.
-import crypto from "node:crypto";
+import crypto from "crypto";
 import { z } from "zod";
 import { mongo } from "@/server/db/mongo";
 import { resend } from "@/server/email/resend";

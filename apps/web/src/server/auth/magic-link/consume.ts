@@ -1,6 +1,6 @@
 // FR-AUTH-002 §6 — consume magic-link.
 // Atomic single-use: findOneAndUpdate with consumed:false guard.
-import crypto from "node:crypto";
+import crypto from "crypto";
 import { mongo } from "@/server/db/mongo";
 import { upsertUserOnSignIn } from "@/server/users/upsert-on-signin";
 

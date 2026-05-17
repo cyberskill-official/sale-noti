@@ -1,13 +1,18 @@
-// FR-AUTH-001 — protect /dashboard/* via Auth.js middleware.
-import { auth } from "@/auth";
+// FR-AUTH-001/003 — protect /dashboard/* without importing Node-only Auth.js callbacks into Edge middleware.
+import type { NextRequest } from "next/server";
 
-export default auth((req) => {
-  if (!req.auth && req.nextUrl.pathname.startsWith("/dashboard")) {
+export default function middleware(req: NextRequest) {
+  const hasSession =
+    req.cookies.has("authjs.session-token") ||
+    req.cookies.has("__Secure-authjs.session-token") ||
+    req.cookies.has("salenoti.session-token");
+
+  if (!hasSession && req.nextUrl.pathname.startsWith("/dashboard")) {
     const signInUrl = new URL("/auth/sign-in", req.url);
     signInUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
     return Response.redirect(signInUrl);
   }
-});
+}
 
 export const config = {
   matcher: ["/dashboard/:path*"],

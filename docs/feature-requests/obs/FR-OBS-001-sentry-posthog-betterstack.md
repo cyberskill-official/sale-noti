@@ -3,7 +3,8 @@ id: FR-OBS-001
 title: "Observability baseline — Sentry (errors + traces) + PostHog (analytics + flags) + Better Stack (uptime + logs + heartbeats) · PII redaction · daily metrics digest"
 module: OBS
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P0
 milestone: P0 · slice 1 · Pre-MVP Foundation
@@ -654,4 +655,4 @@ A: `docs/obs/runbook-pii-leak.md` covers: detect (manual audit + grep against Se
 
 ---
 
-*FR-OBS-001 spec — last revised 2026-05-16. Status: accepted (10/10).*
+*FR-OBS-001 spec — last revised 2026-05-16. Status: shipped (2026-05-17).*

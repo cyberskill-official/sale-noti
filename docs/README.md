@@ -17,6 +17,15 @@ sale-noti/
 ├── CLAUDE.md                 — @AGENTS.md
 └── docs/
     ├── README.md             — this file
+    ├── product/
+    │   ├── PRD.md            — product requirements document
+    │   └── SRS.md            — software requirements specification
+    ├── qa/
+    │   ├── TEST_PLAN.md      — QA strategy and release gates
+    │   ├── TEST_CASES.md     — automated, browser, provider, and per-FR cases
+    │   └── FR_TRACEABILITY.md — one-by-one FR implementation audit
+    ├── growth/
+    │   └── MANUAL_SOCIAL_CONTENT_CALENDAR.md — manually gated social copy/schedule
     ├── FR_AUTHORING_WORKFLOW.md   — project-local authoring + audit playbook
     ├── SaleNoti — Plan.pdf   — 34-page founder plan (input)
     └── feature-requests/     — the engineering surface
@@ -47,6 +56,9 @@ sale-noti/
 **Founder · roadmap & priorities**
 → [`feature-requests/BACKLOG.md`](feature-requests/BACKLOG.md) §1 totals · §7 cross-cutting watch-items.
 
+**Product/QA · release readiness**
+→ [`product/PRD.md`](product/PRD.md) · [`product/SRS.md`](product/SRS.md) · [`qa/FR_TRACEABILITY.md`](qa/FR_TRACEABILITY.md) · [`qa/TEST_CASES.md`](qa/TEST_CASES.md).
+
 **Senior Tech Lead · build sequence**
 → [`feature-requests/P0_AUDIT_SUMMARY.md`](feature-requests/P0_AUDIT_SUMMARY.md) §4 dependency unlock · [`P1_AUDIT_SUMMARY.md`](feature-requests/P1_AUDIT_SUMMARY.md) §4.
 
@@ -57,7 +69,7 @@ sale-noti/
 → [`feature-requests/legal/FR-LEGAL-001-pdpl-dpia-dpo.md`](feature-requests/legal/FR-LEGAL-001-pdpl-dpia-dpo.md) (PDPL DPIA + DPO + A05) · [`legal/FR-LEGAL-002-affiliate-disclosure-surfaces.md`](feature-requests/legal/FR-LEGAL-002-affiliate-disclosure-surfaces.md) (5 ethical principles + transparency report).
 
 **Marketing/Growth lead · viral mechanics**
-→ [`feature-requests/grow/`](feature-requests/grow/) · plan §F1 personas + §F2 channels in source PDF.
+→ [`feature-requests/grow/`](feature-requests/grow/) · [`growth/MANUAL_SOCIAL_CONTENT_CALENDAR.md`](growth/MANUAL_SOCIAL_CONTENT_CALENDAR.md) · plan §F1 personas + §F2 channels in source PDF.
 
 **Investor/advisor · scope at a glance**
 → [`feature-requests/BACKLOG.md`](feature-requests/BACKLOG.md) §1 phase table + [`SESSION_PROGRESS.md`](feature-requests/SESSION_PROGRESS.md) §2 totals · 42 FRs, 5 phases, ~22 person-weeks calendar.
@@ -82,7 +94,7 @@ PR (one FR per PR)
 shipped: <date> in FR frontmatter
 ```
 
-All 26 P0/P1/P2 FRs are currently `status: accepted` ready to build. P3+P4 are roadmap rows in BACKLOG.md §5–§6.
+All 26 P0/P1/P2 FRs are currently `status: shipped` with implementation traceability in [`qa/FR_TRACEABILITY.md`](qa/FR_TRACEABILITY.md). P3+P4 are roadmap rows in BACKLOG.md §5–§6.
 
 ---
 
@@ -141,4 +153,4 @@ For P3 + P4 re-batch, see `feature-requests/P2_AUDIT_SUMMARY.md §6` (trigger co
 
 ---
 
-*Last updated: 2026-05-16 (initial batch — 26 FRs, P0+P1+P2 ready to build).*
+*Last updated: 2026-05-18 (implementation hardening — 26 FRs shipped with PRD/SRS/QA traceability).*

@@ -24,14 +24,14 @@ P0 establishes the cross-cutting infrastructure that everything else depends on:
 
 | FR-ID | Title | Pre | R1 | R2 | Critical | Status |
 |---|---|:-:|:-:|:-:|:-:|:-:|
-| **FR-AUTH-001** | Google OAuth via Auth.js v5 pinned | 8.5 | 9.5 | **10** | 0 | accepted |
-| **FR-AUTH-002** | Email magic-link auth | 8.5 | 9.5 | **10** | 0 | accepted |
-| **FR-AUTH-003** | JWT session + refresh rotation | 8.0 | 9.5 | **10** | 0 | accepted |
-| **FR-LEGAL-001** | PDPL DPIA + DPO + A05 72h | 7.5 | 9.0 | **10** | 0 | accepted |
-| **FR-LEGAL-002** | Affiliate disclosure surfaces | 8.0 | 9.5 | **10** | 0 | accepted |
-| **FR-OBS-001** | Sentry + PostHog + Better Stack | 8.0 | 9.5 | **10** | 0 | accepted |
-| **FR-WORKER-001** | BullMQ + Redis + Bull Board | 8.5 | 9.5 | **10** | 0 | accepted |
-| **FR-WORKER-002** | Adaptive scheduler 30m/6h/24h | 8.0 | 9.5 | **10** | 0 | accepted |
+| **FR-AUTH-001** | Google OAuth via Auth.js v5 pinned | 8.5 | 9.5 | **10** | 0 | shipped |
+| **FR-AUTH-002** | Email magic-link auth | 8.5 | 9.5 | **10** | 0 | shipped |
+| **FR-AUTH-003** | JWT session + refresh rotation | 8.0 | 9.5 | **10** | 0 | shipped |
+| **FR-LEGAL-001** | PDPL DPIA + DPO + A05 72h | 7.5 | 9.0 | **10** | 0 | shipped |
+| **FR-LEGAL-002** | Affiliate disclosure surfaces | 8.0 | 9.5 | **10** | 0 | shipped |
+| **FR-OBS-001** | Sentry + PostHog + Better Stack | 8.0 | 9.5 | **10** | 0 | shipped |
+| **FR-WORKER-001** | BullMQ + Redis + Bull Board | 8.5 | 9.5 | **10** | 0 | shipped |
+| **FR-WORKER-002** | Adaptive scheduler 30m/6h/24h | 8.0 | 9.5 | **10** | 0 | shipped |
 
 8 FRs, all reached 10/10 after two audit rounds. Zero critical issues remaining.
 

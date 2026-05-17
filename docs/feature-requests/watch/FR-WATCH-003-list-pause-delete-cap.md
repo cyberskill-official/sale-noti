@@ -3,7 +3,8 @@ id: FR-WATCH-003
 title: "`GET /v1/watchlists` list + `PATCH` pause/resume + `DELETE` soft-delete + free-tier 10-product cap enforcement"
 module: WATCH
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P1
 milestone: P1 · slice 1 · MVP Core
@@ -466,4 +467,4 @@ All resolved at authoring time:
 
 ---
 
-*End of FR-WATCH-003. Status: accepted (10/10). Last expanded: 2026-05-16.*
+*End of FR-WATCH-003. Status: shipped (2026-05-17). Last expanded: 2026-05-16.*

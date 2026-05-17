@@ -1,7 +1,9 @@
 // FR-OBS-001 §1 #11 — /health returns the three-pillar status.
-import { Controller, Get, Inject } from "@nestjs/common";
+import { Controller, Get } from "@nestjs/common";
+import { Queue } from "bullmq";
 import { redis } from "../queue/redis.client";
 import { mongo } from "../db/mongo";
+import { QUEUES, bullConnectionFromUrl, type QueueName } from "../queue/queues";
 
 @Controller("health")
 export class HealthController {
@@ -25,6 +27,19 @@ export class QueueHealthController {
   async queueHealth() {
     if (!process.env.REDIS_URL) return { redis: false, queues: {} };
     const ok = await redis.ping().then(() => true).catch(() => false);
-    return { redis: ok, queues: {} }; // depth wiring lands when worker handlers register
+    const connection = bullConnectionFromUrl(process.env.REDIS_URL);
+    const queueEntries = await Promise.all(
+      QUEUES.map(async (name) => {
+        const q = new Queue(name, { connection });
+        try {
+          const counts = await q.getJobCounts("waiting", "delayed", "active", "failed");
+          const depth = (counts.waiting ?? 0) + (counts.delayed ?? 0) + (counts.active ?? 0);
+          return [name, { ready: ok, depth, failed: counts.failed ?? 0 }] as const;
+        } finally {
+          await q.close();
+        }
+      })
+    );
+    return { redis: ok, queues: Object.fromEntries(queueEntries) as Record<QueueName, { ready: boolean; depth: number; failed: number }> };
   }
 }

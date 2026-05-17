@@ -1,5 +1,5 @@
 // FR-AUTH-003 §6 — refresh token rotation with reuse-detection.
-import crypto from "node:crypto";
+import crypto from "crypto";
 import { mongo } from "@/server/db/mongo";
 import { sentry } from "@/server/obs/sentry.server";
 import { signAccessToken, buildAccessCookie, buildRefreshCookie, ACCESS_COOKIE, REFRESH_COOKIE, buildClearCookie } from "./session";

@@ -3,7 +3,8 @@ id: FR-AUTH-001
 title: "Google OAuth via Auth.js v5.0.0-beta.25 (pinned, no `latest`)"
 module: AUTH
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P0
 milestone: P0 · slice 1 · Pre-MVP Foundation
@@ -338,4 +339,4 @@ All resolved at authoring time:
 
 ---
 
-*End of FR-AUTH-001. Status: accepted (10/10).*
+*End of FR-AUTH-001. Status: shipped (2026-05-17).*

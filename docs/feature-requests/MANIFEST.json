@@ -45,25 +45,36 @@
       "phase": "P0",
       "authored_at": "2026-05-16",
       "frs": [
-        "FR-AUTH-001", "FR-AUTH-002", "FR-AUTH-003",
-        "FR-LEGAL-001", "FR-LEGAL-002",
+        "FR-AUTH-001",
+        "FR-AUTH-002",
+        "FR-AUTH-003",
+        "FR-LEGAL-001",
+        "FR-LEGAL-002",
         "FR-OBS-001",
-        "FR-WORKER-001", "FR-WORKER-002"
+        "FR-WORKER-001",
+        "FR-WORKER-002"
       ],
-      "status": "all-accepted-10/10"
+      "status": "all-shipped-2026-05-17"
     },
     {
       "id": "batch-002-p1-mvp-core",
       "phase": "P1",
       "authored_at": "2026-05-16",
       "frs": [
-        "FR-AFF-001", "FR-AFF-002", "FR-AFF-003", "FR-AFF-004",
-        "FR-WATCH-001", "FR-WATCH-002", "FR-WATCH-003",
-        "FR-PRICE-001", "FR-PRICE-002",
-        "FR-NOTIF-001", "FR-NOTIF-002",
+        "FR-AFF-001",
+        "FR-AFF-002",
+        "FR-AFF-003",
+        "FR-AFF-004",
+        "FR-WATCH-001",
+        "FR-WATCH-002",
+        "FR-WATCH-003",
+        "FR-PRICE-001",
+        "FR-PRICE-002",
+        "FR-NOTIF-001",
+        "FR-NOTIF-002",
         "FR-EXT-001"
       ],
-      "status": "all-accepted-10/10"
+      "status": "all-shipped-2026-05-17"
     },
     {
       "id": "batch-003-p2-growth-monetization",
@@ -72,10 +83,12 @@
       "frs": [
         "FR-BILL-001",
         "FR-NOTIF-003",
-        "FR-GROW-001", "FR-GROW-002", "FR-GROW-003",
+        "FR-GROW-001",
+        "FR-GROW-002",
+        "FR-GROW-003",
         "FR-ADMIN-001"
       ],
-      "status": "all-accepted-10/10"
+      "status": "all-shipped-2026-05-17"
     }
   ],
   "totals": {
@@ -84,5 +97,6 @@
     "fr_count_total_planned": 42,
     "estimated_effort_hours_authored": 167,
     "estimated_effort_hours_total": 336
-  }
+  },
+  "shipped_at": "2026-05-17"
 }

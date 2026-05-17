@@ -1,23 +1,34 @@
 // FR-ADMIN-001 — B2B lead capture.
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { z } from "zod";
+import { Resend } from "resend";
 import { mongo } from "../db/mongo";
+import { envelopeEncrypt, piiHash } from "../legal/encryption-envelope";
 
 const VN_PHONE = /^(\+?84|0)\d{9,10}$/;
 
-const LeadSchema = z.object({
-  companyName: z.string().min(2).max(200),
-  website: z.string().url().max(500).optional(),
-  contactName: z.string().min(2).max(100),
-  email: z.string().email().max(255),
-  phone: z.string().regex(VN_PHONE),
-  monthlyBudget: z.enum(["<5M", "5-15M", "15-50M", "50M+"]),
-  volume: z.enum(["<1K", "1K-10K", "10K-100K", "100K+"]),
-  useCase: z.string().min(10).max(1000),
-  howFoundUs: z.string().max(200).optional(),
-  consents: z.object({ pdpl_v1: z.literal(true) }),
-  hcaptchaToken: z.string().min(10).optional(),
-});
+const LeadSchema = z
+  .object({
+    companyName: z.string().min(2).max(200),
+    website: z.string().url().max(500).optional(),
+    contactName: z.string().min(2).max(100),
+    email: z.string().email().max(255),
+    phone: z.string().regex(VN_PHONE),
+    monthlyBudget: z.enum(["<5M", "5-15M", "15-50M", "50M+"]).default("<5M"),
+    volume: z.enum(["<1K", "1K-10K", "10K-100K", "100K+"]).default("<1K"),
+    monthlyOrders: z.enum(["<100", "100-1000", "1000-10000", ">10000"]).optional(),
+    shopeeStoreUrl: z.string().url().max(500).optional(),
+    source: z.enum(["homepage", "footer", "blog", "other"]).optional(),
+    useCase: z.string().min(10).max(1000),
+    howFoundUs: z.string().max(200).optional(),
+    consents: z.object({ pdpl_v1: z.literal(true) }).optional(),
+    consentPdpl: z.literal(true).optional(),
+    hcaptchaToken: z.string().min(10).optional(),
+  })
+  .refine((data) => data.consents?.pdpl_v1 === true || data.consentPdpl === true, {
+    path: ["consentPdpl"],
+    message: "consent_required",
+  });
 
 export type LeadInput = z.infer<typeof LeadSchema>;
 
@@ -41,24 +52,29 @@ export class B2bLeadService {
       if (!ok) throw new BadRequestException({ error: "captcha_failed" });
     }
 
-    // FR-ADMIN-001 §1 #10 — explicit consent required.
-    if (!parsed.data.consents?.pdpl_v1) throw new BadRequestException({ error: "consent_required" });
-
+    const email = parsed.data.email.toLowerCase();
+    const phone = parsed.data.phone;
     const doc = {
       companyName: parsed.data.companyName,
-      website: parsed.data.website ?? null,
+      website: parsed.data.website ?? parsed.data.shopeeStoreUrl ?? null,
+      shopeeStoreUrl: parsed.data.shopeeStoreUrl ?? null,
       contactName: parsed.data.contactName,
-      email: parsed.data.email.toLowerCase(),
-      phone: parsed.data.phone,
+      emailEncrypted: envelopeEncrypt(email, "b2b_leads.email"),
+      phoneEncrypted: envelopeEncrypt(phone, "b2b_leads.phone"),
+      emailHash: piiHash(email, "b2b_leads.email"),
+      phoneHash: piiHash(phone, "b2b_leads.phone"),
+      phoneLast4: phone.slice(-4),
       monthlyBudget: parsed.data.monthlyBudget,
+      monthlyOrders: parsed.data.monthlyOrders ?? null,
       volume: parsed.data.volume,
       useCase: parsed.data.useCase,
+      source: parsed.data.source ?? parsed.data.howFoundUs ?? null,
       howFoundUs: parsed.data.howFoundUs ?? null,
       consents: { pdpl_v1: { grantedAt: new Date(), ip: meta.ip } },
       status: "new" as const,
-      ip: meta.ip,
+      ipHash: piiHash(meta.ip, "b2b_leads.ip"),
+      uaHash: piiHash(meta.ua, "b2b_leads.ua"),
       referer: meta.referer.slice(0, 500),
-      ua: meta.ua.slice(0, 500),
       createdAt: new Date(),
     };
 
@@ -74,7 +90,7 @@ export class B2bLeadService {
             type: "mrkdwn",
             text: [
               `*${parsed.data.companyName}*`,
-              `Contact: ${parsed.data.contactName} <${parsed.data.email}> · ${parsed.data.phone}`,
+              `Contact: ${parsed.data.contactName} · email hash ${doc.emailHash.slice(0, 10)} · phone ****${doc.phoneLast4}`,
               `Budget: ${parsed.data.monthlyBudget}  ·  Volume: ${parsed.data.volume}`,
               `Use-case: ${parsed.data.useCase.slice(0, 300)}${parsed.data.useCase.length > 300 ? "…" : ""}`,
             ].join("\n"),
@@ -96,10 +112,30 @@ export class B2bLeadService {
     this.posthog.capture("b2b_lead_submitted", {
       companySize: parsed.data.monthlyBudget,
       volumeBucket: parsed.data.volume,
+      source: doc.source,
+      hasShopeeStore: Boolean(doc.shopeeStoreUrl),
     });
+
+    await sendLeadConfirmation(email, parsed.data.contactName).catch(() => undefined);
 
     return { ok: true, leadId: String(r.insertedId) };
   }
+}
+
+async function sendLeadConfirmation(email: string, contactName: string): Promise<void> {
+  if (!process.env.RESEND_API_KEY) return;
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  await resend.emails.send({
+    from: "CyberSkill <sales@cyberskill.world>",
+    to: email,
+    subject: "Cảm ơn bạn đã liên hệ CyberSkill",
+    text: `Chào ${contactName},\n\nCyberSkill đã nhận thông tin của bạn. Team sẽ phản hồi trong vòng 24 giờ làm việc.\n\nCyberSkill`,
+    html: `<p>Chào ${escapeHtml(contactName)},</p><p>CyberSkill đã nhận thông tin của bạn. Team sẽ phản hồi trong vòng <b>24 giờ làm việc</b>.</p><p>CyberSkill</p>`,
+  });
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 }
 
 async function verifyHcaptcha(token: string, ip: string): Promise<boolean> {

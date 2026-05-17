@@ -3,7 +3,8 @@ id: FR-LEGAL-002
 title: "Affiliate disclosure surfaces — listing · onboarding · alert email · every affiliate-tagged link · transparency report · 5-ethics firewall"
 module: LEGAL
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: I
 phase: P0
 milestone: P0 · slice 1 · Pre-MVP Foundation
@@ -546,4 +547,4 @@ A: Publish anyway. "0 ₫ commission this quarter — pre-launch / launch phase"
 
 ---
 
-*FR-LEGAL-002 spec — last revised 2026-05-16. Status: accepted (10/10).*
+*FR-LEGAL-002 spec — last revised 2026-05-16. Status: shipped (2026-05-17).*

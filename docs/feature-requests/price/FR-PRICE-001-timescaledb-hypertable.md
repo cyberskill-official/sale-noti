@@ -3,7 +3,8 @@ id: FR-PRICE-001
 title: "TimescaleDB `price_history` hypertable + 30-min rolling continuous aggregate + 30/90/730-day retention policies"
 module: PRICE
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P1
 milestone: P1 · slice 1 · MVP Core
@@ -582,4 +583,4 @@ A: Out of scope for this FR — backfill is a P2 ops task (`source = 'replay'` e
 
 ---
 
-*FR-PRICE-001 spec — last revised 2026-05-16. Status: accepted (10/10).*
+*FR-PRICE-001 spec — last revised 2026-05-16. Status: shipped (2026-05-17).*

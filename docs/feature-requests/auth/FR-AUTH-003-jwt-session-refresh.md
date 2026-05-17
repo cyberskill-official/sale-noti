@@ -3,7 +3,8 @@ id: FR-AUTH-003
 title: "JWT session (15-min access + 30-day refresh in HTTP-only cookie) · rotation + reuse-detection · family revoke"
 module: AUTH
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P0
 milestone: P0 · slice 1 · Pre-MVP Foundation
@@ -604,4 +605,4 @@ A: Limited blast radius by design (15 min). Sign-out revokes the family, which m
 
 ---
 
-*FR-AUTH-003 spec — last revised 2026-05-16. Status: accepted (10/10).*
+*FR-AUTH-003 spec — last revised 2026-05-16. Status: shipped (2026-05-17).*

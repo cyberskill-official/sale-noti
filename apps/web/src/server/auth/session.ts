@@ -1,6 +1,6 @@
 // FR-AUTH-003 — JWT access token signing (15-min).
 // HS256 with AUTH_SECRET; symmetric since both signer and verifier live in our app.
-import crypto from "node:crypto";
+import crypto from "crypto";
 
 const ACCESS_TTL_SEC = 15 * 60;
 

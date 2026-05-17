@@ -3,7 +3,8 @@ id: FR-WATCH-001
 title: "`POST /v1/products/track` — paste shopee.vn URL → resolve via Affiliate API → upsert product + watchlist row"
 module: WATCH
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P1
 milestone: P1 · slice 1 · MVP Core
@@ -591,4 +592,4 @@ A: Reject at MVP (the parser doesn't follow redirects). User must paste the cano
 
 ---
 
-*FR-WATCH-001 spec — last revised 2026-05-16. Status: accepted (10/10).*
+*FR-WATCH-001 spec — last revised 2026-05-16. Status: shipped (2026-05-17).*

@@ -3,7 +3,8 @@ id: FR-WORKER-001
 title: "BullMQ + Redis (Upstash) baseline + Bull Board ops dashboard"
 module: WORKER
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P0
 milestone: P0 · slice 1 · Pre-MVP Foundation
@@ -307,4 +308,4 @@ All resolved:
 
 ---
 
-*End of FR-WORKER-001. Status: accepted (10/10).*
+*End of FR-WORKER-001. Status: shipped (2026-05-17).*

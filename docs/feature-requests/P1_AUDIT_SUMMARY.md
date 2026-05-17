@@ -25,18 +25,18 @@ P1 ships the happy path the founder dogfoods for 8 weeks: paste a Shopee URL →
 
 | FR-ID | Title | Pre | R1 | R2 | Critical | Status |
 |---|---|:-:|:-:|:-:|:-:|:-:|
-| **FR-AFF-001** | Shopee Affiliate Open API client | 8.5 | 9.5 | **10** | 0 | accepted |
-| **FR-AFF-002** | generateShortLink with attribution | 8.5 | 9.5 | **10** | 0 | accepted |
-| **FR-AFF-003** | productOfferV2 + shopOfferV2 resolver | 8.5 | 9.5 | **10** | 0 | accepted |
-| **FR-AFF-004** | Cached productSearch | 8.0 | 9.5 | **10** | 0 | accepted |
-| **FR-WATCH-001** | POST /v1/products/track | 8.5 | 9.5 | **10** | 0 | accepted |
-| **FR-WATCH-002** | Alert trigger config | 8.5 | 9.5 | **10** | 0 | accepted |
-| **FR-WATCH-003** | List + pause + delete + cap | 8.5 | 9.5 | **10** | 0 | accepted |
-| **FR-PRICE-001** | TimescaleDB hypertable + agg | 8.0 | 9.5 | **10** | 0 | accepted |
-| **FR-PRICE-002** | History chart API | 8.0 | 9.5 | **10** | 0 | accepted |
-| **FR-NOTIF-001** | Email alert via Resend | 8.5 | 9.5 | **10** | 0 | accepted |
-| **FR-NOTIF-002** | Web Push (VAPID + SW) | 8.0 | 9.5 | **10** | 0 | accepted |
-| **FR-EXT-001** | Chrome MV3 extension | 7.5 | 9.0 | **10** | 0 | accepted |
+| **FR-AFF-001** | Shopee Affiliate Open API client | 8.5 | 9.5 | **10** | 0 | shipped |
+| **FR-AFF-002** | generateShortLink with attribution | 8.5 | 9.5 | **10** | 0 | shipped |
+| **FR-AFF-003** | productOfferV2 + shopOfferV2 resolver | 8.5 | 9.5 | **10** | 0 | shipped |
+| **FR-AFF-004** | Cached productSearch | 8.0 | 9.5 | **10** | 0 | shipped |
+| **FR-WATCH-001** | POST /v1/products/track | 8.5 | 9.5 | **10** | 0 | shipped |
+| **FR-WATCH-002** | Alert trigger config | 8.5 | 9.5 | **10** | 0 | shipped |
+| **FR-WATCH-003** | List + pause + delete + cap | 8.5 | 9.5 | **10** | 0 | shipped |
+| **FR-PRICE-001** | TimescaleDB hypertable + agg | 8.0 | 9.5 | **10** | 0 | shipped |
+| **FR-PRICE-002** | History chart API | 8.0 | 9.5 | **10** | 0 | shipped |
+| **FR-NOTIF-001** | Email alert via Resend | 8.5 | 9.5 | **10** | 0 | shipped |
+| **FR-NOTIF-002** | Web Push (VAPID + SW) | 8.0 | 9.5 | **10** | 0 | shipped |
+| **FR-EXT-001** | Chrome MV3 extension | 7.5 | 9.0 | **10** | 0 | shipped |
 
 12 FRs, all reached 10/10. Zero critical issues. FR-EXT-001 started lowest (7.5) due to multiple Chrome Web Store policy gotchas; round-2 closed all 7 issues.
 

@@ -3,7 +3,8 @@ id: FR-WORKER-002
 title: "Adaptive scheduler — hot/mid/low tiers 30min/6h/24h under Shopee API rate-limit + exponential backoff"
 module: WORKER
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P0
 milestone: P0 · slice 1 · Pre-MVP Foundation
@@ -308,4 +309,4 @@ All resolved:
 
 ---
 
-*End of FR-WORKER-002. Status: accepted (10/10).*
+*End of FR-WORKER-002. Status: shipped (2026-05-17).*

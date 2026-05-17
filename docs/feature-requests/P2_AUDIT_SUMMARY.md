@@ -24,12 +24,12 @@ P2 turns the MVP into a freemium business. Add Telegram bot, web push for alread
 
 | FR-ID | Title | Pre | R1 | R2 | Critical | Status |
 |---|---|:-:|:-:|:-:|:-:|:-:|
-| **FR-BILL-001** | Freemium + Stripe + VNPay/MoMo | 7.5 | 9.0 | **10** | 0 | accepted |
-| **FR-NOTIF-003** | Telegram bot integration | 8.5 | 9.5 | **10** | 0 | accepted |
-| **FR-GROW-001** | Referral program (3 → 1 month Pro) | 8.0 | 9.5 | **10** | 0 | accepted |
-| **FR-GROW-002** | Share deal with friend (deal page) | 8.5 | 9.5 | **10** | 0 | accepted |
-| **FR-GROW-003** | Mega Sale Mode | 8.0 | 9.5 | **10** | 0 | accepted |
-| **FR-ADMIN-001** | B2B contact form | 8.5 | 9.5 | **10** | 0 | accepted |
+| **FR-BILL-001** | Freemium + Stripe + VNPay/MoMo | 7.5 | 9.0 | **10** | 0 | shipped |
+| **FR-NOTIF-003** | Telegram bot integration | 8.5 | 9.5 | **10** | 0 | shipped |
+| **FR-GROW-001** | Referral program (3 → 1 month Pro) | 8.0 | 9.5 | **10** | 0 | shipped |
+| **FR-GROW-002** | Share deal with friend (deal page) | 8.5 | 9.5 | **10** | 0 | shipped |
+| **FR-GROW-003** | Mega Sale Mode | 8.0 | 9.5 | **10** | 0 | shipped |
+| **FR-ADMIN-001** | B2B contact form | 8.5 | 9.5 | **10** | 0 | shipped |
 
 6 FRs, all reached 10/10. FR-BILL-001 started lowest (7.5) due to multi-rail payment complexity; R1 closed PCI scope avoidance + webhook-only state, R2 closed grace period + idempotency.
 

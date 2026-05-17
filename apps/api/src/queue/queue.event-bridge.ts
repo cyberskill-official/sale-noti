@@ -2,7 +2,7 @@
 import { Inject, Injectable, OnModuleInit } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { QueueEvents } from "bullmq";
-import { QUEUES, type QueueName } from "./queue.module";
+import { QUEUES, bullConnectionFromUrl, type QueueName } from "./queues";
 
 @Injectable()
 export class QueueEventBridge implements OnModuleInit {
@@ -13,16 +13,7 @@ export class QueueEventBridge implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    const urlStr = this.config.getOrThrow<string>("REDIS_URL");
-    const u = new URL(urlStr);
-    const connection = {
-      host: u.hostname,
-      port: Number(u.port),
-      password: u.password || undefined,
-      tls: u.protocol === "rediss:" ? {} : undefined,
-      maxRetriesPerRequest: null,
-      enableReadyCheck: false,
-    };
+    const connection = bullConnectionFromUrl(this.config.getOrThrow<string>("REDIS_URL"));
 
     for (const name of QUEUES) {
       const events = new QueueEvents(name as QueueName, { connection });

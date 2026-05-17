@@ -3,7 +3,8 @@ id: FR-NOTIF-003
 title: "Telegram bot — `/start <linkToken>` daily-rotated binding · per-user channel · shared idempotency with FR-NOTIF-001/002 · disclosure-on-every-message"
 module: NOTIF
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P2
 milestone: P2 · slice 1 · Growth & Monetization
@@ -352,4 +353,4 @@ All resolved at authoring time:
 
 ---
 
-*End of FR-NOTIF-003. Status: accepted (10/10). Last expanded: 2026-05-16.*
+*End of FR-NOTIF-003. Status: shipped (2026-05-17). Last expanded: 2026-05-16.*

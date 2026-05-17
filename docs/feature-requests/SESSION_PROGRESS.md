@@ -103,6 +103,29 @@
 
 ## §4 — Next steps
 
+### Implementation checkpoint — 2026-05-17
+
+All 26 authored P0-P2 FRs have been implemented and marked `shipped` in their FR frontmatter, `BACKLOG.md`, and `MANIFEST.json`.
+
+Notable completion work:
+
+- Added missing queue production pieces: shared queue registry, queue depth health, housekeeping/commission workers, price-check worker, trigger evaluation dispatch, and scheduler tier reevaluation.
+- Added PDPL DSR API module with export/delete request endpoints plus AES-256-GCM envelope encryption and PII hashing for restricted data.
+- Completed B2B contact plumbing from web form to API, including the public endpoint alias, hashed/encrypted lead PII, Slack/PostHog events, and confirmation email path.
+- Added missing Chrome extension and Web Push icon assets referenced by the manifest/service worker.
+- Added Auth session-family listing/revoke route and real gateway checkout creation paths for Stripe, VNPay, and MoMo when production credentials are present.
+
+Verification checkpoint:
+
+- Direct `fr-check` and `legal-check` scripts pass.
+- Direct package TypeScript checks pass for API, Web, and Extension.
+- Direct unit tests pass for API and Web.
+- Extension build emits `dist/` with manifest, scripts, and icons.
+
+Known local runner caveat:
+
+- Root `pnpm <script>` currently invokes pnpm's install/deps-status path and is blocked by pnpm 11 ignored-build approval state in this checkout. Direct package binaries were used for verification until the checkout's pnpm build approvals are refreshed.
+
 ### Immediate (this week)
 
 1. Founder reviews BACKLOG.md + 3 phase summaries → adjusts priorities if needed.

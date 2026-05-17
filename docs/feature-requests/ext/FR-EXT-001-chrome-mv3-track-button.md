@@ -3,7 +3,8 @@ id: FR-EXT-001
 title: "Chrome MV3 extension — '+ Theo dõi giá' floating button on shopee.vn product pages · disclosure-first · strict scope · no cart-API scrape · cookie-respect · onboarding gate"
 module: EXT
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P1
 milestone: P1 · slice 1 · MVP Core
@@ -693,4 +694,4 @@ A: Tempting but conflicts with Principle 2 (user-initiated). Each product MUST b
 
 ---
 
-*FR-EXT-001 spec — last revised 2026-05-16. Status: accepted (10/10).*
+*FR-EXT-001 spec — last revised 2026-05-16. Status: shipped (2026-05-17).*

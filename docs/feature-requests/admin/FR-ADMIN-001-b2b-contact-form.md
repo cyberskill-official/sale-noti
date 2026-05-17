@@ -3,7 +3,8 @@ id: FR-ADMIN-001
 title: "Public B2B contact form — lead capture for Mall/Brand sellers wanting price-intel dashboard"
 module: ADMIN
 priority: SHOULD
-status: SPEC_READY
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P2
 slice: 2

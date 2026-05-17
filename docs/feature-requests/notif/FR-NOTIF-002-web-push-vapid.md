@@ -3,7 +3,8 @@ id: FR-NOTIF-002
 title: "Web Push (VAPID + service worker) — Chrome / Edge / Android primary; iOS Safari graceful fallback to email; shared idempotency with FR-NOTIF-001/003"
 module: NOTIF
 priority: SHOULD
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P1
 milestone: P1 · slice 1 · MVP Core
@@ -362,4 +363,4 @@ All resolved at authoring time:
 
 ---
 
-*End of FR-NOTIF-002. Status: accepted (10/10). Last expanded: 2026-05-16.*
+*End of FR-NOTIF-002. Status: shipped (2026-05-17). Last expanded: 2026-05-16.*

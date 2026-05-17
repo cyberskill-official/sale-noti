@@ -28,13 +28,16 @@ export default async function MegaSalePage({ params }: { params: Promise<{ slug:
   const sale = SALES.find((s) => s.slug === slug);
   if (!sale) notFound();
 
-  const topDeals = await mongo
-    .db("salenoti")
-    .collection("products")
-    .find({ _megaSaleOverride: slug, currentDiscountPct: { $gte: 30 } })
-    .sort({ currentDiscountPct: -1, sales: -1 })
-    .limit(100)
-    .toArray();
+  let topDeals: any[] = [];
+  if (process.env.MONGODB_URI) {
+    topDeals = await mongo
+      .db("salenoti")
+      .collection("products")
+      .find({ _megaSaleOverride: slug, currentDiscountPct: { $gte: 30 } })
+      .sort({ currentDiscountPct: -1, sales: -1 })
+      .limit(100)
+      .toArray();
+  }
 
   return (
     <main style={{ maxWidth: 960, margin: "32px auto", padding: "0 16px", fontFamily: "system-ui", lineHeight: 1.6 }}>

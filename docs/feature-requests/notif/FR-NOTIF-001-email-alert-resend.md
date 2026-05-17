@@ -3,7 +3,8 @@ id: FR-NOTIF-001
 title: "Email alert via Resend — React Email template · idempotency-key dedup · 365-day TTL audit log · suppression list"
 module: NOTIF
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: T
 phase: P1
 milestone: P1 · slice 1 · MVP Core
@@ -613,4 +614,4 @@ A: Resend handles IP rotation automatically. We only need to verify DNS (SPF, DK
 
 ---
 
-*FR-NOTIF-001 spec — last revised 2026-05-16. Status: accepted (10/10).*
+*FR-NOTIF-001 spec — last revised 2026-05-16. Status: shipped (2026-05-17).*

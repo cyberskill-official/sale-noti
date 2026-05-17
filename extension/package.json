@@ -8,7 +8,8 @@
     "dev": "node esbuild.config.mjs --watch",
     "lint": "eslint \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "test:e2e": "vitest run --passWithNoTests"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.270",

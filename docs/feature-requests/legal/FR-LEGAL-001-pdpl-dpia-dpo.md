@@ -3,7 +3,8 @@ id: FR-LEGAL-001
 title: "PDPL Decree 13/2023 — DPIA filed + DPO appointed + A05 72h-breach notification + DSR endpoints + cross-border transfer impact assessment"
 module: LEGAL
 priority: MUST
-status: accepted
+status: shipped
+shipped: 2026-05-17
 verify: I
 phase: P0
 milestone: P0 · slice 1 · Pre-MVP Foundation
@@ -568,4 +569,4 @@ A: PostHog events are hashed-userId per FR-OBS-001 PII-redaction; they're not di
 
 ---
 
-*FR-LEGAL-001 spec — last revised 2026-05-16. Status: accepted (10/10).*
+*FR-LEGAL-001 spec — last revised 2026-05-16. Status: shipped (2026-05-17).*
