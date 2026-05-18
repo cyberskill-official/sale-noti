@@ -30,7 +30,7 @@
     "LEGAL": 2,
     "OBS": 1,
     "WORKER": 2,
-    "AFF": 4,
+    "AFF": 7,
     "WATCH": 3,
     "PRICE": 2,
     "NOTIF": 3,
@@ -89,14 +89,41 @@
         "FR-ADMIN-001"
       ],
       "status": "all-shipped-2026-05-17"
+    },
+    {
+      "id": "batch-004-p3-authorship-kickoff",
+      "phase": "P3",
+      "authored_at": "2026-05-18",
+      "frs": [
+        "FR-AFF-005"
+      ],
+      "status": "draft-in-progress"
+    },
+    {
+      "id": "batch-005-p3-authorship-continued",
+      "phase": "P3",
+      "authored_at": "2026-05-18",
+      "frs": [
+        "FR-AFF-006"
+      ],
+      "status": "draft-in-progress"
+    },
+    {
+      "id": "batch-006-p3-authorship-fallback",
+      "phase": "P3",
+      "authored_at": "2026-05-18",
+      "frs": [
+        "FR-AFF-007"
+      ],
+      "status": "draft-in-progress"
     }
   ],
   "totals": {
-    "fr_count_authored": 26,
-    "fr_count_roadmapped_only": 16,
+    "fr_count_authored": 29,
+    "fr_count_roadmapped_only": 13,
     "fr_count_total_planned": 42,
-    "estimated_effort_hours_authored": 167,
-    "estimated_effort_hours_total": 336
+    "estimated_effort_hours_authored": 199,
+    "estimated_effort_hours_total": 346
   },
   "shipped_at": "2026-05-17"
 }

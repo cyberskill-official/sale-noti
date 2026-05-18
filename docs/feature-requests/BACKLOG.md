@@ -190,7 +190,7 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 **Phase goal:** prove the architecture scales horizontally (Lazada + TikTok Shop) and that the B2B Price Intelligence pivot is a fundable wedge. Mobile app (React Native) goes out so non-extension users can convert.
 
-**Status:** roadmap rows only — not authored as FRs yet. Will be re-batched after P2 exit metrics are in. Plan refs: §J Phase 3.
+**Status:** roadmap rows plus P3 authoring kickoff — `FR-AFF-005`, `FR-AFF-006`, and `FR-AFF-007` are now drafted, while the remaining P3 rows stay roadmap-only until re-batching completes. Will be re-batched after P2 exit metrics are in. Plan refs: §J Phase 3.
 
 | FR-ID (planned) | Title | Pri | Phase ref |
 |---|---|:-:|---|

@@ -8,10 +8,10 @@
 
 ### Backlog + Manifest
 
-- [`BACKLOG.md`](BACKLOG.md) — phase-by-phase index, 26 authored + 16 roadmapped = 42 FRs total.
-- [`MANIFEST.json`](MANIFEST.json) — state file, 3 batches recorded, 12 module FR counters.
+- [`BACKLOG.md`](BACKLOG.md) — phase-by-phase index, 29 authored + 13 roadmapped = 42 FRs total.
+- [`MANIFEST.json`](MANIFEST.json) — state file, 6 batches recorded, 12 module FR counters.
 
-### FRs + Audits (26 each, all 10/10)
+### FRs + Audits (26 shipped P0-P2, 3 P3 drafts in progress)
 
 **P0 · Pre-MVP Foundation** (8 FRs · 8 audits)
 
@@ -68,17 +68,18 @@
 
 | Metric | Value |
 |---|---:|
-| Files written | 56 (1 backlog + 1 manifest + 26 FR + 26 audit + 3 phase summaries) |
+| Files written | 60 (backlog + manifest + FR/audit files + phase summaries) |
 | Bytes written | ~380 KB |
-| FRs authored | 26 |
-| FRs roadmapped | 16 |
+| FRs authored | 28 |
+| FRs roadmapped | 14 |
 | Total FRs planned | 42 |
-| Effort sum (authored phases P0–P2) | ~150 hours |
+| Effort sum (authored P0–P2 + P3 drafts) | ~189 hours |
 | Effort sum (all 5 phases) | ~336 hours (~22 person-weeks calendar) |
 | Audit rounds per FR | 2 (engineering-spec template v1) |
 | Average pre-revision score | 8.3 / 10 |
-| Final score (every FR) | 10 / 10 |
+| Final score (audited FRs) | 10 / 10 |
 | Critical issues remaining | 0 |
+| P3 drafts in progress | 2 |
 | Plan PDF pages covered | 34 / 34 |
 
 ---
@@ -115,6 +116,12 @@ Notable completion work:
 - Added missing Chrome extension and Web Push icon assets referenced by the manifest/service worker.
 - Added Auth session-family listing/revoke route and real gateway checkout creation paths for Stripe, VNPay, and MoMo when production credentials are present.
 
+### Current transition — 2026-05-18
+
+P0-P2 are now the shipped baseline. The team is shifting into P3 re-batch and authoring mode, and the first P3 drafts now exist as `FR-AFF-005` for Lazada Affiliate API integration, `FR-AFF-006` for TikTok Shop affiliate discovery, and `FR-AFF-007` for the AccessTrade publisher failover path.
+
+P3 fallback re-batch has now extended to `FR-AFF-007` for the AccessTrade publisher failover path.
+
 Verification checkpoint:
 
 - Direct `fr-check` and `legal-check` scripts pass.
@@ -126,32 +133,12 @@ Known local runner caveat:
 
 - Root `pnpm <script>` currently invokes pnpm's install/deps-status path and is blocked by pnpm 11 ignored-build approval state in this checkout. Direct package binaries were used for verification until the checkout's pnpm build approvals are refreshed.
 
-### Immediate (this week)
+### P3 authoring kickoff
 
-1. Founder reviews BACKLOG.md + 3 phase summaries → adjusts priorities if needed.
-2. Senior Tech Lead reviews P0 FRs → accepts or sends revision notes.
-3. Counsel one-shot consult booked (FR-LEGAL-001 dependency) — Tilleke & Gibbins recommended.
-4. Shopee Affiliate VN registration submitted (FR-AFF-001 dependency, 1–2 week lead).
-
-### Week 1–2 (P0 build)
-
-5. AUTH, LEGAL, OBS, WORKER modules built in order per `depends_on` graph.
-6. CI gates added: pin checks, manifest-lint, disclosure snapshot, commission-rate grep.
-
-### Week 2–8 (P1 build)
-
-7. AFF, WATCH, PRICE, NOTIF, EXT modules build per dependency graph.
-8. Chrome Web Store submission rehearsal in week 7; submit in week 8.
-9. Closed beta of 50 users (network founder + 2 FB groups per plan §F5).
-
-### Week 8 launch
-
-10. Public launch (Product Hunt + TinHTe + Spiderum + Reddit r/Vietnam per plan §F2 #4).
-11. Phase 1 success criteria measured weekly.
-
-### Re-batch trigger
-
-P3 FR authoring starts when ANY trigger from P2_AUDIT_SUMMARY.md §6 fires.
+1. Re-batch P3 from `BACKLOG.md` plus the trigger rules in `P2_AUDIT_SUMMARY.md §6`.
+2. Author `FR-AFF-005`, `FR-AFF-006`, and `FR-AFF-007` as the first P3 drafts.
+3. Complete audit round 1 on each FR before starting the next P3 FR.
+4. Only after each FR reaches `10/10` should the next FR be started.
 
 ---
 
@@ -180,4 +167,4 @@ The full authoring + audit process is self-contained in this project at [`../FR_
 
 ---
 
-*Session complete. 26 FRs ready for build. BRAIN ledger heartbeat emitted per AGENTS.md §14.*
+*Session complete. 29 FRs authored; 26 shipped P0-P2 + 3 P3 drafts in progress. BRAIN ledger heartbeat emitted per AGENTS.md §14.*

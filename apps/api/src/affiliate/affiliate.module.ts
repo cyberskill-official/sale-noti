@@ -2,6 +2,8 @@ import { Module } from "@nestjs/common";
 import { BullModule } from "@nestjs/bullmq";
 import { ShopeeAffiliateClient } from "./shopee/client";
 import { ShopeeRateLimitGuard } from "./shopee/rate-limit-guard";
+import { TikTokShopAffiliateClient } from "./tiktok/client";
+import { TikTokShopRateLimitGuard } from "./tiktok/rate-limit-guard";
 import { DeeplinkService } from "./deeplink.service";
 import { DeeplinkController } from "./deeplink.controller";
 import { OfferResolverService } from "./offer-resolver.service";
@@ -14,12 +16,20 @@ import { PriceCheckProcessor } from "./price-check.processor";
   providers: [
     ShopeeRateLimitGuard,
     ShopeeAffiliateClient,
+    TikTokShopRateLimitGuard,
+    TikTokShopAffiliateClient,
     DeeplinkService,
     OfferResolverService,
     ProductSearchService,
     PriceCheckProcessor,
   ],
   controllers: [DeeplinkController, ProductSearchController],
-  exports: [ShopeeAffiliateClient, DeeplinkService, OfferResolverService, ProductSearchService],
+  exports: [
+    ShopeeAffiliateClient,
+    TikTokShopAffiliateClient,
+    DeeplinkService,
+    OfferResolverService,
+    ProductSearchService,
+  ],
 })
 export class AffiliateModule {}
