@@ -1,18 +1,45 @@
 // FR-LEGAL-002 §1 #6 — pre-click interstitial. Once per session (cookie-tracked 30d).
 "use client";
+import React from "react";
 import { useEffect, useState } from "react";
 import { AffiliateDisclosureCard } from "./AffiliateDisclosureCard";
 
-const COOKIE_NAME = "salenoti.pre_click_v1";
-const COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30d
+export const PRE_CLICK_COOKIE_NAME = "salenoti.pre_click_v1";
+export const PRE_CLICK_COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30d
 
-function hasAcked(): boolean {
-  if (typeof document === "undefined") return false;
-  return document.cookie.split(";").some((c) => c.trim().startsWith(`${COOKIE_NAME}=1`));
+export function hasPreClickAcknowledgement(cookieHeader?: string): boolean {
+  const value = cookieHeader ?? (typeof document === "undefined" ? "" : document.cookie);
+  return value.split(";").some((c) => c.trim().startsWith(`${PRE_CLICK_COOKIE_NAME}=1`));
 }
 
-function setAcked() {
-  document.cookie = `${COOKIE_NAME}=1; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax`;
+export function buildPreClickAcknowledgementCookie(): string {
+  return `${PRE_CLICK_COOKIE_NAME}=1; Path=/; Max-Age=${PRE_CLICK_COOKIE_MAX_AGE}; SameSite=Lax`;
+}
+
+export function writePreClickAcknowledgement(target: Pick<Document, "cookie"> = document) {
+  target.cookie = buildPreClickAcknowledgementCookie();
+}
+
+export function openAffiliateTarget(url: string, opener: typeof window.open = window.open) {
+  opener(url, "_blank", "noopener,noreferrer");
+}
+
+export function affiliateDestinationHostname(url: string): string {
+  try {
+    return new URL(url).hostname || "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
+export function continueAffiliateClick(
+  pending: { url: string; productName: string },
+  onClose: () => void,
+  deps: { document?: Pick<Document, "cookie">; opener?: typeof window.open } = {},
+) {
+  writePreClickAcknowledgement(deps.document);
+  openAffiliateTarget(pending.url, deps.opener);
+  onClose();
 }
 
 /**
@@ -24,8 +51,8 @@ export function useDeeplinkWithInterstitial() {
   const [pending, setPending] = useState<null | { url: string; productName: string }>(null);
 
   function open(url: string, productName: string) {
-    if (hasAcked()) {
-      window.open(url, "_blank", "noopener,noreferrer");
+    if (hasPreClickAcknowledgement()) {
+      openAffiliateTarget(url);
       return;
     }
     setPending({ url, productName });
@@ -72,13 +99,14 @@ export function PreClickInterstitial({
         <p style={{ margin: "12px 0", fontSize: 14 }}>
           Sản phẩm: <b>{pending.productName}</b>
         </p>
+        <p data-testid="aff-destination-hostname" style={{ margin: "4px 0 0", fontSize: 12, color: "#666" }}>
+          Đích đến: {affiliateDestinationHostname(pending.url)}
+        </p>
         <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
           <button
             type="button"
             onClick={() => {
-              setAcked();
-              window.open(pending.url, "_blank", "noopener,noreferrer");
-              onClose();
+              continueAffiliateClick(pending, onClose);
             }}
             style={{ background: "#FAA227", color: "white", border: 0, padding: "10px 16px", borderRadius: 8, fontWeight: 600 }}
           >

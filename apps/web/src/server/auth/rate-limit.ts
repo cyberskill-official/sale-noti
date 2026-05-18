@@ -9,7 +9,11 @@ function redis(): Redis | null {
   return _redis;
 }
 
-const memCounter = new Map<string, { count: number; expiresAt: number }>();
+declare global {
+  var __salenotiRateLimit: Map<string, { count: number; expiresAt: number }> | undefined;
+}
+
+const memCounter = (globalThis.__salenotiRateLimit ??= new Map<string, { count: number; expiresAt: number }>());
 
 export async function rateLimitFixed(key: string, max: number, windowSec: number): Promise<{ ok: boolean; used: number }> {
   const r = redis();

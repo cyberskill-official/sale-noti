@@ -2,6 +2,7 @@
 import { z } from "zod";
 import { mongo } from "@/server/db/mongo";
 import { ObjectId } from "mongodb";
+import { rateLimitFixed } from "@/server/auth/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -17,6 +18,10 @@ function readUserId(req: Request): string | null {
 export async function POST(req: Request) {
   const userId = readUserId(req);
   if (!userId) return Response.json({ ok: false, error: "unauthenticated" }, { status: 401 });
+  const limit = await rateLimitFixed(`push:subscribe:${userId}`, 5, 60);
+  if (!limit.ok) {
+    return Response.json({ ok: false, error: "rate_limit", retryAfter: 60 }, { status: 429, headers: { "Retry-After": "60" } });
+  }
   const body = await req.json().catch(() => null);
   const parsed = Body.safeParse(body);
   if (!parsed.success) return Response.json({ ok: false, error: "validation_failed" }, { status: 400 });
@@ -53,5 +58,6 @@ export async function POST(req: Request) {
     } as any
   );
 
-  return Response.json({ ok: true });
+  const user = await mongo.db("salenoti").collection("users").findOne({ _id: userOid }, { projection: { pushSubscriptions: 1 } });
+  return Response.json({ ok: true, deviceCount: user?.pushSubscriptions?.length ?? 1 });
 }

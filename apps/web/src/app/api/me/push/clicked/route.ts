@@ -1,6 +1,7 @@
 // FR-NOTIF-002 §1 #10 — click attribution beacon from service worker.
 import { z } from "zod";
 import { mongo } from "@/server/db/mongo";
+import { posthogServer } from "@/server/obs/posthog.server";
 
 export const runtime = "nodejs";
 
@@ -14,5 +15,6 @@ export async function POST(req: Request) {
     { idem: parsed.data.idem, channel: "webPush", clickedAt: null },
     { $set: { clickedAt: new Date() } }
   );
+  posthogServer.capture("push_clicked", parsed.data.idem.slice(-12), { idem_tail: parsed.data.idem.slice(-12) });
   return Response.json({ ok: true });
 }

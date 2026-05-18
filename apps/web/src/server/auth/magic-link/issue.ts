@@ -4,6 +4,7 @@ import { z } from "zod";
 import { mongo } from "@/server/db/mongo";
 import { resend } from "@/server/email/resend";
 import { renderMagicLinkEmail } from "@/server/email/templates/magic-link";
+import { sentry } from "@/server/obs/sentry.server";
 
 const EmailSchema = z.string().email().max(255);
 
@@ -40,6 +41,12 @@ export async function issueMagicLink(input: { email: string; ip: string; userAge
       { name: "fr", value: "FR-AUTH-002" },
       { name: "kind", value: "magic-link" },
     ],
+  });
+
+  sentry.addBreadcrumb?.({
+    category: "auth.magic_link.issued",
+    level: "info",
+    data: { fr: "FR-AUTH-002", emailDomain: email.slice(email.indexOf("@") + 1) },
   });
 
   return { ok: true };

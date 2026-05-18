@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { mongo } from "../db/mongo";
+import { productFilterFromId } from "./admin-overrides";
 
 export type TrackPriority = "hot" | "mid" | "low";
 
@@ -10,11 +11,14 @@ function hasFlashSaleTrigger(watchlist: any): boolean {
 }
 
 async function isInActiveMegaSaleWindow(now: Date): Promise<boolean> {
-  const active = await mongo.db("salenoti").collection("mega_sales").findOne({
-    status: "active",
-    startsAt: { $lte: now },
-    endsAt: { $gte: now },
-  });
+  const active = await mongo
+    .db("salenoti")
+    .collection("mega_sales")
+    .findOne({
+      status: "active",
+      startsAt: { $lte: now },
+      endsAt: { $gte: now },
+    });
   return Boolean(active);
 }
 
@@ -31,6 +35,18 @@ async function newestUserActivity(userIds: ObjectId[]): Promise<Date | null> {
 }
 
 export async function reevaluateTier(productId: string, now = new Date()): Promise<TrackPriority> {
+  const product = await mongo.db("salenoti").collection("products").findOne(productFilterFromId(productId));
+  if (
+    product?.priorityOverride?.tier &&
+    product.priorityOverride.expiresAt instanceof Date &&
+    product.priorityOverride.expiresAt > now
+  ) {
+    return product.priorityOverride.tier;
+  }
+  if (product?.cooldownUntil instanceof Date && product.cooldownUntil > now) {
+    return "low";
+  }
+
   const watchlists = await mongo
     .db("salenoti")
     .collection("watchlists")
@@ -40,14 +56,6 @@ export async function reevaluateTier(productId: string, now = new Date()): Promi
   if (watchlists.length === 0) return "low";
   if (watchlists.some(hasFlashSaleTrigger)) return "hot";
 
-  const productMatch = productId.match(/^(\d+)-(\d+)$/);
-  const product = productMatch
-    ? await mongo
-        .db("salenoti")
-        .collection("products")
-        .findOne({ shopId: Number(productMatch[1]), itemId: Number(productMatch[2]) })
-    : null;
-
   if (product?.lastAlertAt instanceof Date && now.getTime() - product.lastAlertAt.getTime() < 7 * DAY_MS) {
     return "hot";
   }
@@ -56,7 +64,9 @@ export async function reevaluateTier(productId: string, now = new Date()): Promi
   const activeWatchlists = watchlists.filter((w) => w.status === "active");
   if (activeWatchlists.length === 0) return "low";
 
-  const activity = await newestUserActivity(activeWatchlists.map((w) => w.userId).filter((id): id is ObjectId => id instanceof ObjectId));
+  const activity = await newestUserActivity(
+    activeWatchlists.map((w) => w.userId).filter((id): id is ObjectId => id instanceof ObjectId),
+  );
   if (activity && now.getTime() - activity.getTime() > 30 * DAY_MS) return "low";
 
   return "mid";

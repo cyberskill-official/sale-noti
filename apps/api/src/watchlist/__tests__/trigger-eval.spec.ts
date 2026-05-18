@@ -28,6 +28,17 @@ describe("FR-WATCH-002 — evaluateTriggers", () => {
     expect(evaluateTriggers(triggers, ctx).triggered).toEqual([]);
   });
 
+  it("AC10+17: pct_drop fires again after cooldown and is deterministic for pinned time", () => {
+    const triggers: Trigger[] = [
+      { kind: "pct_drop", minDropPct: 15, baseline: "current_at_track", paused: false },
+    ];
+    const now = 1_800_000_000_000;
+    const ctx = { ...baseCtx, cooldowns: { pct_drop: new Date(now - 13 * 3600 * 1000) } };
+
+    expect(evaluateTriggers(triggers, ctx, now)).toEqual(evaluateTriggers(triggers, ctx, now));
+    expect(evaluateTriggers(triggers, ctx, now).triggered).toEqual(["pct_drop"]);
+  });
+
   it("AC8: paused trigger excluded", () => {
     const triggers: Trigger[] = [
       { kind: "pct_drop", minDropPct: 15, baseline: "current_at_track", paused: true },
@@ -39,6 +50,8 @@ describe("FR-WATCH-002 — evaluateTriggers", () => {
     const triggers: Trigger[] = [{ kind: "flash_sale", minDiscountPct: 30, paused: false }];
     const ctx = { ...baseCtx, flashSaleObserved: true, currentPrice: 65_000, currentDiscountPct: 35 };
     expect(evaluateTriggers(triggers, ctx).triggered).toEqual(["flash_sale"]);
+    expect(evaluateTriggers(triggers, { ...ctx, flashSaleObserved: false }).triggered).toEqual([]);
+    expect(evaluateTriggers(triggers, { ...ctx, currentDiscountPct: 25 }).triggered).toEqual([]);
   });
 
   it("absolute_drop fires only when current ≤ target", () => {
@@ -51,6 +64,16 @@ describe("FR-WATCH-002 — evaluateTriggers", () => {
     const triggers: Trigger[] = [{ kind: "lowest_30d", paused: false }];
     expect(evaluateTriggers(triggers, baseCtx).triggered).toEqual([]);
     expect(evaluateTriggers(triggers, { ...baseCtx, currentPrice: 75_000 }).triggered).toEqual(["lowest_30d"]);
+    expect(evaluateTriggers(triggers, { ...baseCtx, currentPrice: 1, last30dMin: 0 }).triggered).toEqual([]);
+  });
+
+  it("pct_drop supports last_observed baseline and ignores zero baselines", () => {
+    const triggers: Trigger[] = [{ kind: "pct_drop", minDropPct: 5, baseline: "last_observed", paused: false }];
+
+    expect(evaluateTriggers(triggers, { ...baseCtx, currentPrice: 76_000, lastObservedPrice: 80_000 }).triggered).toEqual([
+      "pct_drop",
+    ]);
+    expect(evaluateTriggers(triggers, { ...baseCtx, currentPrice: 1, lastObservedPrice: 0 }).triggered).toEqual([]);
   });
 
   it("cooldown durations match §1 #5", () => {

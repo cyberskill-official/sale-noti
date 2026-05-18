@@ -1,6 +1,6 @@
 // FR-AUTH-003 §1 #7 — POST /api/auth/sign-out
-import { revokeFamily } from "@/server/auth/refresh";
-import { REFRESH_COOKIE } from "@/server/auth/session";
+import { revokeFamily, revokeFamilyById } from "@/server/auth/refresh";
+import { ACCESS_COOKIE, REFRESH_COOKIE, verifyAccessToken } from "@/server/auth/session";
 
 export const runtime = "nodejs";
 
@@ -14,6 +14,11 @@ function readCookie(req: Request, name: string): string | null {
 }
 
 export async function POST(req: Request) {
+  const access = readCookie(req, ACCESS_COOKIE);
+  if (access) {
+    const claims = await verifyAccessToken(access);
+    if (claims) await revokeFamilyById(claims.familyId, claims.sub);
+  }
   const raw = readCookie(req, REFRESH_COOKIE);
   const setCookies = await revokeFamily(raw);
   return new Response(JSON.stringify({ ok: true }), {

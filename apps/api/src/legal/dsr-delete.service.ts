@@ -4,15 +4,17 @@ import { mongo } from "../db/mongo";
 
 @Injectable()
 export class DsrDeleteService {
-  async requestErasure(userId: string, reason: string): Promise<{ erasureRequestId: string; purgeAfter: Date }> {
+  async requestErasure(userId: string, reason: string): Promise<{ erasureRequestId: string; cancelUntil: Date; purgeAfter: Date }> {
     const oid = new ObjectId(userId);
     const now = new Date();
-    const purgeAfter = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const cancelUntil = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const purgeAfter = new Date(now.getTime() + 72 * 60 * 60 * 1000);
     const result = await mongo.db("salenoti").collection("privacy_erasure_requests").insertOne({
       userId: oid,
       reason,
       status: "pending_24h_soft_tombstone",
       requestedAt: now,
+      cancelUntil,
       purgeAfter,
     });
 
@@ -22,6 +24,8 @@ export class DsrDeleteService {
         $set: {
           deletedAt: now,
           erasureRequestId: result.insertedId,
+          erasureCancelUntil: cancelUntil,
+          purgeScheduledAt: purgeAfter,
           status: "pending_erasure",
         },
       }
@@ -35,7 +39,7 @@ export class DsrDeleteService {
       createdAt: now,
     });
 
-    return { erasureRequestId: String(result.insertedId), purgeAfter };
+    return { erasureRequestId: String(result.insertedId), cancelUntil, purgeAfter };
   }
 
   async purgeUserPii(userId: string, reason: string): Promise<{ ok: true }> {

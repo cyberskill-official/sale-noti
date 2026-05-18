@@ -20,7 +20,15 @@ export const resend = {
   }): Promise<{ id: string }> {
     const c = client();
     if (!c) {
-      console.log("[resend:dev-stub] send", { ...args, html: args.html.slice(0, 200) + "…" });
+      const toDomain = args.to.split("@")[1] ?? "unknown";
+      console.log("[resend:dev-stub] send", {
+        from: args.from,
+        toDomain,
+        subject: args.subject,
+        htmlBytes: Buffer.byteLength(args.html, "utf8"),
+        textBytes: args.text ? Buffer.byteLength(args.text, "utf8") : 0,
+        tags: args.tags,
+      });
       return { id: "dev-stub-" + Date.now() };
     }
     const res = await c.emails.send(args);

@@ -34,6 +34,19 @@ describe("FR-GROW-001 — fraud detection", () => {
     expect(r.sameIp).toBe(false);
   });
 
+  it("IPv6 /64 matches while malformed email falls back to lowercase", () => {
+    const r = detectFraud({
+      referrerId: "u1",
+      referredId: "u2",
+      referrerIp: "2001:db8:85a3:0000:0000:8a2e:0370:7334",
+      referredIp: "2001:db8:85a3:0000:1111:8a2e:0370:7334",
+      referrerEmail: "NOT-AN-EMAIL",
+      referredEmail: "not-an-email",
+    });
+    expect(r.sameIp).toBe(true);
+    expect(r.samePlusAlias).toBe(true);
+  });
+
   it("AC7: plus-alias email family flagged", () => {
     const r = detectFraud({
       referrerId: "u1",

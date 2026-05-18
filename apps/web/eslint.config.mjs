@@ -4,7 +4,9 @@
 // is forward-compatible and is the path Next 15.2+ also moved to.
 // The custom FR-LEGAL-002 no-auto-apply-coupon rule is loaded from eslint-rules/ at repo root.
 import tsParser from "@typescript-eslint/parser";
+import disclosureImportRequired from "../../eslint-rules/disclosure-import-required.cjs";
 import noAutoApplyCoupon from "../../eslint-rules/no-auto-apply-coupon.cjs";
+import noCommissionRanking from "../../eslint-rules/no-commission-ranking.cjs";
 
 export default [
   {
@@ -25,12 +27,16 @@ export default [
     plugins: {
       "salenoti-legal": {
         rules: {
+          "disclosure-import-required": disclosureImportRequired,
           "no-auto-apply-coupon": noAutoApplyCoupon,
+          "no-commission-ranking": noCommissionRanking,
         },
       },
     },
     rules: {
+      "salenoti-legal/disclosure-import-required": "error",
       "salenoti-legal/no-auto-apply-coupon": "error",
+      "salenoti-legal/no-commission-ranking": "error",
       "no-unused-vars": "off", // typecheck catches this better
       "no-undef": "off", // TS handles undefined identifiers
     },

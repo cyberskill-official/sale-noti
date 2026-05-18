@@ -2,7 +2,11 @@
 export type ShopeeErrorCode = "rate_limit" | "service_unavailable" | "auth_failure" | "unknown" | "schema_drift";
 
 export class ShopeeApiError extends Error {
-  constructor(public readonly code: ShopeeErrorCode, message?: string) {
+  constructor(
+    public readonly code: ShopeeErrorCode,
+    message?: string,
+    public readonly retryable = false,
+  ) {
     super(message ?? `Shopee API error: ${code}`);
     this.name = "ShopeeApiError";
   }

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { mongo } from "@/server/db/mongo";
 import { AffiliateDisclosureCard } from "@/components/disclosure/AffiliateDisclosureCard";
+import { DealAffiliateActions } from "./DealAffiliateActions";
 
 export const revalidate = 300; // 5 minutes per FR-GROW-002 §1 #9
 
@@ -90,35 +91,7 @@ export default async function DealPage({ params, searchParams }: Props) {
         <AffiliateDisclosureCard variant="card" />
       </div>
 
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "24px 0" }}>
-        <Link
-          href="/auth/sign-in?action=track-product&p=${productId}"
-          style={{
-            background: "#1a202c",
-            color: "white",
-            padding: "12px 20px",
-            borderRadius: 8,
-            textDecoration: "none",
-            fontWeight: 600,
-          }}
-        >
-          + Theo dõi giá miễn phí
-        </Link>
-        <a
-          href={clickHref}
-          rel="sponsored noopener"
-          style={{
-            background: "#FAA227",
-            color: "white",
-            padding: "12px 20px",
-            borderRadius: 8,
-            textDecoration: "none",
-            fontWeight: 600,
-          }}
-        >
-          Mua ngay trên Shopee →
-        </a>
-      </div>
+      <DealAffiliateActions productId={productId} productName={product.name} clickHref={clickHref} />
 
       <hr style={{ margin: "32px 0", border: "none", borderTop: "1px solid #eee" }} />
 

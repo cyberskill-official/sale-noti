@@ -10,19 +10,28 @@ function b64url(input: Buffer | string): string {
 
 export type AccessClaims = {
   sub: string; // userId
+  plan: string;
   familyId: string;
+  jti: string;
   method: "google" | "magic-link";
   iat: number;
   exp: number;
 };
 
-export async function signAccessToken(input: { userId: string; familyId: string; method: AccessClaims["method"] }): Promise<string> {
+export async function signAccessToken(input: {
+  userId: string;
+  familyId: string;
+  method: AccessClaims["method"];
+  plan?: string;
+}): Promise<string> {
   const secret = process.env.AUTH_SECRET;
   if (!secret || secret.length < 32) throw new Error("AUTH_SECRET missing or too short");
   const now = Math.floor(Date.now() / 1000);
   const claims: AccessClaims = {
     sub: input.userId,
+    plan: input.plan ?? "free",
     familyId: input.familyId,
+    jti: crypto.randomUUID(),
     method: input.method,
     iat: now,
     exp: now + ACCESS_TTL_SEC,
@@ -34,18 +43,29 @@ export async function signAccessToken(input: { userId: string; familyId: string;
 }
 
 export async function verifyAccessToken(token: string): Promise<AccessClaims | null> {
-  const secret = process.env.AUTH_SECRET;
-  if (!secret) return null;
+  const current = process.env.AUTH_SECRET;
+  if (!current) return null;
   const parts = token.split(".");
   if (parts.length !== 3) return null;
   const [header, payload, sig] = parts;
   // TS doesn't narrow destructured tuples from .split() — explicit guard for type-soundness.
   if (!header || !payload || !sig) return null;
-  const expected = crypto.createHmac("sha256", secret).update(`${header}.${payload}`).digest("base64url");
+
+  const previous = process.env.AUTH_SECRET_N_MINUS_1;
+  const previousUntil = Number(process.env.AUTH_SECRET_N_MINUS_1_ACCEPT_UNTIL_MS ?? "0");
+  const candidates = [
+    current,
+    previous && (!previousUntil || Date.now() <= previousUntil) ? previous : null,
+  ].filter(Boolean) as string[];
+
   const sigBuf = Buffer.from(sig);
-  const expBuf = Buffer.from(expected);
-  if (sigBuf.length !== expBuf.length) return null;
-  if (!crypto.timingSafeEqual(sigBuf, expBuf)) return null;
+  const verified = candidates.some((secret) => {
+    const expected = crypto.createHmac("sha256", secret).update(`${header}.${payload}`).digest("base64url");
+    const expBuf = Buffer.from(expected);
+    return sigBuf.length === expBuf.length && crypto.timingSafeEqual(sigBuf, expBuf);
+  });
+  if (!verified) return null;
+
   const claims = JSON.parse(Buffer.from(payload, "base64url").toString()) as AccessClaims;
   // Allow ±60s clock skew per FR-AUTH-003 §10 row 10
   const now = Math.floor(Date.now() / 1000);
@@ -54,8 +74,8 @@ export async function verifyAccessToken(token: string): Promise<AccessClaims | n
   return claims;
 }
 
-export const ACCESS_COOKIE = "salenoti.session-token";
-export const REFRESH_COOKIE = "salenoti.refresh-token";
+export const ACCESS_COOKIE = "authjs.session-token";
+export const REFRESH_COOKIE = "authjs.refresh-token";
 
 export function buildAccessCookie(token: string): string {
   return [

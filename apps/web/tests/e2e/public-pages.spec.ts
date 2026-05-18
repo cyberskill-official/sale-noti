@@ -55,8 +55,16 @@ describe("public web e2e smoke", () => {
     expect(privacy).toContain("Chính sách bảo mật");
     expect(privacy).toContain("legal@salenoti.vn");
 
+    const privacyEn = await fetch(`${BASE}/privacy/en`).then((r) => r.text());
+    expect(privacyEn).toContain("Privacy Policy");
+    expect(privacyEn).toContain("DPO");
+
     const affiliate = await fetch(`${BASE}/legal/affiliate`).then((r) => r.text());
     expect(affiliate).toContain("Shopee Affiliate");
+
+    const crossBorder = await fetch(`${BASE}/legal/cross-border-transfer-impact-assessment`).then((r) => r.text());
+    expect(crossBorder).toContain("Cross-border");
+    expect(crossBorder).toContain("A05");
 
     const megaSale = await fetch(`${BASE}/megasale/2026-11-11`).then((r) => r.text());
     expect(megaSale).toContain("11.11 Double Eleven");
@@ -70,6 +78,24 @@ describe("public web e2e smoke", () => {
 
     const signIn = await fetch(`${BASE}/auth/sign-in`).then((r) => r.text());
     expect(signIn).toContain("Đăng nhập SaleNoti");
-    expect(signIn).toContain("/api/auth/signin/google");
+    expect(signIn).toContain("Trước khi bắt đầu");
+    expect(signIn).toContain("Tôi đã hiểu");
+    expect(signIn).toContain("Sign in with Google");
+  });
+
+  it("rate-limits Google OAuth callback after 10 hits/min/IP", async () => {
+    const headers = { "x-forwarded-for": "203.0.113.77" };
+
+    for (let i = 0; i < 10; i++) {
+      const response = await fetch(`${BASE}/api/auth/callback/google`, { method: "POST", headers });
+      expect(response.status).not.toBe(429);
+    }
+
+    const blocked = await fetch(`${BASE}/api/auth/callback/google`, { method: "POST", headers });
+    expect(blocked.status).toBe(429);
+    expect(blocked.headers.get("Retry-After")).toBe("60");
+    await expect(blocked.json()).resolves.toMatchObject({
+      code: "AUTH_GOOGLE_CALLBACK_RATE_LIMITED",
+    });
   });
 });

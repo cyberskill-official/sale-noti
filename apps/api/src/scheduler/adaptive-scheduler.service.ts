@@ -5,6 +5,7 @@ import { Cron, CronExpression } from "@nestjs/schedule";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import { computeApiHealth } from "./shopee-api-health";
+import { PRICE_CHECK_JOB_OPTIONS } from "../queue/queues";
 
 type Tier = "hot" | "mid" | "low";
 
@@ -16,7 +17,7 @@ export class AdaptiveSchedulerService {
 
   constructor(
     @InjectQueue("price-check") private readonly q: Queue,
-    @Inject("OBS_POSTHOG") private readonly posthog: any
+    @Inject("OBS_POSTHOG") private readonly posthog: any,
   ) {}
 
   /**
@@ -36,11 +37,20 @@ export class AdaptiveSchedulerService {
     const health = await computeApiHealth();
     const scaleFactor = health.errorRate5m > 0.05 ? 0.5 : 1.0;
     const minute = Math.floor(Date.now() / 60_000);
+    const now = new Date();
+    const queueCounts = await this.q
+      .getJobCounts("waiting", "delayed", "active", "completed", "failed")
+      .catch(() => ({ waiting: 0, delayed: 0, active: 0, completed: 0, failed: 0 }));
+    const currentDepth = (queueCounts.waiting ?? 0) + (queueCounts.delayed ?? 0) + (queueCounts.active ?? 0);
 
     for (const tier of ["hot", "mid", "low"] as Tier[]) {
       const cadenceMin = TIER_CADENCE_MIN[tier];
       const slot = minute % cadenceMin;
-      const count = await mongo.db("salenoti").collection("products").countDocuments({ trackPriority: tier });
+      const baseFilter = {
+        trackPriority: tier,
+        $or: [{ cooldownUntil: { $exists: false } }, { cooldownUntil: { $lte: now } }],
+      };
+      const count = await mongo.db("salenoti").collection("products").countDocuments(baseFilter);
       const perMinute = Math.ceil((count * scaleFactor) / cadenceMin);
 
       // FR-GROW-003 §1 #12 — Mega Sale Mode hot cap 50K.
@@ -50,8 +60,8 @@ export class AdaptiveSchedulerService {
         .db("salenoti")
         .collection("products")
         .find(
-          { trackPriority: tier, _scheduleHash: { $mod: [cadenceMin, slot] } },
-          { projection: { _id: 1, shopId: 1, itemId: 1 } }
+          { ...baseFilter, _scheduleHash: { $mod: [cadenceMin, slot] } },
+          { projection: { _id: 1, shopId: 1, itemId: 1 } },
         )
         .limit(cap);
       let enqueued = 0;
@@ -59,13 +69,21 @@ export class AdaptiveSchedulerService {
         await this.q.add(
           `pc-${tier}`,
           { productId: String(p._id), shopId: p.shopId, itemId: p.itemId, tier },
-          { jobId: `pc:${p._id}:${minute}`, removeOnComplete: 100 }
+          {
+            ...PRICE_CHECK_JOB_OPTIONS,
+            delay: Math.floor(Math.random() * 10_000),
+            jobId: `pc:${p._id}:${minute}`,
+          },
         );
         enqueued++;
       }
       this.posthog.capture("scheduler_tier_health", {
         tier,
         scheduled: enqueued,
+        succeeded: queueCounts.completed ?? 0,
+        failed: queueCounts.failed ?? 0,
+        current_depth: currentDepth,
+        queueDepth: currentDepth,
         scale: scaleFactor,
         errorRate5m: health.errorRate5m,
       });

@@ -7,7 +7,16 @@ import { mongo } from "../db/mongo";
 import { timescale } from "../db/timescale.client";
 import { Resend } from "resend";
 import { renderAlertEmail } from "./render-alert-email";
-import { alertIdem, dailyCount, reserveSend } from "./idempotency";
+import {
+  alertIdem,
+  dailyCount,
+  emailHash,
+  nextHoChiMinhNine,
+  recordDeferred,
+  reserveSend,
+  setTriggerCooldown,
+  unsubscribeToken,
+} from "./idempotency";
 import { isSuppressed } from "./suppression";
 import { DeeplinkService } from "../affiliate/deeplink.service";
 
@@ -16,6 +25,11 @@ export type AlertJobData = {
   watchlistId: string;
   triggerKind: string;
   observedAt: Date | string;
+  observedPrice?: number;
+  baseline?: number;
+  baselineLow30d?: number;
+  channels?: Array<"email" | "push" | "telegram">;
+  jobMeta?: { enqueuedAt?: Date | string; correlationId?: string };
 };
 
 const DAILY_CAP = 20;
@@ -26,6 +40,10 @@ function resend(): Resend | null {
   if (!process.env.RESEND_API_KEY) return null;
   _resend = new Resend(process.env.RESEND_API_KEY);
   return _resend;
+}
+
+export function resetResendForTests(): void {
+  _resend = null;
 }
 
 @Processor("alert-dispatch", { name: "email" })
@@ -41,23 +59,44 @@ export class NotifyEmailProcessor extends WorkerHost {
   }
 
   async process(job: Job<AlertJobData>): Promise<void> {
+    const startedAt = Date.now();
+    if (job.data.channels && !job.data.channels.includes("email")) return;
     const observedAt = job.data.observedAt instanceof Date ? job.data.observedAt : new Date(job.data.observedAt);
     const { userId, watchlistId, triggerKind } = job.data;
+    const correlationId = job.data.jobMeta?.correlationId ?? job.id ?? `${userId}-${watchlistId}-${observedAt.toISOString()}`;
 
     const user = await mongo.db("salenoti").collection("users").findOne({ _id: this.oid(userId) });
     if (!user) return;
-    if (!user.notificationChannels?.email) return;
+    if (!user.notificationChannels?.email) {
+      this.posthog.capture("alert_skipped_channel_disabled", { channel: "email", trigger: triggerKind });
+      return;
+    }
+    const safeEmailHash = emailHash(user.email);
     if (await isSuppressed(user.email)) {
+      await setTriggerCooldown(watchlistId, triggerKind);
       this.posthog.capture("alert_suppressed", { reason: "suppression_list", channel: "email" });
       return;
     }
     if ((await dailyCount(userId)) >= DAILY_CAP) {
+      await recordDeferred({ userId, watchlistId, channel: "email", triggerKind, reason: "daily_cap", correlationId });
+      await this.deferToNextMorning(job);
       this.posthog.capture("alert_deferred", { reason: "daily_cap", channel: "email" });
       return;
     }
 
-    const idem = alertIdem({ userId, watchlistId, triggerKind, observedAt });
-    if (!(await reserveSend({ userId, watchlistId, channel: "email", idem }))) {
+    const idem = alertIdem({ userId, watchlistId, triggerKind, observedAt, channel: "email" });
+    if (
+      !(await reserveSend({
+        userId,
+        watchlistId,
+        channel: "email",
+        idem,
+        triggerKind,
+        observedAt,
+        emailHash: safeEmailHash,
+        correlationId,
+      }))
+    ) {
       this.log.debug(`idem hit — skipping duplicate email ${idem.slice(0, 12)}`);
       return;
     }
@@ -76,26 +115,35 @@ export class NotifyEmailProcessor extends WorkerHost {
       source: "alert_email",
       watchlistId,
     });
+    const affiliateLink = await mongo
+      .db("salenoti")
+      .collection("affiliate_links")
+      .findOne({ shortUrl: deepLinkResult.url });
+    const affiliateLinkId = affiliateLink?._id ?? null;
+    const unsubToken = unsubscribeToken(userId, watchlistId);
+    const appUrl = process.env.APP_URL ?? "https://sale.cyber.skill";
+    const unsubscribeUrl = `${appUrl}/unsubscribe?u=${encodeURIComponent(userId)}&watchlistId=${encodeURIComponent(watchlistId)}&t=${unsubToken}`;
+    const observedPrice = job.data.observedPrice ?? product.currentPrice ?? 0;
 
     const { subject, html, text } = renderAlertEmail({
       productName: product.name ?? "Sản phẩm",
       imageUrl: product.imageUrl ?? null,
-      currentPrice: product.currentPrice ?? 0,
-      originalPrice: product.originalPrice ?? product.currentPrice ?? 0,
+      currentPrice: observedPrice,
+      originalPrice: product.originalPrice ?? observedPrice,
       currentDiscountPct: product.currentDiscountPct ?? 0,
-      last30dMin,
-      baselineAtTrack: watchlist.baselineAtTrack ?? product.currentPrice ?? 0,
+      last30dMin: job.data.baselineLow30d ?? last30dMin,
+      baselineAtTrack: job.data.baseline ?? watchlist.baselineAtTrack ?? product.currentPrice ?? 0,
       triggerKind,
       ctaUrl: deepLinkResult.url,
-      unsubscribeUrl: `${process.env.APP_URL ?? "https://salenoti.vn"}/dashboard/watchlists/${watchlistId}?action=pause`,
+      unsubscribeUrl,
     });
 
     const r = resend();
     if (!r) {
-      this.log.warn(`[dev-stub] would send email to ${user.email}: ${subject}`);
+      this.log.warn(`[dev-stub] would send email to ${safeEmailHash}: ${subject}`);
     } else {
       const sendResult = await r.emails.send({
-        from: "SaleNoti <alerts@salenoti.vn>",
+        from: "SaleNoti <alerts@cyberskill.world>",
         to: user.email,
         subject,
         html,
@@ -103,32 +151,40 @@ export class NotifyEmailProcessor extends WorkerHost {
         tags: [
           { name: "fr", value: "FR-NOTIF-001" },
           { name: "trigger", value: triggerKind },
+          { name: "user_cohort", value: user.plan ?? "free" },
         ],
         headers: {
-          "List-Unsubscribe": `<mailto:unsubscribe@salenoti.vn?subject=u-${userId}>, <${process.env.APP_URL}/api/notif/unsubscribe?u=${userId}>`,
+          "List-Unsubscribe": `<${unsubscribeUrl}>, <mailto:unsubscribe@cyberskill.world?subject=u-${userId}>`,
           "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+          "X-PM-Message-Stream": "outbound",
         },
       });
       if (sendResult.error) {
         this.sentry.captureException(new Error(sendResult.error.message), {
           tags: { fr: "FR-NOTIF-001", kind: "resend_error" },
+          contexts: { notify: { email_hash: safeEmailHash, affiliate_link_id: affiliateLinkId } },
         });
         throw new Error(sendResult.error.message);
       }
+      const resendMessageId = (sendResult as any).data?.id ?? (sendResult as any).id ?? null;
+      await mongo
+        .db("salenoti")
+        .collection("notifications")
+        .updateOne({ idem, channel: "email" }, { $set: { resendMessageId, affiliateLinkId } });
     }
 
     // FR-NOTIF-001 §1 #7 — write cooldown after successful send.
-    await mongo.db("salenoti").collection("watchlists").updateOne(
-      { _id: this.oid(watchlistId) },
-      {
-        $set: { [`triggerCooldowns.${triggerKind}`]: new Date(), lastTriggeredAt: new Date() },
-      }
-    );
+    await setTriggerCooldown(watchlistId, triggerKind);
 
     this.posthog.capture("alert_sent", {
       channel: "email",
       trigger: triggerKind,
       productId: watchlist.productId,
+    });
+    this.posthog.capture("alert_dispatch_latency_ms", {
+      channel: "email",
+      trigger: triggerKind,
+      latency_ms: Date.now() - startedAt,
     });
   }
 
@@ -136,5 +192,11 @@ export class NotifyEmailProcessor extends WorkerHost {
     // Job IDs are persisted as ObjectId hex strings. If the value isn't a valid hex,
     // we cannot match the row anyway — throwing here surfaces the schema bug fast.
     return new ObjectId(id);
+  }
+
+  private async deferToNextMorning(job: Job<AlertJobData>): Promise<void> {
+    const target = nextHoChiMinhNine();
+    const delay = Math.max(0, target.getTime() - Date.now());
+    await (job as any).queue?.add?.("alert", job.data, { delay, attempts: 3 });
   }
 }

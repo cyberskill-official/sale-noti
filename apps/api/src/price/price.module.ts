@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common";
-import { HistoryService } from "./history.service";
+import { HistoryCacheInvalidator, HistoryService } from "./history.service";
 import { HistoryController } from "./history.controller";
 
 @Module({
-  providers: [HistoryService],
+  providers: [HistoryService, HistoryCacheInvalidator],
   controllers: [HistoryController],
   exports: [HistoryService],
 })
