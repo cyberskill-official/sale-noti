@@ -13,7 +13,12 @@ export async function GET(req: Request) {
 
   // FR-AUTH-002 §1 #7 — 20/min/IP on consume
   const limit = await rateLimitFixed(`ml:consume:ip:${ip}`, 20, 60);
-  if (!limit.ok) return Response.redirect(new URL("/auth/error?code=rate_limit", req.url), 302);
+  if (!limit.ok) {
+    return Response.json(
+      { ok: false, error: "rate_limit" },
+      { status: 429, headers: { "Retry-After": "60" } }
+    );
+  }
 
   const result = await consumeMagicLink(token);
   if (!result.ok) {

@@ -1,4 +1,5 @@
 // FR-LEGAL-002 §3 — three-variant disclosure component.
+import React from "react";
 import { disclosureFor, DISCLOSURE_VERSION, type Locale } from "@/lib/disclosure";
 
 type Variant = "card" | "inline" | "footer";

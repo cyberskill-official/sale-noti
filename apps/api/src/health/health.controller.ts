@@ -1,23 +1,76 @@
 // FR-OBS-001 §1 #11 — /health returns the three-pillar status.
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get, Res } from "@nestjs/common";
 import { Queue } from "bullmq";
 import { redis } from "../queue/redis.client";
 import { mongo } from "../db/mongo";
 import { QUEUES, bullConnectionFromUrl, type QueueName } from "../queue/queues";
+import { timescale } from "../db/timescale.client";
+
+type HealthChecks = {
+  mongo: boolean;
+  redis: boolean;
+  resend: boolean;
+  timescale: boolean;
+};
+
+export type HealthPayload = {
+  status: "ok" | "degraded";
+  checks: HealthChecks;
+  version: string;
+  uptime_seconds: number;
+  latency_ms: number;
+};
+
+export async function withTimeout(check: Promise<boolean>, timeoutMs = 1000): Promise<boolean> {
+  return Promise.race([check, new Promise<boolean>((resolve) => setTimeout(() => resolve(false), timeoutMs))]);
+}
+
+function mongoCheck(): Promise<boolean> {
+  return process.env.MONGODB_URI
+    ? mongo.db("salenoti").command({ ping: 1 }).then(() => true).catch(() => false)
+    : Promise.resolve(false);
+}
+
+function redisCheck(): Promise<boolean> {
+  return process.env.REDIS_URL ? redis.ping().then(() => true).catch(() => false) : Promise.resolve(false);
+}
+
+function timescaleCheck(): Promise<boolean> {
+  return process.env.TIMESCALE_DB_URL
+    ? timescale.healthCheck().then((result) => result.ok).catch(() => false)
+    : Promise.resolve(false);
+}
+
+export async function buildHealthPayload(timeoutMs = 1000): Promise<HealthPayload> {
+  const started = Date.now();
+  const [m, r, t] = await Promise.all([
+    withTimeout(mongoCheck(), timeoutMs),
+    withTimeout(redisCheck(), timeoutMs),
+    withTimeout(timescaleCheck(), timeoutMs),
+  ]);
+  const checks = {
+    mongo: m,
+    redis: r,
+    resend: Boolean(process.env.RESEND_API_KEY),
+    timescale: t,
+  };
+  const ok = Object.values(checks).every(Boolean);
+  return {
+    status: ok ? "ok" : "degraded",
+    checks,
+    version: process.env.GIT_COMMIT ?? "local-dev",
+    uptime_seconds: Math.round(process.uptime()),
+    latency_ms: Date.now() - started,
+  };
+}
 
 @Controller("health")
 export class HealthController {
   @Get()
-  async health() {
-    const mongoCheck = process.env.MONGODB_URI
-      ? mongo.db("salenoti").command({ ping: 1 }).then(() => true).catch(() => false)
-      : Promise.resolve(false);
-    const redisCheck = process.env.REDIS_URL
-      ? redis.ping().then(() => true).catch(() => false)
-      : Promise.resolve(false);
-    const [m, r] = await Promise.all([mongoCheck, redisCheck]);
-    const ok = m && r;
-    return { status: ok ? "ok" : "degraded", checks: { mongo: m, redis: r } };
+  async health(@Res({ passthrough: true }) response?: { status: (code: number) => unknown }) {
+    const payload = await buildHealthPayload();
+    response?.status(payload.status === "ok" ? 200 : 503);
+    return payload;
   }
 }
 

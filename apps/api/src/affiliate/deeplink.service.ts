@@ -8,12 +8,14 @@ import { redis } from "../queue/redis.client";
 import { mongo } from "../db/mongo";
 
 const SHOPEE_URL_REGEX = /^https:\/\/shopee\.vn\/.+-i\.\d+\.\d+(?:\?.*)?$/;
+const CACHE_TTL_SECONDS = 86_400;
+const LEASE_TTL_SECONDS = 5;
 
 export type DeeplinkSource = "alert_email" | "alert_push" | "alert_telegram" | "deal_page" | "share_deal" | "ext";
 
 export type GenerateInput = {
   userId: string;
-  productId: string;   // shopId-itemId composite
+  productId: string;
   source: DeeplinkSource;
   watchlistId?: string;
   campaign?: string;
@@ -26,107 +28,171 @@ export type GenerateResult = {
   cached: boolean;
 };
 
+export class DeeplinkRateLimitError extends Error {
+  readonly retryAfter = 60;
+
+  constructor() {
+    super("rate_limit");
+    this.name = "DeeplinkRateLimitError";
+  }
+}
+
 @Injectable()
 export class DeeplinkService {
   constructor(
     private readonly shopee: ShopeeAffiliateClient,
     private readonly cfg: ConfigService,
-    @Inject("OBS_POSTHOG") private readonly posthog: any
+    @Inject("OBS_POSTHOG") private readonly posthog: any,
   ) {}
 
   async generate(input: GenerateInput): Promise<GenerateResult> {
-    // FR-AFF-002 §1 #6 — load origin URL from products collection.
+    const startedAt = Date.now();
+    await this.assertUserRateLimit(input.userId);
+
     const product = await this.lookupProduct(input.productId);
     if (!product) throw new BadRequestException("product_not_found");
-    if (!SHOPEE_URL_REGEX.test(product.url)) throw new BadRequestException("invalid_shopee_url");
+    this.assertValidOrigin(product.url, input.productId);
 
-    // FR-AFF-002 §1 #8 — respect existing publisher cookie: return origin URL unchanged.
     if (input.respectOtherPublisher) {
-      this.posthog.capture("affiliate_link_generated", {
+      const subIds = this.buildSubIds({ ...input, campaign: "respected" });
+      await this.insertAffiliateLink(input, product.url, product.url, subIds, true);
+      this.posthog.capture("affiliate_link_respected_publisher", {
         source: input.source,
-        userId: this.hash(input.userId),
-        productIdHashed: this.hash(input.productId).slice(0, 12),
-        campaign: this.scrubCampaign(input.campaign),
-        respect_other_publisher: true,
+        userIdHash: this.hash(input.userId).slice(0, 12),
+        productIdHash: this.hash(input.productId).slice(0, 12),
+        latency_ms: Date.now() - startedAt,
       });
+      this.observe(startedAt, input, true, false, "respected");
       return { url: product.url, expiresAt: null, cached: false };
     }
 
-    // FR-AFF-002 §1 #2 — sub-id semantics (5 slots).
-    const userHash = this.hash(input.userId, this.cfg.getOrThrow<string>("DEEPLINK_SALT")).slice(0, 12);
-    const wlHash = input.watchlistId ? this.hash(input.watchlistId).slice(0, 8) : "0";
-    const subIds: [string, string, string, string, string] = [
-      "salenoti",
-      userHash,
-      wlHash,
-      input.source,
-      this.scrubCampaign(input.campaign),
-    ];
-
-    // FR-AFF-002 §1 #5 — 24h cache keyed by (userId, productId, source, campaign).
+    const subIds = this.buildSubIds(input);
     const cacheKey = `dl:${input.userId}:${input.productId}:${input.source}:${subIds[4]}`;
     const cached = await redis.get(cacheKey);
     if (cached) {
-      this.posthog.capture("affiliate_link_generated", {
-        source: input.source,
-        userId: this.hash(input.userId),
-        productIdHashed: this.hash(input.productId).slice(0, 12),
-        campaign: subIds[4],
-        cached: true,
-      });
-      // Bump cache_hits counter on the row for analytics.
-      await mongo
-        .db("salenoti")
-        .collection("affiliate_links")
-        .updateOne({ shortUrl: cached, userId: this.toObjectId(input.userId) }, { $inc: { cacheHits: 1 } });
+      await this.incrementCacheHit(cached, input.userId);
+      this.observe(startedAt, input, false, true, subIds[4]);
       return { url: cached, expiresAt: null, cached: true };
     }
 
-    const { shortLink } = await this.shopee.generateShortLink({ originUrl: product.url, subIds });
+    const leaseKey = `${cacheKey}:lease`;
+    const lease = await redis.set(leaseKey, "1", "EX", LEASE_TTL_SECONDS, "NX");
+    if (lease !== "OK") {
+      await this.sleep(50 + Math.floor(Math.random() * 100));
+      const second = await redis.get(cacheKey);
+      if (second) {
+        await this.incrementCacheHit(second, input.userId);
+        this.observe(startedAt, input, false, true, subIds[4]);
+        return { url: second, expiresAt: null, cached: true };
+      }
+    }
 
-    await mongo.db("salenoti").collection("affiliate_links").insertOne({
-      userId: this.toObjectId(input.userId),
-      productId: input.productId,
-      watchlistId: input.watchlistId ? this.toObjectId(input.watchlistId) : null,
-      subIds,
-      originUrl: product.url,
-      shortUrl: shortLink,
-      source: input.source,
-      campaign: subIds[4],
-      createdAt: new Date(),
-      expiresAt: null,
-      cacheHits: 0,
-      conversions: [],
-    });
+    try {
+      const { shortLink } = await this.shopee.generateShortLink({ originUrl: product.url, subIds });
+      await this.insertAffiliateLink(input, product.url, shortLink, subIds, false);
+      await redis.setex(cacheKey, CACHE_TTL_SECONDS, shortLink);
+      this.observe(startedAt, input, false, false, subIds[4]);
+      return { url: shortLink, expiresAt: null, cached: false };
+    } finally {
+      if (lease === "OK") await redis.del(leaseKey).catch(() => undefined);
+    }
+  }
 
-    await redis.setex(cacheKey, 86_400, shortLink);
-
-    this.posthog.capture("affiliate_link_generated", {
-      source: input.source,
-      userId: this.hash(input.userId),
-      productIdHashed: this.hash(input.productId).slice(0, 12),
-      campaign: subIds[4],
-      cached: false,
-    });
-
-    return { url: shortLink, expiresAt: null, cached: false };
+  private buildSubIds(input: GenerateInput): [string, string, string, string, string] {
+    const userHash = this.hash(input.userId, this.deeplinkSalt()).slice(0, 12);
+    const wlHash = input.watchlistId ? this.hash(input.watchlistId).slice(0, 8) : "0";
+    return ["salenoti", userHash, wlHash, input.source, this.scrubCampaign(input.campaign)];
   }
 
   private async lookupProduct(productId: string): Promise<{ url: string } | null> {
-    // productId is "<shopId>-<itemId>". Look up `products` (FR-AFF-003 writes this collection).
     const match = productId.match(/^(\d+)-(\d+)$/);
     if (!match) return null;
     const shopId = Number(match[1]);
     const itemId = Number(match[2]);
     const product = await mongo.db("salenoti").collection("products").findOne({ shopId, itemId });
     if (!product) return null;
-    // affiliateLink is the canonical origin URL for deeplink-ing (FR-AFF-003 §1 #4).
     const url = product.affiliateLink ?? `https://shopee.vn/-i.${shopId}.${itemId}`;
     return { url };
   }
 
+  private assertValidOrigin(originUrl: string, productId: string): void {
+    if (!SHOPEE_URL_REGEX.test(originUrl)) throw new BadRequestException("invalid_shopee_url");
+    const match = originUrl.match(/-i\.(\d+)\.(\d+)(?:\?.*)?$/);
+    if (!match || `${match[1]}-${match[2]}` !== productId) {
+      throw new BadRequestException("invalid_shopee_url");
+    }
+  }
+
+  private async insertAffiliateLink(
+    input: GenerateInput,
+    originUrl: string,
+    shortUrl: string,
+    subIds: [string, string, string, string, string],
+    respectOtherPublisher: boolean,
+  ): Promise<void> {
+    await mongo
+      .db("salenoti")
+      .collection("affiliate_links")
+      .insertOne({
+        userId: this.toObjectId(input.userId),
+        productId: input.productId,
+        watchlistId: input.watchlistId ? this.toObjectId(input.watchlistId) : null,
+        subIds,
+        originUrl,
+        shortUrl,
+        source: input.source,
+        campaign: subIds[4],
+        createdAt: new Date(),
+        expiresAt: null,
+        cacheHits: 0,
+        respectOtherPublisher,
+        conversions: [],
+      });
+  }
+
+  private async incrementCacheHit(shortUrl: string, userId: string): Promise<void> {
+    await mongo
+      .db("salenoti")
+      .collection("affiliate_links")
+      .updateOne({ shortUrl, userId: this.toObjectId(userId) }, { $inc: { cacheHits: 1 } });
+  }
+
+  private async assertUserRateLimit(userId: string): Promise<void> {
+    const bucket = `rl:deeplink:${userId}:${Math.floor(Date.now() / 60_000)}`;
+    const used = await redis.incr(bucket);
+    if (used === 1) await redis.expire(bucket, 60);
+    if (used > 30) throw new DeeplinkRateLimitError();
+  }
+
+  private observe(
+    startedAt: number,
+    input: GenerateInput,
+    respectOtherPublisher: boolean,
+    cached: boolean,
+    campaign: string,
+  ): void {
+    this.posthog.capture("affiliate_link_generated", {
+      source: input.source,
+      userIdHash: this.hash(input.userId).slice(0, 12),
+      productIdHash: this.hash(input.productId).slice(0, 12),
+      campaign,
+      cached,
+      respect_other_publisher: respectOtherPublisher,
+      latency_ms: Date.now() - startedAt,
+    });
+  }
+
+  private deeplinkSalt(): string {
+    const salt = this.cfg.getOrThrow<string>("DEEPLINK_SALT");
+    if (!/^[a-f0-9]{32,}$/i.test(salt)) throw new Error("DEEPLINK_SALT_WEAK");
+    return salt;
+  }
+
   private hash(s: string, salt = ""): string {
-    return crypto.createHash("sha256").update(s + salt).digest("hex");
+    return crypto
+      .createHash("sha256")
+      .update(s + salt)
+      .digest("hex");
   }
 
   private toObjectId(id: string): ObjectId | string {
@@ -139,7 +205,10 @@ export class DeeplinkService {
 
   private scrubCampaign(c: string | undefined): string {
     if (!c) return "default";
-    // FR-AFF-002 §10 row 10 — cap to 20 chars; whitelist [A-Za-z0-9_-].
     return c.replace(/[^A-Za-z0-9_-]/g, "").slice(0, 20) || "default";
+  }
+
+  private async sleep(ms: number): Promise<void> {
+    await new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

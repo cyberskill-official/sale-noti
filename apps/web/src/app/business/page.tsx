@@ -1,5 +1,6 @@
 // FR-ADMIN-001 §1 #1 — public B2B landing with lead form. SSG.
 import type { Metadata } from "next";
+import { AffiliateDisclosureCard } from "@/components/disclosure/AffiliateDisclosureCard";
 import { B2BLeadForm } from "./B2BLeadForm";
 
 export const metadata: Metadata = {
@@ -14,7 +15,8 @@ export default function BusinessPage() {
     <main style={{ maxWidth: 760, margin: "32px auto", padding: "0 16px", fontFamily: "system-ui", lineHeight: 1.6 }}>
       <h1 style={{ color: "#C05621" }}>SaleNoti for Business</h1>
       <p style={{ fontSize: 18 }}>
-        Price Intelligence cho Shopee Mall / Brand sellers — historical pricing, competitor tracking, deal-monitoring API.
+        Price Intelligence cho Shopee Mall / Brand sellers — historical pricing, competitor tracking, deal-monitoring
+        API.
       </p>
 
       <h2>Bạn nhận được gì</h2>
@@ -27,18 +29,16 @@ export default function BusinessPage() {
 
       <h2>Pricing</h2>
       <p style={{ background: "#FFFAF0", padding: 16, borderRadius: 8, border: "1px solid #FBD38D" }}>
-        <b>From 10M ₫/month</b> — custom theo volume + region. Trial 30 ngày sau khi tham gia chương trình
-        khách hàng đầu tiên.
+        <b>From 10M ₫/month</b> — custom theo volume + region. Trial 30 ngày sau khi tham gia chương trình khách hàng
+        đầu tiên.
       </p>
 
       <h2 style={{ marginTop: 32 }}>Liên hệ</h2>
       <B2BLeadForm />
 
       <hr style={{ margin: "48px 0", border: "none", borderTop: "1px solid #eee" }} />
-      <p style={{ fontSize: 11, color: "#666" }}>
-        SaleNoti là price-tracker affiliate. Khi end-user click vào deal trong alert, chúng tôi nhận hoa hồng từ Shopee
-        Affiliate Open API. B2B data licensing là rev stream riêng biệt — không xung đột.
-      </p>
+      <AffiliateDisclosureCard variant="footer" />
+      <p style={{ fontSize: 11, color: "#666" }}>B2B data licensing là rev stream riêng biệt — không xung đột.</p>
     </main>
   );
 }

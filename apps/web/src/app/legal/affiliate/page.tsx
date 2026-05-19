@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AffiliateDisclosureCard } from "@/components/disclosure/AffiliateDisclosureCard";
+import { FIVE_PRINCIPLES_VI } from "@/lib/disclosure";
 
 export const metadata: Metadata = {
   title: "Affiliate Disclosure — SaleNoti",
@@ -21,33 +22,21 @@ export default function AffiliatePage() {
 
       <h2 style={{ marginTop: 40 }}>5 nguyên tắc đạo đức (plan §A3)</h2>
       <ol>
-        <li>
-          <b>Không bao giờ override affiliate cookie của người khác.</b> Nếu user đang điều hướng tự nhiên trên Shopee
-          (đã có cookie affiliate của KOC khác), extension chỉ được click vào link SaleNoti từ alert / web app / share /
-          extension button — không tự inject.
-        </li>
-        <li>
-          <b>Disclosure đầy đủ tại mọi điểm chạm.</b> Trên Chrome Web Store listing, trong onboarding, trong mỗi alert
-          email, trong mỗi affiliate link surfaced.
-        </li>
-        <li>
-          <b>Không bao giờ giấu coupon tốt hơn để hưởng commission cao hơn.</b> Nếu user có một coupon code tốt hơn,
-          chúng tôi hiển thị bằng văn bản (copy-to-clipboard), không tự áp.
-        </li>
-        <li>
-          <b>Mở source revenue model.</b> Calculator bên dưới cho phép bạn tự kiểm chứng doanh thu của chúng tôi.
-        </li>
-        <li>
-          <b>Có Privacy Policy + Transparency Report mỗi quý.</b> Xem{" "}
-          <Link href="/transparency">danh sách báo cáo</Link>.
-        </li>
+        {FIVE_PRINCIPLES_VI.map((principle) => (
+          <li key={principle.id}>
+            <b>{principle.title}.</b> {principle.body}
+          </li>
+        ))}
       </ol>
+      <p>
+        Xem <Link href="/transparency">danh sách báo cáo Transparency</Link> để kiểm tra audit đạo đức hằng quý.
+      </p>
 
       <h2 style={{ marginTop: 40 }} id="revenue-model">
         Revenue model (mở source)
       </h2>
       <pre style={{ background: "#f7fafc", padding: 16, borderRadius: 8, overflowX: "auto", fontSize: 13 }}>
-{`# Affiliate revenue per user
+        {`# Affiliate revenue per user
 ARPU = (alerts_sent_per_user_per_month
         × CTR_alert        # ~25% target
         × Conversion_rate  # ~4% on Shopee
@@ -66,10 +55,10 @@ ARPU_casual = 5 × 0.20 × 0.04 × 200_000 × 0.025 = ~200 ₫/tháng ≈ $0.008
 
       <h2 style={{ marginTop: 40 }}>Cách kiểm chứng (audit your own numbers)</h2>
       <p>
-        Mỗi affiliate link SaleNoti gửi cho bạn có 5 sub-id slots: <code>[salenoti, userHash, watchlistHash, source,
-        campaign]</code>. Chúng tôi join với commission webhook của Shopee để tính doanh thu. Transparency Report mỗi
-        quý cộng dồn theo từng <code>source</code> (alert_email / alert_push / alert_telegram / deal_page / share_deal
-        / ext).
+        Mỗi affiliate link SaleNoti gửi cho bạn có 5 sub-id slots:{" "}
+        <code>[salenoti, userHash, watchlistHash, source, campaign]</code>. Chúng tôi join với commission webhook của
+        Shopee để tính doanh thu. Transparency Report mỗi quý cộng dồn theo từng <code>source</code> (alert_email /
+        alert_push / alert_telegram / deal_page / share_deal / ext).
       </p>
       <p>
         Code mở source (sẽ public sau MVP launch):{" "}

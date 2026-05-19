@@ -1,6 +1,11 @@
 // FR-EXT-001 — service worker — handles trackProduct messages from content script.
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.type === "openOnboarding") {
+    chrome.tabs.create({ url: chrome.runtime.getURL("onboarding.html") }).then(() => sendResponse({ ok: true }));
+    return true;
+  }
+
   if (msg?.type !== "trackProduct") return;
 
   (async () => {

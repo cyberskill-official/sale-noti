@@ -9,6 +9,7 @@ import { evaluateTriggers } from "../watchlist/trigger-eval";
 import { reevaluateTier } from "../scheduler/priority-engine";
 import { priceCheckWorkerOptions } from "../queue/queues";
 import { OfferResolverService } from "./offer-resolver.service";
+import { ShopeeApiError } from "./shopee/errors";
 
 type PriceCheckJob = {
   productId: string;
@@ -16,6 +17,10 @@ type PriceCheckJob = {
   itemId: number;
   tier: "hot" | "mid" | "low";
 };
+
+function isShopeeBackoffFailure(error: Error): boolean {
+  return error instanceof ShopeeApiError && (error.code === "rate_limit" || error.code === "service_unavailable");
+}
 
 @Processor("price-check", priceCheckWorkerOptions())
 export class PriceCheckProcessor extends WorkerHost {
@@ -25,7 +30,7 @@ export class PriceCheckProcessor extends WorkerHost {
     private readonly resolver: OfferResolverService,
     @InjectQueue("alert-dispatch") private readonly alerts: Queue,
     @Inject("OBS_POSTHOG") private readonly posthog: any,
-    @Inject("OBS_SENTRY") private readonly sentry: any
+    @Inject("OBS_SENTRY") private readonly sentry: any,
   ) {
     super();
   }
@@ -69,17 +74,20 @@ export class PriceCheckProcessor extends WorkerHost {
             triggerKind,
             observedAt: new Date().toISOString(),
           },
-          { jobId: `alert:${wl._id}:${triggerKind}:${Math.floor(Date.now() / 60_000)}` }
+          { jobId: `alert:${wl._id}:${triggerKind}:${Math.floor(Date.now() / 60_000)}` },
         );
         alertJobs++;
       }
     }
 
     const nextTier = await reevaluateTier(productId);
-    await mongo.db("salenoti").collection("products").updateOne(
-      { shopId: job.data.shopId, itemId: job.data.itemId },
-      { $set: { trackPriority: nextTier, lastPriceCheckAt: new Date() } }
-    );
+    await mongo
+      .db("salenoti")
+      .collection("products")
+      .updateOne(
+        { shopId: job.data.shopId, itemId: job.data.itemId },
+        { $set: { trackPriority: nextTier, lastPriceCheckAt: new Date() } },
+      );
 
     this.posthog.capture("price_check_completed", {
       productId,
@@ -95,15 +103,18 @@ export class PriceCheckProcessor extends WorkerHost {
     const productId = job?.data.productId;
     if (!productId) return;
     const attempts = job?.attemptsMade ?? 0;
-    if (attempts >= 5) {
+    if (attempts >= 5 && isShopeeBackoffFailure(error)) {
       await mongo
         .db("salenoti")
         .collection("products")
         .updateOne(
           { shopId: job.data.shopId, itemId: job.data.itemId },
-          { $set: { trackPriority: "low", cooldownUntil: new Date(Date.now() + 86_400_000) } }
+          { $set: { trackPriority: "low", cooldownUntil: new Date(Date.now() + 86_400_000) } },
         );
-      this.sentry.captureException(error, { tags: { fr: "FR-WORKER-002", kind: "shopee_repeated_failure", productId } });
+      this.sentry.captureException(error, {
+        level: "warning",
+        tags: { fr: "FR-WORKER-002", kind: "shopee_repeated_failure", productId },
+      });
     }
   }
 }

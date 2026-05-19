@@ -2,6 +2,8 @@
 // Atomic single-use: findOneAndUpdate with consumed:false guard.
 import crypto from "crypto";
 import { mongo } from "@/server/db/mongo";
+import { posthogServer } from "@/server/obs/posthog.server";
+import { sentry } from "@/server/obs/sentry.server";
 import { upsertUserOnSignIn } from "@/server/users/upsert-on-signin";
 
 export type ConsumeResult =
@@ -18,16 +20,44 @@ export async function consumeMagicLink(rawToken: string): Promise<ConsumeResult>
       { tokenHash, consumed: false, expiresAt: { $gt: now } },
       { $set: { consumed: true, consumedAt: now } },
       { returnDocument: "before" }
-    );
+  );
 
-  if (!row) return { ok: false, code: "invalid_or_expired_token" };
+  if (!row) {
+    sentry.addBreadcrumb?.({
+      category: "auth.magic_link.rejected",
+      level: "warning",
+      data: { fr: "FR-AUTH-002", reason: "invalid_or_expired_token" },
+    });
+    return { ok: false, code: "invalid_or_expired_token" };
+  }
 
   const result = await upsertUserOnSignIn({
     sub: `magic-link:${row.email}`,
     email: row.email,
     email_verified: true,
+    provider: "magic-link",
   });
 
-  if (!result.ok) return { ok: false, code: "USER_UPSERT_FAILED", trace: result.traceId };
+  if (!result.ok) {
+    sentry.addBreadcrumb?.({
+      category: "auth.magic_link.rejected",
+      level: "warning",
+      data: { fr: "FR-AUTH-002", reason: result.reason, trace: result.traceId },
+    });
+    return { ok: false, code: "USER_UPSERT_FAILED", trace: result.traceId };
+  }
+
+  sentry.addBreadcrumb?.({
+    category: "auth.magic_link.consumed",
+    level: "info",
+    data: { fr: "FR-AUTH-002" },
+  });
+  posthogServer.capture("auth_sign_in", result.userId, {
+    fr: "FR-AUTH-002",
+    method: "magic-link",
+    auth_sign_in_method: "magic-link",
+    outcome: "succeeded",
+  });
+
   return { ok: true, userId: result.userId, email: row.email };
 }

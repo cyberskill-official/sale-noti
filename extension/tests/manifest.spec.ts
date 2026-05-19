@@ -24,7 +24,12 @@ describe("FR-EXT-001 — Chrome MV3 static contract", () => {
 
   it("requires disclosure acknowledgement before injecting tracking UI", () => {
     const content = readFileSync(resolve(ROOT, "src/content.ts"), "utf8");
+    const background = readFileSync(resolve(ROOT, "src/background.ts"), "utf8");
+    const onboarding = readFileSync(resolve(ROOT, "src/onboarding/onboarding.ts"), "utf8");
     expect(content).toContain("disclosureAcknowledgedAt");
+    expect(content).toContain("salenoti-disclosure-required");
+    expect(background).toContain("openOnboarding");
+    expect(onboarding).toContain("/api/auth/disclosure-ack");
     expect(content).toContain("+ Theo dõi giá");
     expect(content).not.toMatch(/get_cart_list|autoApply|coupon/i);
   });

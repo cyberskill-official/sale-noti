@@ -14,6 +14,7 @@ export const ProductOfferNode = z.object({
   sales: NumberLike.optional().default(0),
   imageUrl: z.string().nullable().optional(),
   stock: z.number().nullable().optional(),
+  flashSale: z.boolean().optional(),
 });
 export type ProductOfferNode = z.infer<typeof ProductOfferNode>;
 

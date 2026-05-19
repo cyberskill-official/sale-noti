@@ -2,6 +2,9 @@
 // FR-OBS-001 ties into this; FR-AUTH-001 uses sentry breadcrumbs.
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    await import("./src/server/obs/sentry.server");
+    await import("./sentry.server.config");
+  }
+  if (process.env.NEXT_RUNTIME === "edge") {
+    await import("./sentry.edge.config");
   }
 }

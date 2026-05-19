@@ -6,13 +6,15 @@ import { NotifyPushProcessor } from "./notify-push.processor";
 import { NotifyTelegramProcessor } from "./notify-telegram.processor";
 import { ResendWebhookController } from "./resend-webhook.controller";
 import { TelegramWebhookController } from "./telegram-webhook.controller";
+import { UnsubscribeController } from "./unsubscribe.controller";
+import { NotificationIndexService } from "./idempotency";
 
 @Module({
   imports: [
     AffiliateModule,
     BullModule.registerQueue({ name: "alert-dispatch" }),
   ],
-  controllers: [ResendWebhookController, TelegramWebhookController],
-  providers: [NotifyEmailProcessor, NotifyPushProcessor, NotifyTelegramProcessor],
+  controllers: [ResendWebhookController, TelegramWebhookController, UnsubscribeController],
+  providers: [NotifyEmailProcessor, NotifyPushProcessor, NotifyTelegramProcessor, NotificationIndexService],
 })
 export class NotifyModule {}

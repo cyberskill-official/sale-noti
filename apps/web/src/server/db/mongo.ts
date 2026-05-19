@@ -1,6 +1,6 @@
 // Shared Mongo client — single connection pool per Node process.
 // FR-AUTH-001 §1 #6 uses this for users upsert.
-import { MongoClient, type Db } from "mongodb";
+import { MongoClient, type ClientSession, type Db } from "mongodb";
 
 declare global {
   var __salenotiMongo: MongoClient | undefined;
@@ -22,6 +22,18 @@ function getClient(): MongoClient {
 export const mongo = {
   db(name: string): Db {
     return getClient().db(name);
+  },
+  async withTransaction<T>(fn: (session: ClientSession) => Promise<T>): Promise<T> {
+    const session = getClient().startSession();
+    try {
+      let result: T | undefined;
+      await session.withTransaction(async () => {
+        result = await fn(session);
+      });
+      return result as T;
+    } finally {
+      await session.endSession();
+    }
   },
   async close() {
     if (globalThis.__salenotiMongo) {

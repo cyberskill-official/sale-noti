@@ -20,7 +20,8 @@ module.exports = {
     },
   },
   create(context) {
-    const FORBIDDEN = /^(applyCoupon|autoApplyPromo|injectPromoCode|autoCoupon|injectCoupon)$/i;
+    const FORBIDDEN =
+      /^(applyCoupon|autoApplyPromo|injectPromoCode|autoCoupon|injectCoupon|setCouponField|fillCouponInput)$/i;
     function check(node, name) {
       if (FORBIDDEN.test(name)) {
         context.report({ node, messageId: "forbidden" });

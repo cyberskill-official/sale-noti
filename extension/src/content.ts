@@ -8,7 +8,10 @@ const PRODUCT_URL_RE = /-i\.(\d+)\.(\d+)/;
 (async () => {
   // FR-EXT-001 §1 #8 — gate by disclosure ack.
   const { disclosureAcknowledgedAt } = await chrome.storage.local.get("disclosureAcknowledgedAt");
-  if (!disclosureAcknowledgedAt) return;
+  if (!disclosureAcknowledgedAt) {
+    showDisclosureRequired();
+    return;
+  }
 
   const match = location.pathname.match(PRODUCT_URL_RE);
   if (!match) return;
@@ -45,9 +48,8 @@ const PRODUCT_URL_RE = /-i\.(\d+)\.(\d+)/;
 
     try {
       const resp = await new Promise<{ ok: boolean; code?: string; data?: any; error?: string }>((resolve) => {
-        chrome.runtime.sendMessage(
-          { type: "trackProduct", url: location.href, affiliateCookiePresent },
-          (r) => resolve(r ?? { ok: false, code: "no_response" })
+        chrome.runtime.sendMessage({ type: "trackProduct", url: location.href, affiliateCookiePresent }, (r) =>
+          resolve(r ?? { ok: false, code: "no_response" }),
         );
       });
 
@@ -113,4 +115,34 @@ function createToast() {
       hide = setTimeout(() => (el.style.opacity = "0"), 3500);
     },
   };
+}
+
+function showDisclosureRequired() {
+  if (document.getElementById("salenoti-disclosure-required")) return;
+  const panel = document.createElement("div");
+  panel.id = "salenoti-disclosure-required";
+  Object.assign(panel.style, {
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    zIndex: "2147483647",
+    background: "#FFFAF0",
+    color: "#1a1a1a",
+    border: "1px solid #FBD38D",
+    padding: "12px",
+    borderRadius: "10px",
+    fontFamily: "system-ui, sans-serif",
+    fontSize: "13px",
+    maxWidth: "300px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.16)",
+  } as CSSStyleDeclaration);
+  panel.innerHTML = `
+    <strong>SaleNoti cần disclosure trước</strong>
+    <p style="margin:6px 0 10px">Chúng tôi là affiliate price-tracker. Hãy đọc và đồng ý trước khi theo dõi giá.</p>
+    <button id="salenoti-open-onboarding" type="button" style="background:#FAA227;color:white;border:0;border-radius:8px;padding:8px 10px;font-weight:600;cursor:pointer">Mở onboarding</button>
+  `;
+  document.body.appendChild(panel);
+  document.getElementById("salenoti-open-onboarding")?.addEventListener("click", () => {
+    chrome.runtime.sendMessage({ type: "openOnboarding" });
+  });
 }

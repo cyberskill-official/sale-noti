@@ -3,12 +3,14 @@
 import { mongo } from "@/server/db/mongo";
 import { traceId } from "@/server/obs/trace";
 import { sentry } from "@/server/obs/sentry.server";
+import { defaultSignInConsents } from "@/server/legal/disclosure-consent";
 
 export type GoogleProfile = {
   sub: string;
   email: string;
   email_verified?: boolean;
   name?: string;
+  provider?: "google" | "magic-link";
 };
 
 export type UpsertResult =
@@ -25,6 +27,8 @@ export async function upsertUserOnSignIn(profile: GoogleProfile): Promise<Upsert
     const col = mongo.db("salenoti").collection("users");
     const now = new Date();
     const email = profile.email.toLowerCase();
+    const provider = profile.provider ?? "google";
+    const consents = defaultSignInConsents(now);
 
     const doc = await col.findOneAndUpdate(
       { email },
@@ -34,15 +38,15 @@ export async function upsertUserOnSignIn(profile: GoogleProfile): Promise<Upsert
           plan: "free",
           notificationChannels: { email: true, webPush: false, telegram: false },
           passwordHash: null,
-          consents: [],
+          consents,
           createdAt: now,
         },
         $set: { updatedAt: now },
         $addToSet: {
-          oauthProviders: { provider: "google", providerAccountId: profile.sub },
+          oauthProviders: { provider, providerAccountId: profile.sub },
         },
       },
-      { upsert: true, returnDocument: "after" }
+      { upsert: true, returnDocument: "after" },
     );
 
     if (!doc) return { ok: false, traceId: trace, reason: "db_error" };

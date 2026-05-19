@@ -1,8 +1,9 @@
 // FR-AFF-002 §3 — POST /v1/affiliate/deeplink
 import crypto from "node:crypto";
-import { Body, Controller, Headers, HttpException, HttpStatus, Post } from "@nestjs/common";
+import { Body, Controller, Headers, HttpException, HttpStatus, Post, Res } from "@nestjs/common";
+import type { Response } from "express";
 import { z } from "zod";
-import { DeeplinkService, type DeeplinkSource } from "./deeplink.service";
+import { DeeplinkRateLimitError, DeeplinkService, type DeeplinkSource } from "./deeplink.service";
 
 const Body_ = z.object({
   productId: z.string().regex(/^\d+-\d+$/),
@@ -20,20 +21,37 @@ export class DeeplinkController {
   async generate(
     @Body() body: unknown,
     @Headers("authorization") authorization: string | undefined,
-    @Headers("x-user-id") userIdHeader: string | undefined
+    @Headers("x-user-id") userIdHeader: string | undefined,
+    @Res({ passthrough: true }) res: Response,
   ) {
     const userId = extractUserId(authorization, userIdHeader);
     if (!userId) throw new HttpException({ ok: false, error: "unauthenticated" }, HttpStatus.UNAUTHORIZED);
     const parsed = Body_.safeParse(body);
-    if (!parsed.success) throw new HttpException({ ok: false, error: "validation_failed", issues: parsed.error.issues }, HttpStatus.BAD_REQUEST);
-    const result = await this.deeplink.generate({
-      userId,
-      productId: parsed.data.productId,
-      source: parsed.data.source as DeeplinkSource,
-      watchlistId: parsed.data.watchlistId,
-      campaign: parsed.data.campaign,
-      respectOtherPublisher: parsed.data.respect_other_publisher,
-    });
+    if (!parsed.success)
+      throw new HttpException(
+        { ok: false, error: "validation_failed", issues: parsed.error.issues },
+        HttpStatus.BAD_REQUEST,
+      );
+    let result;
+    try {
+      result = await this.deeplink.generate({
+        userId,
+        productId: parsed.data.productId,
+        source: parsed.data.source as DeeplinkSource,
+        watchlistId: parsed.data.watchlistId,
+        campaign: parsed.data.campaign,
+        respectOtherPublisher: parsed.data.respect_other_publisher,
+      });
+    } catch (e) {
+      if (e instanceof DeeplinkRateLimitError) {
+        res.setHeader("Retry-After", String(e.retryAfter));
+        throw new HttpException(
+          { ok: false, error: "rate_limit", retryAfter: e.retryAfter },
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+      throw e;
+    }
     return { ok: true, url: result.url, expiresAt: result.expiresAt };
   }
 }
@@ -59,7 +77,11 @@ function verifyAccessTokenSub(token: string): string | null {
   const expBuf = Buffer.from(expected);
   if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) return null;
 
-  const claims = JSON.parse(Buffer.from(payload, "base64url").toString()) as { sub?: string; exp?: number; iat?: number };
+  const claims = JSON.parse(Buffer.from(payload, "base64url").toString()) as {
+    sub?: string;
+    exp?: number;
+    iat?: number;
+  };
   const now = Math.floor(Date.now() / 1000);
   if (!claims.sub || !claims.exp || !claims.iat) return null;
   if (claims.exp < now - 60 || claims.iat > now + 60) return null;

@@ -2,6 +2,9 @@
 // Plain React + HTML string (we render manually; React Email lib lands when more templates exist).
 import { AFFILIATE_DISCLOSURE_VI } from "@/lib/disclosure";
 
+export const MAGIC_LINK_DISCLOSURE_VI =
+  "SaleNoti là price-tracker affiliate dùng Shopee Affiliate Open API. Khi bạn click vào deal trong alert, chúng tôi nhận hoa hồng. Bạn không trả thêm.";
+
 export function renderMagicLinkEmail(args: { url: string; email: string }): { html: string; text: string } {
   const safeUrl = args.url;
   const html = `<!doctype html>
@@ -15,6 +18,9 @@ export function renderMagicLinkEmail(args: { url: string; email: string }): { ht
   </p>
   <p style="font-size:13px;color:#666">Nếu bạn không yêu cầu link này, có thể bỏ qua email — link sẽ tự hết hạn.</p>
   <hr style="border:none;border-top:1px solid #eee;margin:32px 0">
+  <p style="font-size:11px;color:#666;line-height:1.5;margin:0 0 8px">
+    ${MAGIC_LINK_DISCLOSURE_VI}
+  </p>
   <p style="font-size:11px;color:#666;line-height:1.5;margin:0 0 8px">
     ${AFFILIATE_DISCLOSURE_VI}
   </p>
@@ -32,6 +38,8 @@ export function renderMagicLinkEmail(args: { url: string; email: string }): { ht
     "Nếu bạn không yêu cầu link này, có thể bỏ qua email.",
     "",
     "---",
+    MAGIC_LINK_DISCLOSURE_VI,
+    "",
     AFFILIATE_DISCLOSURE_VI,
     "DPO: legal@salenoti.vn · CyberSkill JSC.",
   ].join("\n");

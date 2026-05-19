@@ -1,24 +1,96 @@
-// FR-AUTH-001 §5 — integration tests.
-// Run: `pnpm --filter @salenoti/web test:integration`
-// Requires: local Atlas-compatible Mongo (or `mongodb-memory-server`).
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+// FR-AUTH-001 §5 — integration tests with an in-memory Mongo-compatible collection.
+// This keeps CI/sandbox validation credential-free while exercising the real upsert service.
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+type OAuthProvider = { provider: "google"; providerAccountId: string };
+type UserDoc = {
+  _id: string;
+  email: string;
+  oauthProviders: OAuthProvider[];
+  plan: "free";
+  notificationChannels: { email: boolean; webPush: boolean; telegram: boolean };
+  passwordHash: null;
+  consents: unknown[];
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type UserUpdate = {
+  $setOnInsert?: Partial<UserDoc>;
+  $set?: Partial<UserDoc>;
+  $addToSet?: { oauthProviders?: OAuthProvider };
+};
+
+const dbMock = vi.hoisted(() => ({
+  users: new Map<string, UserDoc>(),
+  nextId: 0,
+}));
+
+function cloneUser(doc: UserDoc | null): UserDoc | null {
+  if (!doc) return null;
+  return {
+    ...doc,
+    oauthProviders: doc.oauthProviders.map((provider) => ({ ...provider })),
+    consents: [...doc.consents],
+    createdAt: new Date(doc.createdAt),
+    updatedAt: new Date(doc.updatedAt),
+  };
+}
+
+const usersCollection = {
+  async findOneAndUpdate(filter: { email: string }, update: UserUpdate, options: { upsert?: boolean }) {
+    let doc = dbMock.users.get(filter.email) ?? null;
+    if (!doc && options.upsert) {
+      const inserted = update.$setOnInsert ?? {};
+      doc = {
+        _id: `mock-user-${++dbMock.nextId}`,
+        email: filter.email,
+        oauthProviders: [],
+        plan: "free",
+        notificationChannels: { email: true, webPush: false, telegram: false },
+        passwordHash: null,
+        consents: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        ...inserted,
+      };
+      dbMock.users.set(filter.email, doc);
+    }
+
+    if (!doc) return null;
+    Object.assign(doc, update.$set ?? {});
+
+    const provider = update.$addToSet?.oauthProviders;
+    if (provider && !doc.oauthProviders.some((item) => JSON.stringify(item) === JSON.stringify(provider))) {
+      doc.oauthProviders.push({ ...provider });
+    }
+
+    return cloneUser(doc);
+  },
+  async findOne(filter: { email: string }) {
+    return cloneUser(dbMock.users.get(filter.email) ?? null);
+  },
+};
+
+vi.mock("@/server/db/mongo", () => ({
+  mongo: {
+    db: () => ({
+      collection: (name: string) => {
+        if (name !== "users") throw new Error(`Unexpected collection ${name}`);
+        return usersCollection;
+      },
+    }),
+    close: vi.fn(),
+  },
+}));
+
 import { upsertUserOnSignIn } from "@/server/users/upsert-on-signin";
 import { mongo } from "@/server/db/mongo";
 
 const TEST_DB = "salenoti";
 
-beforeAll(async () => {
-  // Sanity check — bail early if Mongo isn't reachable
-  await mongo.db(TEST_DB).command({ ping: 1 });
-});
-
-afterAll(async () => {
-  // Best-effort cleanup of test users
-  await mongo
-    .db(TEST_DB)
-    .collection("users")
-    .deleteMany({ email: { $regex: /^salenoti-test-/ } });
-  await mongo.close();
+beforeEach(() => {
+  dbMock.users.clear();
 });
 
 describe("FR-AUTH-001 — upsertUserOnSignIn", () => {
@@ -35,7 +107,10 @@ describe("FR-AUTH-001 — upsertUserOnSignIn", () => {
     expect(row?.plan).toBe("free");
     expect(row?.notificationChannels).toEqual({ email: true, webPush: false, telegram: false });
     expect(row?.oauthProviders).toEqual(
-      expect.arrayContaining([{ provider: "google", providerAccountId: "google-sub-001" }])
+      expect.arrayContaining([{ provider: "google", providerAccountId: "google-sub-001" }]),
+    );
+    expect(row?.consents.map((consent: any) => consent.kind)).toEqual(
+      expect.arrayContaining(["privacy_v1", "affiliate_disclosure_v1"]),
     );
   });
 

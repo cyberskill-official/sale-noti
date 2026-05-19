@@ -7,5 +7,5 @@ const CAP_MS = 30 * 60_000;
 export function backoffMs(attempts: number): number {
   const exp = Math.min(BASE_MS * Math.pow(2, Math.max(0, attempts - 1)), CAP_MS);
   const jitter = (Math.random() - 0.5) * 0.5 * exp; // ±25%
-  return Math.round(exp + jitter);
+  return Math.min(CAP_MS, Math.round(exp + jitter));
 }

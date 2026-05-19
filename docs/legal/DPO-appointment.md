@@ -11,7 +11,7 @@
 |---|---|
 | Name | Stephen Cheng (Trịnh Thái Anh) |
 | Role | Founder & CEO, CyberSkill JSC |
-| Email (DPO line) | legal@salenoti.vn |
+| Email (DPO line) | legal@cyberskill.world (alias: legal@salenoti.vn) |
 | Phone | (+84) 906 878 091 |
 | Reporting line | Board of Directors |
 | Working address | 1st Floor, 207A Nguyen Van Thu Street, Tan Dinh Ward, Ho Chi Minh City, Vietnam |

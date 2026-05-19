@@ -3,6 +3,14 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: [],
   serverExternalPackages: ["mongodb"],
+  async headers() {
+    return [
+      {
+        source: "/service-worker.js",
+        headers: [{ key: "Cache-Control", value: "no-store" }],
+      },
+    ];
+  },
   experimental: {
     // App Router default; nothing required here yet
   },

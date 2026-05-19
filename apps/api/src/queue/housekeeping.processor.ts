@@ -8,7 +8,7 @@ import { QUEUE_CONCURRENCY } from "./queues";
 export class HousekeepingProcessor extends WorkerHost {
   private readonly log = new Logger(HousekeepingProcessor.name);
 
-  async process(job: Job<{ kind?: string; heartbeatUrl?: string }>): Promise<void> {
+  async process(job: Job<{ kind?: string; heartbeatKey?: string; heartbeatUrl?: string }>): Promise<void> {
     if (job.data.kind !== "better-stack-heartbeat") return;
     const url = job.data.heartbeatUrl ?? process.env.BETTER_STACK_HEARTBEAT_URL;
     if (!url) {

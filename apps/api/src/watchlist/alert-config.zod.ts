@@ -2,7 +2,7 @@
 import { z } from "zod";
 
 const Pct = z.number().min(1).max(90);
-const PriceVnd = z.number().int().positive();
+const PriceVnd = z.number().int().positive().max(1_000_000_000);
 const Paused = z.boolean().default(false);
 
 export const TriggerSchema = z.discriminatedUnion("kind", [
@@ -16,7 +16,7 @@ export const TriggerSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("lowest_30d"), paused: Paused }),
   z.object({
     kind: z.literal("flash_sale"),
-    minDiscountPct: Pct.default(30),
+    minDiscountPct: z.number().min(10).max(90).default(30),
     paused: Paused,
   }),
 ]);

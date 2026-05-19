@@ -29,6 +29,13 @@ export async function POST(req: Request) {
       { _id: userOid },
       { $pull: { pushSubscriptions: { endpoint: parsed.data.endpoint } } } as any
     );
+    const user = await mongo.db("salenoti").collection("users").findOne({ _id: userOid }, { projection: { pushSubscriptions: 1 } });
+    if (!user?.pushSubscriptions?.length) {
+      await mongo.db("salenoti").collection("users").updateOne(
+        { _id: userOid },
+        { $set: { "notificationChannels.webPush": false } }
+      );
+    }
   } else {
     await mongo.db("salenoti").collection("users").updateOne(
       { _id: userOid },
