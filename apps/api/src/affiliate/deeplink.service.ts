@@ -3,6 +3,8 @@ import crypto from "node:crypto";
 import { Inject, Injectable, BadRequestException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { ObjectId } from "mongodb";
+import { AccessTradeFallbackService } from "./accesstrade/fallback.service";
+import { ShopeeApiError } from "./shopee/errors";
 import { ShopeeAffiliateClient } from "./shopee/client";
 import { redis } from "../queue/redis.client";
 import { mongo } from "../db/mongo";
@@ -43,6 +45,7 @@ export class DeeplinkService {
     private readonly shopee: ShopeeAffiliateClient,
     private readonly cfg: ConfigService,
     @Inject("OBS_POSTHOG") private readonly posthog: any,
+    private readonly accessTradeFallback: AccessTradeFallbackService,
   ) {}
 
   async generate(input: GenerateInput): Promise<GenerateResult> {
@@ -93,6 +96,24 @@ export class DeeplinkService {
       await redis.setex(cacheKey, CACHE_TTL_SECONDS, shortLink);
       this.observe(startedAt, input, false, false, subIds[4]);
       return { url: shortLink, expiresAt: null, cached: false };
+    } catch (error) {
+      if (this.shouldUseAccessTradeFallback(error)) {
+        const fallback = await this.accessTradeFallback.generateFallbackLink({
+          originUrl: product.url,
+          userId: input.userId,
+          source: input.source,
+          watchlistId: input.watchlistId,
+          campaign: input.campaign,
+          respectOtherPublisher: false,
+        });
+
+        await this.insertAffiliateLink(input, product.url, fallback.url, subIds, false);
+        await redis.setex(cacheKey, CACHE_TTL_SECONDS, fallback.url);
+        this.observe(startedAt, input, false, false, subIds[4]);
+        return fallback;
+      }
+
+      throw error;
     } finally {
       if (lease === "OK") await redis.del(leaseKey).catch(() => undefined);
     }
@@ -210,5 +231,22 @@ export class DeeplinkService {
 
   private async sleep(ms: number): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private shouldUseAccessTradeFallback(error: unknown): boolean {
+    if (!this.isAccessTradeFallbackEnabled()) return false;
+    if (!(error instanceof ShopeeApiError)) return false;
+    return error.code === "rate_limit" || error.code === "service_unavailable";
+  }
+
+  private isAccessTradeFallbackEnabled(): boolean {
+    const raw = this.cfg.get("ACCESSTRADE_FALLBACK_ENABLED");
+    if (typeof raw === "boolean") return raw;
+    if (typeof raw === "number") return raw !== 0;
+    if (typeof raw === "string") {
+      const normalized = raw.trim().toLowerCase();
+      return ["1", "true", "yes", "on"].includes(normalized);
+    }
+    return false;
   }
 }

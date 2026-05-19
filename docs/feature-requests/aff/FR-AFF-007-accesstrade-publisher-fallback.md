@@ -3,7 +3,7 @@ id: FR-AFF-007
 title: "AccessTrade publisher fallback client - campaigns list + tracking links for Shopee outage failover"
 module: AFF
 priority: MUST
-status: draft
+status: accepted
 verify: T
 phase: P3
 milestone: "P3 - slice 2 - Fallback resilience"
@@ -22,8 +22,7 @@ depends_on:
   - FR-LEGAL-002
   - FR-OBS-001
   - FR-WORKER-002
-blocks:
-  - FR-AFF-008 # placeholder - not yet specified
+blocks: []
 effort_hours: 10
 template: engineering-spec@1
 new_files:
@@ -66,7 +65,7 @@ This document SHALL be interpreted per BCP-14 (RFC 2119/8174). The API service M
 7. The client MUST emit PostHog `affiliate_api_call` and Sentry breadcrumb/exception events with `platform`, `operation`, `latency_ms`, `status`, `error_code`, and `outcome` (`live|dead|error`) when relevant.
 8. The normalization layer MUST strip HTML from exposed campaign text fields and MUST prefer `short_link` over `aff_link` when both are present. The client MUST NOT leak raw response HTML, tracking URLs, or unparsed notices into logs or events.
 9. `DeeplinkService` MUST use the AccessTrade fallback only when the Shopee short-link path fails with `rate_limit`, `service_unavailable`, or breaker-open conditions and `ACCESSTRADE_FALLBACK_ENABLED=true`. Config errors, missing AccessTrade credentials, unsupported markets, and `respectOtherPublisher: true` MUST fail closed or return the raw origin URL as appropriate.
-10. The fallback path MUST preserve the FR-AFF-002 attribution semantics by projecting source, campaign, user hash, and watchlist hash into AccessTrade tracking fields deterministically. It MUST NOT override another publisher's cookie or attribution path.
+10. The fallback path MUST preserve the FR-AFF-002 attribution semantics by mapping `sub1 = userHash`, `sub2 = watchlistHash` (or `"0"` when the caller has no watchlist), `sub3 = source`, and `sub4 = campaign`; `utm_source = "salenoti"`, `utm_medium = "affiliate_fallback"`, `utm_campaign = campaign`, and `utm_content = source`. The mapping MUST be deterministic and MUST NOT override another publisher's cookie or attribution path.
 11. The fallback path MUST use `ACCESSTRADE_DEFAULT_CAMPAIGN_ID` from config and MUST fail closed if that campaign is missing or the campaign list is empty.
 12. The normalized campaign MUST expose stable summary fields only: `id`, `name`, `merchant`, `url`, `approval`, `scope`, `status`, and optional `cookieDuration`. The adapter MUST NOT fabricate commission data or expose unrelated HTML blobs.
 
@@ -181,7 +180,7 @@ The client MAY expose additional helpers internally, but the public surface for 
 ## §4 - Acceptance criteria
 
 1. Given valid AccessTrade VN credentials and a configured default campaign, `createTrackingLink()` returns a normalized link object with `shortLink` preferred over `affiliateLink` when both are present.
-2. Given Shopee `generateShortLink()` fails with breaker-open, rate-limit, or provider-unavailable conditions, `DeeplinkService` returns an AccessTrade fallback link when `ACCESSTRADE_FALLBACK_ENABLED=true`.
+2. Given Shopee `generateShortLink()` fails with breaker-open, rate-limit, or service_unavailable conditions, `DeeplinkService` returns an AccessTrade fallback link when `ACCESSTRADE_FALLBACK_ENABLED=true`.
 3. Given `respectOtherPublisher: true`, the fallback path returns the raw origin URL and does not call AccessTrade.
 4. Given missing AccessTrade credentials, missing `ACCESSTRADE_DEFAULT_CAMPAIGN_ID`, or `ACCESSTRADE_REGION` outside the VN publisher slice, the client fails closed and does not fabricate a link.
 5. Given a campaign response containing HTML in descriptive fields, the normalized campaign strips the markup before it leaves the adapter boundary.
@@ -226,10 +225,10 @@ it("creates a tracking link for the configured campaign", async () => {
     campaignId: "5585194803623188142",
     urls: ["https://merchant.example/product"],
     utmSource: "salenoti",
-    utmMedium: "alert_email",
+    utmMedium: "affiliate_fallback",
     utmCampaign: "default",
-    utmContent: "share-deal",
-    subIds: { sub1: "salenoti", sub2: "userhash", sub3: "watchhash" },
+    utmContent: "share_deal",
+    subIds: { sub1: "userhash", sub2: "watchhash", sub3: "share_deal", sub4: "default" },
   });
 
   expect(link.shortLink ?? link.affiliateLink).toContain("http");
@@ -261,12 +260,7 @@ it("falls back to AccessTrade after Shopee breaker-open", async () => {
 ## §6 - Implementation skeleton
 
 ```ts
-import { Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { AccessTradeApiError } from "./errors";
-import { normalizeAccessTradeCampaign, normalizeAccessTradeTrackingLink } from "./normalize";
-import { AccessTradeRateLimitGuard } from "./rate-limit-guard";
-
+// apps/api/src/affiliate/accesstrade/sign.ts
 export function buildAccessTradeHeaders(accessKey: string) {
   return {
     headers: {
@@ -275,6 +269,16 @@ export function buildAccessTradeHeaders(accessKey: string) {
     },
   };
 }
+```
+
+```ts
+// apps/api/src/affiliate/accesstrade/client.ts
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { AccessTradeApiError } from "./errors";
+import { normalizeAccessTradeCampaign, normalizeAccessTradeTrackingLink } from "./normalize";
+import { AccessTradeRateLimitGuard } from "./rate-limit-guard";
+import { buildAccessTradeHeaders } from "./sign";
 
 @Injectable()
 export class AccessTradePublisherClient {
@@ -391,12 +395,13 @@ Internal dependencies:
   "urls": ["https://merchant.example/product"],
   "utm_source": "salenoti",
   "url_enc": true,
-  "utm_medium": "alert_email",
+  "utm_medium": "affiliate_fallback",
   "utm_campaign": "default",
   "utm_content": "share-deal",
-  "sub1": "salenoti",
-  "sub2": "userhash",
-  "sub3": "watchhash"
+  "sub1": "userhash",
+  "sub2": "watchhash",
+  "sub3": "share_deal",
+  "sub4": "default"
 }
 ```
 
@@ -427,7 +432,7 @@ All resolved at authoring time:
 1. The client targets the Vietnam publisher API only. The global JWT-authenticated AccessTrade variant is intentionally deferred.
 2. Fallback uses one configured `ACCESSTRADE_DEFAULT_CAMPAIGN_ID` rather than automatic campaign matching, because the feature needs deterministic behavior before later merchant-routing work lands.
 3. `short_link` is preferred when present; `aff_link` is the deterministic fallback.
-4. The fallback path preserves FR-AFF-002 attribution semantics by mapping source, campaign, user hash, and watchlist hash into AccessTrade tracking fields.
+4. The fallback path preserves FR-AFF-002 attribution semantics by mapping `sub1 = userHash`, `sub2 = watchlistHash` (or `"0"` when no watchlist is supplied), `sub3 = source`, and `sub4 = campaign`; `utm_source = "salenoti"`, `utm_medium = "affiliate_fallback"`, `utm_campaign = campaign`, and `utm_content = source`.
 5. The fallback is only invoked when Shopee fails for provider outage, rate limit, or breaker-open conditions; config and region errors still fail closed.
 
 ## §10 - Failure modes inventory

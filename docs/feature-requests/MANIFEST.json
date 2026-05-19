@@ -30,7 +30,7 @@
     "LEGAL": 2,
     "OBS": 1,
     "WORKER": 2,
-    "AFF": 7,
+    "AFF": 8,
     "WATCH": 3,
     "PRICE": 2,
     "NOTIF": 3,
@@ -97,7 +97,7 @@
       "frs": [
         "FR-AFF-005"
       ],
-      "status": "draft-in-progress"
+      "status": "accepted-2026-05-19"
     },
     {
       "id": "batch-005-p3-authorship-continued",
@@ -106,7 +106,7 @@
       "frs": [
         "FR-AFF-006"
       ],
-      "status": "draft-in-progress"
+      "status": "accepted-2026-05-19"
     },
     {
       "id": "batch-006-p3-authorship-fallback",
@@ -116,13 +116,22 @@
         "FR-AFF-007"
       ],
       "status": "draft-in-progress"
+    },
+    {
+      "id": "batch-007-p3-platform-pivot",
+      "phase": "P3",
+      "authored_at": "2026-05-19",
+      "frs": [
+        "FR-AFF-008"
+      ],
+      "status": "draft-in-progress"
     }
   ],
   "totals": {
-    "fr_count_authored": 29,
-    "fr_count_roadmapped_only": 13,
+    "fr_count_authored": 30,
+    "fr_count_roadmapped_only": 12,
     "fr_count_total_planned": 42,
-    "estimated_effort_hours_authored": 199,
+    "estimated_effort_hours_authored": 207,
     "estimated_effort_hours_total": 346
   },
   "shipped_at": "2026-05-17"

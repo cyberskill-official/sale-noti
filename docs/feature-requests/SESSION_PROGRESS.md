@@ -9,9 +9,9 @@
 ### Backlog + Manifest
 
 - [`BACKLOG.md`](BACKLOG.md) — phase-by-phase index, 29 authored + 13 roadmapped = 42 FRs total.
-- [`MANIFEST.json`](MANIFEST.json) — state file, 6 batches recorded, 12 module FR counters.
+- [`MANIFEST.json`](MANIFEST.json) — state file, 7 batches recorded, 12 module FR counters.
 
-### FRs + Audits (26 shipped P0-P2, 3 P3 drafts in progress)
+### FRs + Audits (26 shipped P0-P2, 2 P3 accepted, 2 P3 drafts in progress)
 
 **P0 · Pre-MVP Foundation** (8 FRs · 8 audits)
 
@@ -70,11 +70,11 @@
 |---|---:|
 | Files written | 60 (backlog + manifest + FR/audit files + phase summaries) |
 | Bytes written | ~380 KB |
-| FRs authored | 28 |
-| FRs roadmapped | 14 |
+| FRs authored | 30 |
+| FRs roadmapped | 13 |
 | Total FRs planned | 42 |
-| Effort sum (authored P0–P2 + P3 drafts) | ~189 hours |
-| Effort sum (all 5 phases) | ~336 hours (~22 person-weeks calendar) |
+| Effort sum (authored P0–P2 + P3 drafts) | ~199 hours |
+| Effort sum (all 5 phases) | ~346 hours (~22 person-weeks calendar) |
 | Audit rounds per FR | 2 (engineering-spec template v1) |
 | Average pre-revision score | 8.3 / 10 |
 | Final score (audited FRs) | 10 / 10 |
@@ -118,9 +118,7 @@ Notable completion work:
 
 ### Current transition — 2026-05-18
 
-P0-P2 are now the shipped baseline. The team is shifting into P3 re-batch and authoring mode, and the first P3 drafts now exist as `FR-AFF-005` for Lazada Affiliate API integration, `FR-AFF-006` for TikTok Shop affiliate discovery, and `FR-AFF-007` for the AccessTrade publisher failover path.
-
-P3 fallback re-batch has now extended to `FR-AFF-007` for the AccessTrade publisher failover path.
+P0-P2 are now the shipped baseline. The team is shifting into P3 re-batch and authoring mode, and the remaining first P3 drafts are `FR-AFF-005` for Lazada Affiliate API integration and `FR-AFF-006` for TikTok Shop affiliate discovery. `FR-AFF-007` for the AccessTrade publisher failover path and `FR-AFF-008` for the `platform` schema pivot have both cleared audit round 2 and are marked accepted.
 
 Verification checkpoint:
 
@@ -167,4 +165,4 @@ The full authoring + audit process is self-contained in this project at [`../FR_
 
 ---
 
-*Session complete. 29 FRs authored; 26 shipped P0-P2 + 3 P3 drafts in progress. BRAIN ledger heartbeat emitted per AGENTS.md §14.*
+*Session complete. 30 FRs authored; 26 shipped P0-P2 + 2 P3 accepted + 2 P3 drafts in progress. BRAIN ledger heartbeat emitted per AGENTS.md §14.*

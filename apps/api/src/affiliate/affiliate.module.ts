@@ -1,5 +1,8 @@
 import { Module } from "@nestjs/common";
 import { BullModule } from "@nestjs/bullmq";
+import { AccessTradeFallbackService } from "./accesstrade/fallback.service";
+import { AccessTradePublisherClient } from "./accesstrade/client";
+import { AccessTradeRateLimitGuard } from "./accesstrade/rate-limit-guard";
 import { ShopeeAffiliateClient } from "./shopee/client";
 import { ShopeeRateLimitGuard } from "./shopee/rate-limit-guard";
 import { TikTokShopAffiliateClient } from "./tiktok/client";
@@ -14,6 +17,9 @@ import { PriceCheckProcessor } from "./price-check.processor";
 @Module({
   imports: [BullModule.registerQueue({ name: "price-check" }, { name: "alert-dispatch" })],
   providers: [
+    AccessTradeRateLimitGuard,
+    AccessTradePublisherClient,
+    AccessTradeFallbackService,
     ShopeeRateLimitGuard,
     ShopeeAffiliateClient,
     TikTokShopRateLimitGuard,
@@ -25,6 +31,8 @@ import { PriceCheckProcessor } from "./price-check.processor";
   ],
   controllers: [DeeplinkController, ProductSearchController],
   exports: [
+    AccessTradePublisherClient,
+    AccessTradeFallbackService,
     ShopeeAffiliateClient,
     TikTokShopAffiliateClient,
     DeeplinkService,

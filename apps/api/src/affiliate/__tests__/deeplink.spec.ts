@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { BadRequestException } from "@nestjs/common";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DeeplinkRateLimitError, DeeplinkService } from "../deeplink.service";
+import { ShopeeApiError } from "../shopee/errors";
 
 const state = vi.hoisted(() => ({
   products: {
@@ -41,16 +42,23 @@ function makeHarness() {
   const shopee = {
     generateShortLink: vi.fn(async () => ({ shortLink: "https://shope.ee/AbCdEf" })),
   };
+  const accessTradeFallback = {
+    generateFallbackLink: vi.fn(async () => ({ url: "https://at.example/fallback", expiresAt: null, cached: false })),
+  };
   const cfg = {
     getOrThrow: vi.fn((key: string) => {
       if (key === "DEEPLINK_SALT") return "0123456789abcdef0123456789abcdef";
       throw new Error(`missing ${key}`);
     }),
+    get: vi.fn((key: string) => {
+      if (key === "ACCESSTRADE_FALLBACK_ENABLED") return "false";
+      return undefined;
+    }),
   };
   const posthog = { capture: vi.fn() };
-  const service = new DeeplinkService(shopee as any, cfg as any, posthog);
+  const service = new DeeplinkService(shopee as any, cfg as any, posthog, accessTradeFallback as any);
   (service as any).sleep = vi.fn(async () => undefined);
-  return { service, shopee, cfg, posthog };
+  return { service, shopee, cfg, posthog, accessTradeFallback };
 }
 
 function seedProduct(url = "https://shopee.vn/ao-thun-i.123456.9876543210") {
@@ -205,5 +213,38 @@ describe("FR-AFF-002 — DeeplinkService", () => {
       service.generate({ userId: "user-1", productId: "123456-9876543210", source: "ext" }),
     ).resolves.toEqual({ url: "https://shope.ee/Racer", expiresAt: null, cached: true });
     expect(shopee.generateShortLink).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to AccessTrade on retryable Shopee failures when enabled", async () => {
+    const { service, shopee, accessTradeFallback, posthog } = makeHarness();
+    (service as any).cfg.get.mockImplementation((key: string) => {
+      if (key === "ACCESSTRADE_FALLBACK_ENABLED") return "true";
+      return undefined;
+    });
+    shopee.generateShortLink.mockRejectedValueOnce(new ShopeeApiError("service_unavailable", "Shopee 503", true));
+
+    const result = await service.generate({
+      userId: "user-1",
+      productId: "123456-9876543210",
+      source: "share_deal",
+      watchlistId: "watch-1",
+      campaign: "default",
+    });
+
+    expect(result).toEqual({ url: "https://at.example/fallback", expiresAt: null, cached: false });
+    expect(accessTradeFallback.generateFallbackLink).toHaveBeenCalledWith(
+      expect.objectContaining({
+        originUrl: "https://shopee.vn/ao-thun-i.123456.9876543210",
+        userId: "user-1",
+        source: "share_deal",
+        watchlistId: "watch-1",
+        campaign: "default",
+        respectOtherPublisher: false,
+      }),
+    );
+    expect(posthog.capture).toHaveBeenCalledWith(
+      "affiliate_link_generated",
+      expect.objectContaining({ cached: false, respect_other_publisher: false }),
+    );
   });
 });

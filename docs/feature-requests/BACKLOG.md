@@ -190,7 +190,7 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 **Phase goal:** prove the architecture scales horizontally (Lazada + TikTok Shop) and that the B2B Price Intelligence pivot is a fundable wedge. Mobile app (React Native) goes out so non-extension users can convert.
 
-**Status:** roadmap rows plus P3 authoring kickoff — `FR-AFF-005`, `FR-AFF-006`, and `FR-AFF-007` are now drafted, while the remaining P3 rows stay roadmap-only until re-batching completes. Will be re-batched after P2 exit metrics are in. Plan refs: §J Phase 3.
+**Status:** roadmap rows plus P3 authoring kickoff — `FR-AFF-005` and `FR-AFF-006` remain authored, while `FR-AFF-007` and `FR-AFF-008` have both been accepted after audit round 2. The remaining P3 rows stay roadmap-only until re-batching completes. Will be re-batched after P2 exit metrics are in. Plan refs: §J Phase 3.
 
 | FR-ID (planned) | Title                                                                               |  Pri   | Phase ref |
 | --------------- | ----------------------------------------------------------------------------------- | :----: | --------- |
@@ -254,4 +254,4 @@ When adding a new FR:
 
 ---
 
-_End of SaleNoti backlog v0.1.0. 26 FRs shipped (2026-05-17), re-audited with implementation traceability (2026-05-18), 16 roadmapped. Re-generate after every status change in the FR files._
+_End of SaleNoti backlog v0.1.0. 30 FRs authored (26 shipped P0-P2 + 2 P3 accepted + 2 P3 drafts), 12 roadmapped-only. Re-generate after every status change in the FR files._
