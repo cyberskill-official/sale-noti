@@ -3,7 +3,7 @@ id: FR-LEGAL-002
 title: "Affiliate disclosure surfaces — listing · onboarding · alert email · every affiliate-tagged link · transparency report · 5-ethics firewall"
 module: LEGAL
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: I
 phase: P0

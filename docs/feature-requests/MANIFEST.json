@@ -2,7 +2,7 @@
   "version": "0.1.0",
   "project": "sale-noti",
   "authored_at": "2026-05-16",
-  "authoring_workflow_ref": "../FR_AUTHORING_WORKFLOW.md",
+  "authoring_workflow_ref": "../feature-request-audit skill",
   "source_plan": "../SaleNoti — Plan.pdf",
   "modules": {
     "AUTH": "auth/",

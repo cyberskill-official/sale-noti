@@ -3,7 +3,7 @@ id: FR-AUTH-002
 title: "Email magic-link sign-in (Resend transactional + 15-min single-use token)"
 module: AUTH
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P0
@@ -33,7 +33,6 @@ disallowed_tools:
   - "allow the same token to be consumed more than once"
   - "issue magic-link without disclosing affiliate program (FR-LEGAL-002 §2)"
 risk_if_skipped: "Without magic-link, every user MUST have a Google account. Plan §F1 personas (Mẹ bỉm sữa 25-35, Sinh viên) include a non-trivial subset without Google preference; offering Email+Pass is heavier (password reset flow, leak risk). Magic-link is the canonical lightweight fallback."
-
 ---
 
 ## §1 — Description (BCP-14 normative)

@@ -3,7 +3,7 @@ id: FR-NOTIF-003
 title: "Telegram bot — `/start <linkToken>` daily-rotated binding · per-user channel · shared idempotency with FR-NOTIF-001/002 · disclosure-on-every-message"
 module: NOTIF
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P2
@@ -32,7 +32,6 @@ disallowed_tools:
   - "send PII to Telegram beyond what user explicitly consented to receive"
   - "expose `TELEGRAM_BOT_TOKEN` to any client-side code or log destination"
 risk_if_skipped: "Plan §C7 explicit: 'Telegram bot integration (đề xuất bonus, không có trong plan trưởng nhóm — cực kỳ phù hợp VN)'. Vietnamese deal-hunter community lives on Telegram channels (plan §A2: 'Sàn Mã Giảm Giá Shopee Lazada Tiki 666K, Sàn Sale Shopee, Nghiện Shopee'). Web Push fails on iOS Safari non-PWA (~30% of VN active internet population); Telegram fills that gap. Without this channel, plan §I Phase 2 retention metric (D30 ≥ 35%) is at risk because iOS users churn without a reliable alert channel."
-
 ---
 
 ## §1 — Description (BCP-14 normative)

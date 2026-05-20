@@ -3,7 +3,7 @@ id: FR-AFF-004
 title: "`productSearch` resolver with 5-min Redis cache + per-user rate-limit + PII keyword redaction + XSS strip"
 module: AFF
 priority: SHOULD
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P1
@@ -31,7 +31,6 @@ disallowed_tools:
   - "return raw HTML from Shopee productName (XSS risk if Shopee response is malicious)"
   - "send raw keyword to PostHog when it matches PII shape (email, phone, CCCD)"
 risk_if_skipped: "Mega Sale Mode UI (FR-GROW-003) and the public deal page need a search surface so users can discover products without pasting URLs. Without productSearch, all discovery is paste-URL-only — a fragile UX that throttles user acquisition. SEO content drive on `/megasale/<slug>` (plan §F2 #5) depends on this for cross-linking related deals."
-
 ---
 
 ## §1 — Description (BCP-14 normative)

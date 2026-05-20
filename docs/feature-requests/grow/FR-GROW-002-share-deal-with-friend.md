@@ -3,7 +3,7 @@ id: FR-GROW-002
 title: "'Chia deal cho bạn' — copy-share user-tagged Affiliate deeplink + landing page with 'Theo dõi giá' CTA"
 module: GROW
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P2

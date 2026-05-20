@@ -3,7 +3,7 @@ id: FR-AUTH-001
 title: "Google OAuth via Auth.js v5.0.0-beta.25 (pinned, no `latest`)"
 module: AUTH
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P0
@@ -35,7 +35,6 @@ disallowed_tools:
   - "store refresh token in `localStorage` or non-HTTP-only cookie"
   - "log raw Google ID token to Sentry/PostHog"
 risk_if_skipped: "Without pinned Auth.js v5 and Google OAuth, every other FR is blocked — there is no user identity to attach a watchlist, affiliate sub-id, or billing record to. Using `latest` re-introduces the pre-1.0 API drift risk that plan §C8 calls out (Auth.js v5 has been in beta for >12 months; minor versions ship breaking changes regularly)."
-
 ---
 
 ## §1 — Description (BCP-14 normative)

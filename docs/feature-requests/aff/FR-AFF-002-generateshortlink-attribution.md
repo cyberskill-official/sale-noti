@@ -3,7 +3,7 @@ id: FR-AFF-002
 title: "`generateShortLink(originUrl, subIds[])` deeplink with userId + watchlistId attribution sub-id"
 module: AFF
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P1
@@ -31,7 +31,6 @@ disallowed_tools:
   - "log raw `shortUrl` or `originUrl` in PostHog events (only hashed dimensions allowed)"
   - "rank or filter products by `commissionRate` (FR-LEGAL-002 §1 #10)"
 risk_if_skipped: "Plan §B2 makes generateShortLink the canonical commission attribution channel. Without per-userId subId attribution we can't (a) join the Shopee commission webhook back to the user who clicked, (b) compute the quarterly Transparency Report's per-source revenue breakdown required by FR-LEGAL-002 §1 #7, (c) settle the founder's open-source revenue calculator on /legal/affiliate. Every alert email, push notification, Telegram message, share-deal landing, and extension button uses this service; if it ships wrong the entire P1 attribution layer breaks."
-
 ---
 
 ## §1 — Description (BCP-14 normative)

@@ -3,7 +3,7 @@ id: FR-BILL-001
 title: "Freemium tiers — Free / Pro 39K₫ / Pro+ 89K₫ — Stripe + VNPay + MoMo · webhook lifecycle · grace period · idempotency"
 module: BILL
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P2

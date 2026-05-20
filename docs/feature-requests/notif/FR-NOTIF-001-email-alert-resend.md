@@ -3,7 +3,7 @@ id: FR-NOTIF-001
 title: "Email alert via Resend — React Email template · idempotency-key dedup · 365-day TTL audit log · suppression list"
 module: NOTIF
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P1

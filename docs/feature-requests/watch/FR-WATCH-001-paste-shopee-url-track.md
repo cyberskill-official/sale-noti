@@ -3,7 +3,7 @@ id: FR-WATCH-001
 title: "`POST /v1/products/track` — paste shopee.vn URL → resolve via Affiliate API → upsert product + watchlist row"
 module: WATCH
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P1

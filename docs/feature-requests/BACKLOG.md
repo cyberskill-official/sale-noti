@@ -3,7 +3,7 @@
 **Owner:** Stephen Cheng (Founder, CyberSkill) · **Status:** v0.1.0 — P0-P2 shipped + QA traceability, 2026-05-18
 **Source of truth:** the markdown files in this folder. This index is regenerated when FRs land or change status.
 **Source plan:** [`../SaleNoti — Plan.pdf`](../SaleNoti%20—%20Plan.pdf)
-**Authoring playbook:** [`../FR_AUTHORING_WORKFLOW.md`](../FR_AUTHORING_WORKFLOW.md) (project-local)
+**Authoring playbook:** `../feature-request-audit skill` (see feature-request skills) (project-local)
 
 ---
 
@@ -55,9 +55,9 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 | FR-ID           | Title                                                            | Pri  |        Status        | Depends on  | Effort |
 | --------------- | ---------------------------------------------------------------- | :--: | :------------------: | ----------- | -----: |
-| **FR-AUTH-001** | Google OAuth via Auth.js v5.0.0-beta.25 (pinned, no `latest`)    | MUST | shipped + mocked-dependency (2026-05-18) | —           |     6h |
-| **FR-AUTH-002** | Email magic-link sign-in (Resend transactional + 15-min token)   | MUST | shipped + mocked-dependency (2026-05-18) | FR-AUTH-001 |     5h |
-| **FR-AUTH-003** | JWT session (15-min access + 30-day refresh in HTTP-only cookie) | MUST | shipped + strict-audited (2026-05-18) | FR-AUTH-001 |     5h |
+| **FR-AUTH-001** | Google OAuth via Auth.js v5.0.0-beta.25 (pinned, no `latest`)    | MUST | done | —           |     6h |
+| **FR-AUTH-002** | Email magic-link sign-in (Resend transactional + 15-min token)   | MUST | done | FR-AUTH-001 |     5h |
+| **FR-AUTH-003** | JWT session (15-min access + 30-day refresh in HTTP-only cookie) | MUST | done | FR-AUTH-001 |     5h |
 
 ### P0.2 — LEGAL · PDPL + affiliate compliance
 
@@ -65,8 +65,8 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 | FR-ID            | Title                                                                                                                   | Pri  |        Status        | Depends on | Effort |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------- | :--: | :------------------: | ---------- | -----: |
-| **FR-LEGAL-001** | PDPL Art. 24/28 — DPIA filed + DPO appointed + A05 notification within 72h breach window                                | MUST | shipped + mocked-dependency (2026-05-18) | —          |     6h |
-| **FR-LEGAL-002** | Affiliate disclosure surfaces (Chrome Web Store listing · onboarding · every alert email · every affiliate-tagged link) | MUST | shipped + strict-audited (2026-05-18) | —          |     4h |
+| **FR-LEGAL-001** | PDPL Art. 24/28 — DPIA filed + DPO appointed + A05 notification within 72h breach window                                | MUST | done | —          |     6h |
+| **FR-LEGAL-002** | Affiliate disclosure surfaces (Chrome Web Store listing · onboarding · every alert email · every affiliate-tagged link) | MUST | done | —          |     4h |
 
 ### P0.3 — OBS · observability baseline
 
@@ -74,7 +74,7 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 | FR-ID          | Title                                                                                          | Pri  |        Status        | Depends on | Effort |
 | -------------- | ---------------------------------------------------------------------------------------------- | :--: | :------------------: | ---------- | -----: |
-| **FR-OBS-001** | Sentry (errors) + PostHog (product analytics + feature flags) + Better Stack (uptime) baseline | MUST | shipped + mocked-dependency (2026-05-18) | —          |     4h |
+| **FR-OBS-001** | Sentry (errors) + PostHog (product analytics + feature flags) + Better Stack (uptime) baseline | MUST | done | —          |     4h |
 
 ### P0.4 — WORKER · queue + adaptive scheduler
 
@@ -82,8 +82,8 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 | FR-ID             | Title                                                                                                     | Pri  |        Status        | Depends on    | Effort |
 | ----------------- | --------------------------------------------------------------------------------------------------------- | :--: | :------------------: | ------------- | -----: |
-| **FR-WORKER-001** | BullMQ + Redis (Upstash free tier) baseline + Bull Board ops dashboard                                    | MUST | shipped + mocked-dependency (2026-05-18) | —             |     5h |
-| **FR-WORKER-002** | Adaptive scheduling — `hot` 30min / `mid` 6h / `low` 24h cadence under 1000 req/min Shopee API rate limit | MUST | shipped + mocked-dependency (2026-05-18) | FR-WORKER-001 |     6h |
+| **FR-WORKER-001** | BullMQ + Redis (Upstash free tier) baseline + Bull Board ops dashboard                                    | MUST | done | —             |     5h |
+| **FR-WORKER-002** | Adaptive scheduling — `hot` 30min / `mid` 6h / `low` 24h cadence under 1000 req/min Shopee API rate limit | MUST | done | FR-WORKER-001 |     6h |
 
 ---
 
@@ -101,10 +101,10 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 | FR-ID          | Title                                                                                                  |  Pri   |                Status                 | Depends on    | Effort |
 | -------------- | ------------------------------------------------------------------------------------------------------ | :----: | :-----------------------------------: | ------------- | -----: |
-| **FR-AFF-001** | Shopee Affiliate Open API client — GraphQL POST · SHA256 signed header · 1000 req/min rate-limit aware |  MUST  | shipped + strict-audited (2026-05-18) | FR-WORKER-002 |     8h |
-| **FR-AFF-002** | `generateShortLink(originUrl, subIds[])` deeplink with userId + watchlistId attribution sub-id         |  MUST  | shipped + strict-audited (2026-05-18) | FR-AFF-001    |     4h |
-| **FR-AFF-003** | `productOfferV2` / `shopOffer` resolver for commission rate ingest + denormalised cache                |  MUST  | shipped + strict-audited (2026-05-18) | FR-AFF-001    |     5h |
-| **FR-AFF-004** | `productSearch` resolver with 5–10 min cache + per-tenant rate-limit budget                            | SHOULD | shipped + mocked-dependency (2026-05-18) | FR-AFF-001    |     4h |
+| **FR-AFF-001** | Shopee Affiliate Open API client — GraphQL POST · SHA256 signed header · 1000 req/min rate-limit aware |  MUST  | done | FR-WORKER-002 |     8h |
+| **FR-AFF-002** | `generateShortLink(originUrl, subIds[])` deeplink with userId + watchlistId attribution sub-id         |  MUST  | done | FR-AFF-001    |     4h |
+| **FR-AFF-003** | `productOfferV2` / `shopOffer` resolver for commission rate ingest + denormalised cache                |  MUST  | done | FR-AFF-001    |     5h |
+| **FR-AFF-004** | `productSearch` resolver with 5–10 min cache + per-tenant rate-limit budget                            | SHOULD | done | FR-AFF-001    |     4h |
 
 ### P1.2 — WATCH · watchlist + alert config
 
@@ -112,9 +112,9 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 | FR-ID            | Title                                                                                                              | Pri  |        Status        | Depends on             | Effort |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------ | :--: | :------------------: | ---------------------- | -----: |
-| **FR-WATCH-001** | `POST /v1/products/track` — paste shopee.vn URL → resolve via Affiliate API → upsert product + watchlist row       | MUST | shipped + mocked-dependency (2026-05-18) | FR-AFF-001, FR-AFF-003 |     6h |
-| **FR-WATCH-002** | `PATCH /v1/watchlists/:id` — configure alert triggers (`absolute_drop` / `pct_drop` / `lowest_30d` / `flash_sale`) | MUST | shipped + strict-audited (2026-05-18) | FR-WATCH-001           |     5h |
-| **FR-WATCH-003** | `GET /v1/watchlists` list + pause/resume/delete + free-tier 10-product cap enforcement                             | MUST | shipped + strict-audited (2026-05-18) | FR-WATCH-001           |     4h |
+| **FR-WATCH-001** | `POST /v1/products/track` — paste shopee.vn URL → resolve via Affiliate API → upsert product + watchlist row       | MUST | done | FR-AFF-001, FR-AFF-003 |     6h |
+| **FR-WATCH-002** | `PATCH /v1/watchlists/:id` — configure alert triggers (`absolute_drop` / `pct_drop` / `lowest_30d` / `flash_sale`) | MUST | done | FR-WATCH-001           |     5h |
+| **FR-WATCH-003** | `GET /v1/watchlists` list + pause/resume/delete + free-tier 10-product cap enforcement                             | MUST | done | FR-WATCH-001           |     4h |
 
 ### P1.3 — PRICE · price history (TimescaleDB)
 
@@ -122,8 +122,8 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 | FR-ID            | Title                                                                                                       | Pri  |                Status                 | Depends on                 | Effort |
 | ---------------- | ----------------------------------------------------------------------------------------------------------- | :--: | :-----------------------------------: | -------------------------- | -----: |
-| **FR-PRICE-001** | TimescaleDB `price_history` hypertable + 30-min rolling continuous aggregate + 30/90 day retention policies | MUST | shipped + strict-audited (2026-05-18) | —                          |     6h |
-| **FR-PRICE-002** | `GET /v1/products/:id/history?range=30d` — chart-ready time-series for FE                                   | MUST | shipped + strict-audited (2026-05-18) | FR-PRICE-001, FR-WATCH-001 |     4h |
+| **FR-PRICE-001** | TimescaleDB `price_history` hypertable + 30-min rolling continuous aggregate + 30/90 day retention policies | MUST | done | —                          |     6h |
+| **FR-PRICE-002** | `GET /v1/products/:id/history?range=30d` — chart-ready time-series for FE                                   | MUST | done | FR-PRICE-001, FR-WATCH-001 |     4h |
 
 ### P1.4 — NOTIF · email alert dispatch + web push
 
@@ -131,8 +131,8 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 | FR-ID            | Title                                                                                         |  Pri   |        Status        | Depends on                 | Effort |
 | ---------------- | --------------------------------------------------------------------------------------------- | :----: | :------------------: | -------------------------- | -----: |
-| **FR-NOTIF-001** | Email alert via Resend — React Email template · idempotency-key dedup · 365-day TTL audit log |  MUST  | shipped + mocked-dependency (2026-05-18) | FR-WATCH-002, FR-LEGAL-002 |     6h |
-| **FR-NOTIF-002** | Web Push (VAPID + service worker) — Chrome/Edge/Android only; iOS falls back to email         | SHOULD | shipped + mocked-dependency (2026-05-19) | FR-NOTIF-001               |     5h |
+| **FR-NOTIF-001** | Email alert via Resend — React Email template · idempotency-key dedup · 365-day TTL audit log |  MUST  | done | FR-WATCH-002, FR-LEGAL-002 |     6h |
+| **FR-NOTIF-002** | Web Push (VAPID + service worker) — Chrome/Edge/Android only; iOS falls back to email         | SHOULD | done | FR-NOTIF-001               |     5h |
 
 ### P1.5 — EXT · browser extension MV3 (Lite scope)
 
@@ -140,7 +140,7 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 | FR-ID          | Title                                                                                                                                                    | Pri  |        Status        | Depends on                              | Effort |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | :--: | :------------------: | --------------------------------------- | -----: |
-| **FR-EXT-001** | Chrome MV3 extension — "+ Theo dõi giá" floating button on `*://*.shopee.vn/-i.*.*` product pages; disclosure-first; no `<all_urls>`; no cart-API scrape | MUST | shipped + strict-audited (2026-05-19) | FR-AUTH-003, FR-WATCH-001, FR-LEGAL-002 |    12h |
+| **FR-EXT-001** | Chrome MV3 extension — "+ Theo dõi giá" floating button on `*://*.shopee.vn/-i.*.*` product pages; disclosure-first; no `<all_urls>`; no cart-API scrape | MUST | done | FR-AUTH-003, FR-WATCH-001, FR-LEGAL-002 |    12h |
 
 ---
 
@@ -156,7 +156,7 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 | FR-ID           | Title                                                                                                                                 | Pri  |        Status        | Depends on                | Effort |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------- | :--: | :------------------: | ------------------------- | -----: |
-| **FR-BILL-001** | Freemium tiers — Free (10 products, 6h check) · Pro 39K₫/mo · Pro+ 89K₫/mo — Stripe primary + VNPay/MoMo VN cards · webhook lifecycle | MUST | shipped + mocked-dependency (2026-05-19) | FR-AUTH-003, FR-WATCH-003 |    12h |
+| **FR-BILL-001** | Freemium tiers — Free (10 products, 6h check) · Pro 39K₫/mo · Pro+ 89K₫/mo — Stripe primary + VNPay/MoMo VN cards · webhook lifecycle | MUST | done | FR-AUTH-003, FR-WATCH-003 |    12h |
 
 ### P2.2 — NOTIF · Telegram bot + multi-channel routing
 
@@ -164,7 +164,7 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 | FR-ID            | Title                                                                                         | Pri  |        Status        | Depends on   | Effort |
 | ---------------- | --------------------------------------------------------------------------------------------- | :--: | :------------------: | ------------ | -----: |
-| **FR-NOTIF-003** | Telegram bot — `/start <userId>` link · per-user push channel · same idempotency log as email | MUST | shipped + mocked-dependency (2026-05-19) | FR-NOTIF-001 |     6h |
+| **FR-NOTIF-003** | Telegram bot — `/start <userId>` link · per-user push channel · same idempotency log as email | MUST | done | FR-NOTIF-001 |     6h |
 
 ### P2.3 — GROW · viral loops + referrals + Mega Sale Mode
 
@@ -172,9 +172,9 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 | FR-ID           | Title                                                                                                        |  Pri   |        Status        | Depends on                 | Effort |
 | --------------- | ------------------------------------------------------------------------------------------------------------ | :----: | :------------------: | -------------------------- | -----: |
-| **FR-GROW-001** | Referral program — invite 3 friends → unlock Pro 1 month; viral coefficient k≥0.4 target                     |  MUST  | shipped + strict-audited (2026-05-19) | FR-AUTH-003, FR-BILL-001   |     6h |
-| **FR-GROW-002** | "Chia deal cho bạn" — copy-share user-tagged Affiliate deeplink + landing page with TT "Theo dõi giá" CTA    |  MUST  | shipped + strict-audited (implemented-scope, 2026-05-19) | FR-AFF-002, FR-NOTIF-001   |     5h |
-| **FR-GROW-003** | Mega Sale Mode — event-themed UI · gamification leaderboard · 7-day-pre push · auto-tweet/Facebook auto-post | SHOULD | shipped + strict-audited (implemented-scope, 2026-05-19) | FR-NOTIF-001, FR-NOTIF-002 |     8h |
+| **FR-GROW-001** | Referral program — invite 3 friends → unlock Pro 1 month; viral coefficient k≥0.4 target                     |  MUST  | done | FR-AUTH-003, FR-BILL-001   |     6h |
+| **FR-GROW-002** | "Chia deal cho bạn" — copy-share user-tagged Affiliate deeplink + landing page with TT "Theo dõi giá" CTA    |  MUST  | done | FR-AFF-002, FR-NOTIF-001   |     5h |
+| **FR-GROW-003** | Mega Sale Mode — event-themed UI · gamification leaderboard · 7-day-pre push · auto-tweet/Facebook auto-post | SHOULD | done | FR-NOTIF-001, FR-NOTIF-002 |     8h |
 
 ### P2.4 — ADMIN · B2B contact form (Price Intelligence lead capture)
 
@@ -182,7 +182,7 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 | FR-ID            | Title                                                                                       |  Pri   |        Status        | Depends on | Effort |
 | ---------------- | ------------------------------------------------------------------------------------------- | :----: | :------------------: | ---------- | -----: |
-| **FR-ADMIN-001** | Public B2B contact form — lead capture for Mall/Brand sellers wanting price-intel dashboard | SHOULD | shipped + mocked-dependency (2026-05-19) | —          |     3h |
+| **FR-ADMIN-001** | Public B2B contact form — lead capture for Mall/Brand sellers wanting price-intel dashboard | SHOULD | done | —          |     3h |
 
 ---
 
@@ -192,18 +192,18 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 **Status:** roadmap rows plus P3 authoring kickoff — `FR-AFF-005` and `FR-AFF-006` remain authored, while `FR-AFF-007` and `FR-AFF-008` have both been accepted after audit round 2. The remaining P3 rows stay roadmap-only until re-batching completes. Will be re-batched after P2 exit metrics are in. Plan refs: §J Phase 3.
 
-| FR-ID (planned) | Title                                                                               |  Pri   | Phase ref |
+| FR-ID (planned) | Title                                                                               |  Pri   | ready_to_implement |
 | --------------- | ----------------------------------------------------------------------------------- | :----: | --------- |
-| FR-AFF-005      | Lazada Affiliate API integration (parallel to Shopee)                               |  MUST  | P3        |
-| FR-AFF-006      | TikTok Shop affiliate integration (if public API ready)                             | SHOULD | P3        |
-| FR-WATCH-004    | React Native / Flutter mobile native app — re-use Phase 1 logic                     |  MUST  | P3        |
-| FR-NOTIF-004    | Mobile push (FCM) — primary channel for mobile users                                |  MUST  | P3        |
-| FR-ADMIN-002    | B2B Price Intelligence Dashboard — historical pricing for sellers/brands            |  MUST  | P3        |
-| FR-ADMIN-003    | Coupon aggregator (Honey-trap-aware design — disclosure-first, no override)         | COULD  | P3        |
-| FR-ADMIN-004    | Multi-region routing — Singapore primary, SG MongoDB Atlas region                   |  MUST  | P3        |
-| FR-AFF-007      | Generic Affiliate Network fallback (AccessTrade publisher) when Shopee direct fails |  MUST  | P3        |
-| FR-AFF-008      | Pivot-ready architecture — `platform` field on PriceHistory + Product collections   |  MUST  | P3        |
-| FR-OBS-002      | Tail-sampling 10/100% + tenant-aware Grafana scoping for B2B customers              |  MUST  | P3        |
+| FR-AFF-005      | Lazada Affiliate API integration (parallel to Shopee)                               |  MUST  | ready_to_implement |
+| FR-AFF-006      | TikTok Shop affiliate integration (if public API ready)                             | SHOULD | ready_to_implement |
+| FR-WATCH-004    | React Native / Flutter mobile native app — re-use Phase 1 logic                     |  MUST  | ready_to_implement |
+| FR-NOTIF-004    | Mobile push (FCM) — primary channel for mobile users                                |  MUST  | ready_to_implement |
+| FR-ADMIN-002    | B2B Price Intelligence Dashboard — historical pricing for sellers/brands            |  MUST  | ready_to_implement |
+| FR-ADMIN-003    | Coupon aggregator (Honey-trap-aware design — disclosure-first, no override)         | COULD  | ready_to_implement |
+| FR-ADMIN-004    | Multi-region routing — Singapore primary, SG MongoDB Atlas region                   |  MUST  | ready_to_implement |
+| FR-AFF-007      | Generic Affiliate Network fallback (AccessTrade publisher) when Shopee direct fails |  MUST  | ready_to_implement |
+| FR-AFF-008      | Pivot-ready architecture — `platform` field on PriceHistory + Product collections   |  MUST  | ready_to_implement |
+| FR-OBS-002      | Tail-sampling 10/100% + tenant-aware Grafana scoping for B2B customers              |  MUST  | ready_to_implement |
 
 ---
 
@@ -213,14 +213,14 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 **Status:** roadmap rows only. Plan refs: §J Phase 4, §K2 Horizontal expansion SEA.
 
-| FR-ID (planned) | Title                                                                                            |  Pri   | Phase ref |
+| FR-ID (planned) | Title                                                                                            |  Pri   | ready_to_implement |
 | --------------- | ------------------------------------------------------------------------------------------------ | :----: | --------- |
-| FR-AFF-009      | Localize Shopee Affiliate to one of `{TH, PH, MY, ID}` — Thai language + currency + KOC roster   |  MUST  | P4        |
-| FR-PRICE-003    | ML deal-scoring model — classify each detected price drop as "real deal" vs "false alarm"        |  MUST  | P4        |
-| FR-WATCH-005    | Smart wishlist — recommend similar-product price targets from history embedding similarity       | SHOULD | P4        |
-| FR-PRICE-004    | Price prediction model — 7-day forward forecast (LightGBM baseline + LSTM upgrade)               | COULD  | P4        |
-| FR-ADMIN-005    | Sponsored deals — paid "Top deal hôm nay" placement; labelled "Tài trợ" with disclosure          | COULD  | P4        |
-| FR-ADMIN-006    | Data licensing API — sell price-history aggregates to market research firms (~$1K/mo per client) | COULD  | P4        |
+| FR-AFF-009      | Localize Shopee Affiliate to one of `{TH, PH, MY, ID}` — Thai language + currency + KOC roster   |  MUST  | ready_to_implement |
+| FR-PRICE-003    | ML deal-scoring model — classify each detected price drop as "real deal" vs "false alarm"        |  MUST  | ready_to_implement |
+| FR-WATCH-005    | Smart wishlist — recommend similar-product price targets from history embedding similarity       | SHOULD | ready_to_implement |
+| FR-PRICE-004    | Price prediction model — 7-day forward forecast (LightGBM baseline + LSTM upgrade)               | COULD  | ready_to_implement |
+| FR-ADMIN-005    | Sponsored deals — paid "Top deal hôm nay" placement; labelled "Tài trợ" with disclosure          | COULD  | ready_to_implement |
+| FR-ADMIN-006    | Data licensing API — sell price-history aggregates to market research firms (~$1K/mo per client) | COULD  | ready_to_implement |
 
 ---
 
@@ -243,7 +243,7 @@ These are not FRs but live audit attention points lifted from plan §H (Risk Mat
 
 ## §8 — Manifest
 
-Source state file: [`MANIFEST.json`](MANIFEST.json) — tracks per-module FR counters and batch history. Maintained manually at MVP scale per [`../FR_AUTHORING_WORKFLOW.md`](../FR_AUTHORING_WORKFLOW.md) §3.
+Source state file: [`MANIFEST.json`](MANIFEST.json) — tracks per-module FR counters and batch history. Maintained manually at MVP scale per `../feature-request-audit skill` (see feature-request skills) §3.
 
 When adding a new FR:
 

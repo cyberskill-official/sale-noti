@@ -3,7 +3,7 @@ id: FR-WATCH-003
 title: "`GET /v1/watchlists` list + `PATCH` pause/resume + `DELETE` soft-delete + free-tier 10-product cap enforcement"
 module: WATCH
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P1
@@ -29,7 +29,6 @@ disallowed_tools:
   - "skip the free-tier cap on reactivation (Pro→Free downgrade reopens this attack)"
   - "return commissionRate field to client (FR-LEGAL-002 §1 #10 — informational only, never user-facing)"
 risk_if_skipped: "Without list+pause+delete, users can only add — there's no exit from a watchlist they no longer care about, no way to step away from alerts without losing history, no way to manage their 10-product cap. Plan §I phase 1 'Products tracked ≥ 10000' depends on users actively curating; D7 retention dies. The free-tier 10-product cap is the central upgrade trigger (plan §E2 'limit 10 products + Mega Sale event tới (FOMO)') — getting the enforcement wrong on reactivation lets users bypass billing."
-
 ---
 
 ## §1 — Description (BCP-14 normative)

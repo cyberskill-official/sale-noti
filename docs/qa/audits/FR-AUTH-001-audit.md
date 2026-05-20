@@ -188,3 +188,42 @@ Browser verification final states:
 - `/auth/sign-in` initially shows the disclosure gate with disabled `Tiếp tục`.
 - After checking `Tôi đã hiểu và đồng ý`, the page shows `Sign in with Google` and the magic-link form.
 - Clicking `Sign in with Google` with sandbox credentials reaches Google's OAuth error page with `Error 401: invalid_client`, proving the app reaches the provider boundary and real credentials are the only remaining live dependency.
+
+## Rework Mode Evidence — 2026-05-20 23:26 ICT
+
+The `chief-technology-officer/ship-feature-requests` workflow was invoked in `--rework` mode for `FR-AUTH-001`. The CUO CLI selected `MockInvoker` because `cyberos-skill` is not installed on this machine; invocation artefacts were written under `.workflow-runs/ship-feature-requests-rework-20260520/FR-AUTH-001/`. The real implementation verification was therefore run directly against the repository.
+
+Rework decision:
+
+- Kept the existing Auth.js implementation, callback rate limiter, provider-boundary handoff packet, and mocked Google contract tests because they still match FR-AUTH-001.
+- Added integration coverage for the two previously under-covered Mongo fail-closed branches: `findOneAndUpdate` returning `null`, and Mongo throwing an exception with Sentry evidence.
+- No production code changed.
+
+Raw focused rework output:
+
+```text
+$ pnpm --filter @salenoti/web exec vitest run src/auth.spec.ts src/server/auth/__tests__/google-sign-in.spec.ts src/server/auth/__tests__/google-callback-rate-limit.spec.ts --coverage --coverage.include=src/auth.ts --coverage.include=src/server/auth/google-sign-in.ts --coverage.include=src/server/auth/google-callback-rate-limit.ts --coverage.reporter=text
+Test Files  3 passed (3)
+Tests       13 passed (13)
+Coverage    src/auth.ts 100/100/100/100; src/server/auth/google-sign-in.ts 100/100/100/100; src/server/auth/google-callback-rate-limit.ts 100/95.83/100/100
+
+$ pnpm --filter @salenoti/web exec vitest run tests/integration/auth.google.spec.ts --config vitest.integration.config.ts --coverage --coverage.include=src/server/users/upsert-on-signin.ts --coverage.reporter=text
+Test Files  1 passed (1)
+Tests       7 passed (7)
+Coverage    src/server/users/upsert-on-signin.ts 100/100/100/100
+
+$ pnpm --filter @salenoti/web typecheck
+tsc --noEmit passed
+
+$ pnpm --filter @salenoti/web test:e2e
+Test Files  1 passed (1)
+Tests       3 passed (3)
+
+$ pnpm --filter @salenoti/web lint
+eslint passed
+
+$ node scripts/fr-check.mjs && node scripts/legal-check.mjs
+fr-check passed; legal-check passed
+```
+
+Residual live gate remains unchanged: real Google OAuth consent and callback p95 evidence require a configured Google Cloud OAuth client and manual/staging test account, per `docs/qa/FR-AUTH-001-google-oauth-handoff.md`.

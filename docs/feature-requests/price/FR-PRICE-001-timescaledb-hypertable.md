@@ -3,7 +3,7 @@ id: FR-PRICE-001
 title: "TimescaleDB `price_history` hypertable + 30-min rolling continuous aggregate + 30/90/730-day retention policies"
 module: PRICE
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P1

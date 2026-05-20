@@ -3,7 +3,7 @@ id: FR-WORKER-001
 title: "BullMQ + Redis (Upstash) baseline + Bull Board ops dashboard"
 module: WORKER
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P0
@@ -32,7 +32,6 @@ disallowed_tools:
   - "expose Bull Board without auth"
   - "use Inngest or Trigger.dev (plan §C4: pricing compute-seconds is too expensive at 10K products × 60 min)"
 risk_if_skipped: "Plan §C4 is explicit about BullMQ + Redis. Inngest's compute-second pricing breaks unit economics at 10K products × 60 min checks (~170K jobs/day). Without baseline queue, FR-WORKER-002 (adaptive scheduler), FR-AFF-001 (price check), FR-NOTIF-001 (alert dispatch) all block."
-
 ---
 
 ## §1 — Description (BCP-14 normative)

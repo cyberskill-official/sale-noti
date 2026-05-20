@@ -3,7 +3,7 @@ id: FR-LEGAL-001
 title: "PDPL Decree 13/2023 — DPIA filed + DPO appointed + A05 72h-breach notification + DSR endpoints + cross-border transfer impact assessment"
 module: LEGAL
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: I
 phase: P0

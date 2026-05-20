@@ -3,7 +3,7 @@ id: FR-OBS-001
 title: "Observability baseline — Sentry (errors + traces) + PostHog (analytics + flags) + Better Stack (uptime + logs + heartbeats) · PII redaction · daily metrics digest"
 module: OBS
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P0

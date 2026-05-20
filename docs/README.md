@@ -4,7 +4,7 @@
 
 **Founder:** Stephen Cheng (Trịnh Thái Anh) · CyberSkill JSC
 **Source plan:** [`SaleNoti — Plan.pdf`](SaleNoti%20—%20Plan.pdf) (34 pages, Vietnamese, May 2026)
-**Authoring workflow:** [`FR_AUTHORING_WORKFLOW.md`](FR_AUTHORING_WORKFLOW.md) (project-local)
+**Authoring workflow:** `feature-request-audit` skill (see feature-request skills) (project-local)
 **Memory protocol:** [`../AGENTS.md`](../AGENTS.md) (proxy to the shared protocol)
 
 ---
@@ -26,7 +26,7 @@ sale-noti/
     │   └── FR_TRACEABILITY.md — one-by-one FR implementation audit
     ├── growth/
     │   └── MANUAL_SOCIAL_CONTENT_CALENDAR.md — manually gated social copy/schedule
-    ├── FR_AUTHORING_WORKFLOW.md   — project-local authoring + audit playbook
+    ├── feature-request-audit skill   — project-local authoring + audit playbook
     ├── SaleNoti — Plan.pdf   — 34-page founder plan (input)
     └── feature-requests/     — the engineering surface
         ├── BACKLOG.md        — phase-by-phase index, 42 FRs
@@ -141,7 +141,7 @@ Plan §A3 closing line: *"Đây không phải là nice-to-have. Đây là moat."
 
 ## §6 — Where to extend
 
-When new features ship, they MUST be added to BACKLOG.md AND get a FR markdown before code lands. The full procedure (manual at MVP scale) lives in [`FR_AUTHORING_WORKFLOW.md`](FR_AUTHORING_WORKFLOW.md). The short loop:
+When new features ship, they MUST be added to BACKLOG.md AND get a FR markdown before code lands. The full procedure (manual at MVP scale) lives in `feature-request-audit` skill (see feature-request skills). The short loop:
 
 1. Identify module + phase; pick the next dense FR-ID for that module.
 2. Add a row to `feature-requests/BACKLOG.md` in the right phase + slice section.

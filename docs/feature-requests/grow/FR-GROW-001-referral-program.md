@@ -3,7 +3,7 @@ id: FR-GROW-001
 title: "Referral program — invite 3 qualified friends → unlock Pro 1 month; fraud-resistant; viral coefficient k≥0.4 target"
 module: GROW
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P2
@@ -34,7 +34,6 @@ disallowed_tools:
   - "self-referral acceptance"
   - "auto-grant Pro bonus when fraud signals present — must hold for manual review"
 risk_if_skipped: "Plan §F2 #6 'Referral program: refer 3 bạn → unlock Pro 1 tháng. Viral coefficient mục tiêu k=0.4.' This is the single highest-leverage growth lever in P2; combined with Mega Sale Mode (FR-GROW-003) and share-deal (FR-GROW-002), referral drives ~40% of organic acquisition per plan §F4. Without it, plan §I Phase 2 MRR target of 30M ₫ is unreachable on paid-only acquisition."
-
 ---
 
 ## §1 — Description (BCP-14 normative)

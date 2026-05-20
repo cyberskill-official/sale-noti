@@ -3,7 +3,7 @@ id: FR-AUTH-003
 title: "JWT session (15-min access + 30-day refresh in HTTP-only cookie) · rotation + reuse-detection · family revoke"
 module: AUTH
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P0

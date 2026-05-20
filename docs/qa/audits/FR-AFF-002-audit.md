@@ -122,7 +122,7 @@ $ nest build
 ```text
 $ pnpm fr:check
 $ node scripts/fr-check.mjs
-✅ fr-check passed — all FRs conform to docs/FR_AUTHORING_WORKFLOW.md §11
+✅ fr-check passed — all FRs conform to feature-request-audit skill §11
 ```
 
 ## Decision

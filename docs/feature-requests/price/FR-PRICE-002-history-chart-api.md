@@ -3,7 +3,7 @@ id: FR-PRICE-002
 title: "`GET /v1/products/:productId/history` — chart-ready time-series API with server-side downsampling + 5-min cache + watchlist-or-public auth"
 module: PRICE
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P1
@@ -31,7 +31,6 @@ disallowed_tools:
   - "cache > 10 min (flash sale prices change too fast)"
   - "include commissionRate in any history response field (FR-LEGAL-002 §1 #10)"
 risk_if_skipped: "Plan §J Phase 1 'Price history chart (last 30 days)' is in the web app deliverable list and is the single feature most cited in user-research interviews from the plan period. Without history, the alert experience is 'price changed' without context — users can't see whether 89K from 99K is a real deal or yesterday's normal. Public deal pages (FR-GROW-002) and Mega Sale landings (FR-GROW-003) both need this endpoint for the inline sparkline."
-
 ---
 
 ## §1 — Description (BCP-14 normative)

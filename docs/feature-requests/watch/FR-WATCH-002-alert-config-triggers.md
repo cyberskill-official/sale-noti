@@ -3,7 +3,7 @@ id: FR-WATCH-002
 title: "`PATCH /v1/watchlists/:id` — configure alert triggers (absolute_drop · pct_drop · lowest_30d · flash_sale) with per-trigger cooldowns + closed-enum integrity"
 module: WATCH
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P1
@@ -32,7 +32,6 @@ disallowed_tools:
   - "rank or order watchlists by `commissionRate` (FR-LEGAL-002 §1 #10 firewall)"
   - "fire an alert without writing the cooldown entry (alert spam risk)"
 risk_if_skipped: "Without configurable triggers, every alert fires on the default 10% drop — which is wrong for high-volatility electronics buyers (they want 25%+) and wrong for grocery loyalists (5% is interesting). Plan §C3 lists the 4 trigger types as canonical and the founder validated each against the §F1 personas. A single fixed threshold collapses 4 distinct buyer-intent segments into one and tanks retention by 50%+ in user research from the plan's beta period."
-
 ---
 
 ## §1 — Description (BCP-14 normative)

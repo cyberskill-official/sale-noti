@@ -3,7 +3,7 @@ id: FR-AFF-001
 title: "Shopee Affiliate Open API client — GraphQL POST · SHA256 signed header · rate-limit aware"
 module: AFF
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P1
@@ -32,7 +32,6 @@ disallowed_tools:
   - "log raw Shopee API secret to any destination"
   - "send unsigned requests (Shopee will 401 — also leaks operational info)"
 risk_if_skipped: "Plan §B2 makes Shopee Affiliate Open API the ONLY allowed channel for product data. Without this client, no FR in WATCH / PRICE / NOTIF can work. Plan §H Risk Matrix: 'Affiliate API thay đổi/đóng' is medium-high impact — having a clean client wrapper makes the swap to AccessTrade/Linkmydeals fallback a one-config change."
-
 ---
 
 ## §1 — Description (BCP-14 normative)

@@ -3,7 +3,7 @@ id: FR-WORKER-002
 title: "Adaptive scheduler — hot/mid/low tiers 30min/6h/24h under Shopee API rate-limit + exponential backoff"
 module: WORKER
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P0
@@ -30,7 +30,6 @@ disallowed_tools:
   - "raw scrape product page HTML (forbidden — plan §B1 + §H Shopee block extension risk)"
   - "hard-code priorities — MUST be data-driven from watchlist alertConfig + history"
 risk_if_skipped: "Plan §D6 'Scalability — chống bị Shopee block & xử lý 100K+ products' depends entirely on this FR. Plan §H Risk Matrix: 'Shopee block extension (cease & desist)' likelihood is cao if we don't respect rate limits. Phase 1 success depends on 10K products checked correctly without hitting Shopee API ceiling."
-
 ---
 
 ## §1 — Description (BCP-14 normative)

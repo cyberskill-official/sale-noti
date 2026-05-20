@@ -1,6 +1,6 @@
 # SaleNoti FR Authoring — Session Progress
 
-**Session:** 2026-05-16 · **Owner:** Stephen Cheng (Founder) · **Driver:** project-local workflow at [`../FR_AUTHORING_WORKFLOW.md`](../FR_AUTHORING_WORKFLOW.md)
+**Session:** 2026-05-16 · **Owner:** Stephen Cheng (Founder) · **Driver:** project-local workflow at `../feature-request-audit skill` (see feature-request skills)
 
 ---
 
@@ -157,7 +157,7 @@ Known local runner caveat:
 
 ## §6 — Workflow provenance
 
-The full authoring + audit process is self-contained in this project at [`../FR_AUTHORING_WORKFLOW.md`](../FR_AUTHORING_WORKFLOW.md):
+The full authoring + audit process is self-contained in this project at `../feature-request-audit skill` (see feature-request skills):
 
 - **Schema:** YAML frontmatter (id/title/module/priority/status/verify/phase/slice/owner/created/related_frs/depends_on/blocks/effort_hours/new_files/modified_files/allowed_tools/disallowed_tools/risk_if_skipped) — see workflow §6.
 - **Sections:** §1 BCP-14 normative / §2 rationale / §3 contract / §4 acceptance / §5 verification / §6 skeleton / §7 deps / §8 examples / §9 open questions / §10 failure modes / §11 notes — see workflow §4.

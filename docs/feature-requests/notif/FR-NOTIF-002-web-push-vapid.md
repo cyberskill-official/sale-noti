@@ -3,7 +3,7 @@ id: FR-NOTIF-002
 title: "Web Push (VAPID + service worker) — Chrome / Edge / Android primary; iOS Safari graceful fallback to email; shared idempotency with FR-NOTIF-001/003"
 module: NOTIF
 priority: SHOULD
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P1
@@ -36,7 +36,6 @@ disallowed_tools:
   - "auto-permission-prompt on page load (Chrome heuristic-blocks the page entirely)"
   - "log raw push subscription endpoint to PostHog (PII per browser instance)"
 risk_if_skipped: "Plan §C7 lists Web Push as a needed channel. With email as the only primary in P1, retention suffers because alerts compete with inbox promotions/spam. Web Push hits the OS notification center directly with sub-second latency — the alert lands while the user is still 'in the moment' of deal-hunting. Conversion rate on push alerts is ~3-5× higher than email per industry benchmarks; for time-sensitive flash sales (FR-WATCH-002 `flash_sale` trigger) push is the only viable channel."
-
 ---
 
 ## §1 — Description (BCP-14 normative)

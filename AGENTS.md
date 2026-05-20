@@ -1,7 +1,7 @@
 # CyberOS Layer-1 Memory Protocol — AGENTS.md (sale-noti edition)
 
 Version: 2.0.0 · Spec status: Normative · Project: `cyberskill/sale-noti`
-Companion files (informative): `docs/SaleNoti — Plan.pdf` (input plan, Vietnamese), `docs/FR_AUTHORING_WORKFLOW.md` (per-FR playbook), `docs/feature-requests/BACKLOG.md` (active backlog), `docs/feature-requests/SESSION_PROGRESS.md` (authoring trace).
+Companion files (informative): `docs/SaleNoti — Plan.pdf` (input plan, Vietnamese), `feature-request-audit skill` (per-FR playbook), `docs/feature-requests/BACKLOG.md` (active backlog), `docs/feature-requests/SESSION_PROGRESS.md` (authoring trace).
 
 The key words MUST, MUST NOT, REQUIRED, SHALL, SHALL NOT, SHOULD, SHOULD NOT, RECOMMENDED, NOT RECOMMENDED, MAY, and OPTIONAL in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals.
 
@@ -207,4 +207,4 @@ Sale-noti additionally classifies user-generated data per the PDPL DPIA (`docs/l
 
 ---
 
-**End of normative spec.** Implementation-side reference for sale-noti is `README.md` + `DEPLOY.md`; FR-authoring playbook is `docs/FR_AUTHORING_WORKFLOW.md`; product roadmap is `docs/feature-requests/BACKLOG.md`.
+**End of normative spec.** Implementation-side reference for sale-noti is `README.md` + `DEPLOY.md`; FR-authoring playbook is `feature-request-audit skill`; product roadmap is `docs/feature-requests/BACKLOG.md`.

@@ -3,7 +3,7 @@ id: FR-AFF-003
 title: "`productOfferV2` + `shopOfferV2` resolver — commission rate ingest + denormalised cache + dual-write to Mongo + TimescaleDB"
 module: AFF
 priority: MUST
-status: shipped
+status: done
 shipped: 2026-05-17
 verify: T
 phase: P1
@@ -30,7 +30,6 @@ disallowed_tools:
   - "skip the TimescaleDB write when MongoDB write succeeds (dual-write must be atomic-enough; outbox retry covers gaps)"
   - "swallow Shopee API errors silently — every failure must surface to OBS"
 risk_if_skipped: "Every WATCH/PRICE/NOTIF surface needs `products.currentPrice` + `products.affiliateLink` + the time-series history. Without the resolver, the price-check cron has no canonical write target, watchlist creation can't denormalise basic product metadata, the alert dispatch can't compute discountPct vs baseline, and the chart endpoint has no data to serve. This FR is the single ingest point that fans out to MongoDB (hot/latest) and TimescaleDB (cold/series). If the dual-write integrity breaks, the entire P1 alert loop produces stale or incoherent output."
-
 ---
 
 ## §1 — Description (BCP-14 normative)

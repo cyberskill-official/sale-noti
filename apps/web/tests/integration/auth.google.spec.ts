@@ -24,7 +24,10 @@ type UserUpdate = {
 const dbMock = vi.hoisted(() => ({
   users: new Map<string, UserDoc>(),
   nextId: 0,
+  failNext: null as null | "return-null" | "throw",
 }));
+
+const sentry = vi.hoisted(() => ({ captureException: vi.fn() }));
 
 function cloneUser(doc: UserDoc | null): UserDoc | null {
   if (!doc) return null;
@@ -39,6 +42,15 @@ function cloneUser(doc: UserDoc | null): UserDoc | null {
 
 const usersCollection = {
   async findOneAndUpdate(filter: { email: string }, update: UserUpdate, options: { upsert?: boolean }) {
+    if (dbMock.failNext === "return-null") {
+      dbMock.failNext = null;
+      return null;
+    }
+    if (dbMock.failNext === "throw") {
+      dbMock.failNext = null;
+      throw new Error("mock mongo unavailable");
+    }
+
     let doc = dbMock.users.get(filter.email) ?? null;
     if (!doc && options.upsert) {
       const inserted = update.$setOnInsert ?? {};
@@ -84,6 +96,8 @@ vi.mock("@/server/db/mongo", () => ({
   },
 }));
 
+vi.mock("@/server/obs/sentry.server", () => ({ sentry }));
+
 import { upsertUserOnSignIn } from "@/server/users/upsert-on-signin";
 import { mongo } from "@/server/db/mongo";
 
@@ -91,6 +105,8 @@ const TEST_DB = "salenoti";
 
 beforeEach(() => {
   dbMock.users.clear();
+  dbMock.failNext = null;
+  sentry.captureException.mockReset();
 });
 
 describe("FR-AUTH-001 — upsertUserOnSignIn", () => {
@@ -139,6 +155,37 @@ describe("FR-AUTH-001 — upsertUserOnSignIn", () => {
     const r = await upsertUserOnSignIn({ sub: "google-sub-004", email: "", email_verified: true });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toBe("missing_email");
+  });
+
+  it("AC5: null Mongo response → fail-closed with db_error", async () => {
+    dbMock.failNext = "return-null";
+
+    const r = await upsertUserOnSignIn({
+      sub: "google-sub-005",
+      email: `salenoti-test-${Date.now()}@example.com`,
+      email_verified: true,
+    });
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toBe("db_error");
+    expect(sentry.captureException).not.toHaveBeenCalled();
+  });
+
+  it("AC5: Mongo exception → fail-closed and captures Sentry evidence", async () => {
+    dbMock.failNext = "throw";
+
+    const r = await upsertUserOnSignIn({
+      sub: "google-sub-006",
+      email: `salenoti-test-${Date.now()}@example.com`,
+      email_verified: true,
+    });
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toBe("db_error");
+    expect(sentry.captureException).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ tags: expect.objectContaining({ fr: "FR-AUTH-001" }) }),
+    );
   });
 
   it("AC: multiple Google sub for same email → $addToSet keeps both", async () => {
