@@ -3,6 +3,8 @@ import { BullModule } from "@nestjs/bullmq";
 import { AccessTradeFallbackService } from "./accesstrade/fallback.service";
 import { AccessTradePublisherClient } from "./accesstrade/client";
 import { AccessTradeRateLimitGuard } from "./accesstrade/rate-limit-guard";
+import { LazadaAffiliateClient } from "./lazada/client";
+import { LazadaRateLimitGuard } from "./lazada/rate-limit-guard";
 import { ShopeeAffiliateClient } from "./shopee/client";
 import { ShopeeRateLimitGuard } from "./shopee/rate-limit-guard";
 import { TikTokShopAffiliateClient } from "./tiktok/client";
@@ -20,6 +22,8 @@ import { PriceCheckProcessor } from "./price-check.processor";
     AccessTradeRateLimitGuard,
     AccessTradePublisherClient,
     AccessTradeFallbackService,
+    LazadaRateLimitGuard,
+    LazadaAffiliateClient,
     ShopeeRateLimitGuard,
     ShopeeAffiliateClient,
     TikTokShopRateLimitGuard,
@@ -33,6 +37,7 @@ import { PriceCheckProcessor } from "./price-check.processor";
   exports: [
     AccessTradePublisherClient,
     AccessTradeFallbackService,
+    LazadaAffiliateClient,
     ShopeeAffiliateClient,
     TikTokShopAffiliateClient,
     DeeplinkService,

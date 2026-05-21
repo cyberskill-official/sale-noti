@@ -118,7 +118,7 @@ Notable completion work:
 
 ### Current transition — 2026-05-18
 
-P0-P2 are now the shipped baseline. The team is shifting into P3 re-batch and authoring mode, and the remaining first P3 drafts are `FR-AFF-005` for Lazada Affiliate API integration and `FR-AFF-006` for TikTok Shop affiliate discovery. `FR-AFF-007` for the AccessTrade publisher failover path and `FR-AFF-008` for the `platform` schema pivot have both cleared audit round 2 and are marked accepted.
+P0-P2 are now the shipped baseline. The team is shifting into P3 re-batch and authoring mode, and the remaining first P3 draft is `FR-AFF-006` for TikTok Shop affiliate discovery. `FR-AFF-005` for Lazada Affiliate API integration has now been implemented in `apps/api/src/affiliate/lazada/` and test-verified in code. `FR-AFF-007` for the AccessTrade publisher failover path and `FR-AFF-008` for the `platform` schema pivot have both cleared audit round 2 and are marked accepted.
 
 Verification checkpoint:
 
@@ -134,9 +134,16 @@ Known local runner caveat:
 ### P3 authoring kickoff
 
 1. Re-batch P3 from `BACKLOG.md` plus the trigger rules in `P2_AUDIT_SUMMARY.md §6`.
-2. Author `FR-AFF-005`, `FR-AFF-006`, and `FR-AFF-007` as the first P3 drafts.
+2. Author `FR-AFF-006` and the next P3 rows as the remaining draft work.
 3. Complete audit round 1 on each FR before starting the next P3 FR.
 4. Only after each FR reaches `10/10` should the next FR be started.
+
+### Implementation checkpoint — 2026-05-21
+
+- `FR-AFF-005` now has a Lazada provider slice in `apps/api/src/affiliate/lazada/`.
+- `AffiliateModule` exports `LazadaAffiliateClient` alongside the existing affiliate clients.
+- Lazada provider tests pass in the API package once Node webcrypto is bootstrapped for Vitest on Windows.
+- The next draft to pick up in the P3 sequence is `FR-AFF-006`.
 
 ---
 
