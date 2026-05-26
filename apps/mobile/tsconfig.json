@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "noEmit": true,
+    "types": []
+  },
+  "include": ["App.tsx", "index.ts", "src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

@@ -37,7 +37,7 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 **Effort budget reality-check:** 42 FRs × 8h average = 336h ≈ 8.4 person-weeks of pure coding. The 22 person-weeks total accounts for design + legal review + QA + Chrome Web Store + Shopee Affiliate compliance + integration. Maps to ~22 weeks for one full-time Senior Tech Lead, which is consistent with the roadmap in plan §J.
 
-**Phase-1 fundables only — what this backlog locks down today:** all P0-P2 FRs (rows 1-26) are shipped as of 2026-05-17. P3 and P4 are deferred — they appear in this backlog as roadmap rows only, not as authored FRs.
+**Phase-1 fundables only — what this backlog locks down today:** all P0-P2 FRs (rows 1-26) are shipped as of 2026-05-17. P3 AFF rows are now authored/accepted, FR-WATCH-004 is completed after runtime validation, FR-NOTIF-004 is now authored as the next P3 draft, and the remaining P3/P4 rows stay roadmap-only until re-batching completes.
 
 ---
 
@@ -190,19 +190,19 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 **Phase goal:** prove the architecture scales horizontally (Lazada + TikTok Shop) and that the B2B Price Intelligence pivot is a fundable wedge. Mobile app (React Native) goes out so non-extension users can convert.
 
-**Status:** roadmap rows plus P3 authoring kickoff — `FR-AFF-005` and `FR-AFF-006` remain authored, while `FR-AFF-007` and `FR-AFF-008` have both been accepted after audit round 2. The remaining P3 rows stay roadmap-only until re-batching completes. Will be re-batched after P2 exit metrics are in. Plan refs: §J Phase 3.
+**Status:** P3 authoring kickoff — `FR-AFF-005` through `FR-AFF-008` have all been accepted after audit round 2, `FR-WATCH-004` is completed after runtime validation, and `FR-NOTIF-004` is the next authored P3 draft. The remaining P3 rows stay roadmap-only until re-batching completes. Will be re-batched after P2 exit metrics are in. Plan refs: §J Phase 3.
 
 | FR-ID (planned) | Title                                                                               |  Pri   | ready_to_implement |
 | --------------- | ----------------------------------------------------------------------------------- | :----: | --------- |
 | FR-AFF-005      | Lazada Affiliate API integration (parallel to Shopee)                               |  MUST  | ready_to_implement |
 | FR-AFF-006      | TikTok Shop affiliate integration (if public API ready)                             | SHOULD | ready_to_implement |
-| FR-WATCH-004    | React Native / Flutter mobile native app — re-use Phase 1 logic                     |  MUST  | ready_to_implement |
+| FR-WATCH-004    | React Native / Flutter mobile native app — re-use Phase 1 logic                     |  MUST  | Completed |
 | FR-NOTIF-004    | Mobile push (FCM) — primary channel for mobile users                                |  MUST  | ready_to_implement |
 | FR-ADMIN-002    | B2B Price Intelligence Dashboard — historical pricing for sellers/brands            |  MUST  | ready_to_implement |
 | FR-ADMIN-003    | Coupon aggregator (Honey-trap-aware design — disclosure-first, no override)         | COULD  | ready_to_implement |
 | FR-ADMIN-004    | Multi-region routing — Singapore primary, SG MongoDB Atlas region                   |  MUST  | ready_to_implement |
-| FR-AFF-007      | Generic Affiliate Network fallback (AccessTrade publisher) when Shopee direct fails |  MUST  | ready_to_implement |
-| FR-AFF-008      | Pivot-ready architecture — `platform` field on PriceHistory + Product collections   |  MUST  | ready_to_implement |
+| FR-AFF-007      | Generic Affiliate Network fallback (AccessTrade publisher) when Shopee direct fails |  MUST  | Completed |
+| FR-AFF-008      | Pivot-ready architecture — `platform` field on PriceHistory + Product collections   |  MUST  | Completed |
 | FR-OBS-002      | Tail-sampling 10/100% + tenant-aware Grafana scoping for B2B customers              |  MUST  | ready_to_implement |
 
 ---
@@ -254,4 +254,4 @@ When adding a new FR:
 
 ---
 
-_End of SaleNoti backlog v0.1.0. 30 FRs authored (26 shipped P0-P2 + 2 P3 accepted + 2 P3 drafts), 12 roadmapped-only. Re-generate after every status change in the FR files._
+_End of SaleNoti backlog v0.1.0. 32 FRs authored (26 shipped P0-P2 + 5 P3 completed + 1 P3 draft in progress), 10 roadmapped-only. Re-generate after every status change in the FR files._

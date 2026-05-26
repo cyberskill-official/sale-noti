@@ -8,10 +8,10 @@
 
 ### Backlog + Manifest
 
-- [`BACKLOG.md`](BACKLOG.md) — phase-by-phase index, 29 authored + 13 roadmapped = 42 FRs total.
+- [`BACKLOG.md`](BACKLOG.md) — phase-by-phase index, 32 authored + 10 roadmapped = 42 FRs total.
 - [`MANIFEST.json`](MANIFEST.json) — state file, 7 batches recorded, 12 module FR counters.
 
-### FRs + Audits (26 shipped P0-P2, 2 P3 accepted, 2 P3 drafts in progress)
+### FRs + Audits (26 shipped P0-P2, 5 P3 completed, 1 P3 draft in progress)
 
 **P0 · Pre-MVP Foundation** (8 FRs · 8 audits)
 
@@ -60,7 +60,7 @@
 
 → [P2_AUDIT_SUMMARY.md](P2_AUDIT_SUMMARY.md)
 
-**P3 + P4** are roadmap rows in `BACKLOG.md §5–§6`. Re-batch when P2 exit metrics land (see P2_AUDIT_SUMMARY.md §6 triggers).
+**P3** accepted rows are recorded in `BACKLOG.md §5`; the remaining P3/P4 rows are roadmap rows in `BACKLOG.md §5–§6`. Re-batch when P2 exit metrics land (see P2_AUDIT_SUMMARY.md §6 triggers).
 
 ---
 
@@ -70,8 +70,8 @@
 |---|---:|
 | Files written | 60 (backlog + manifest + FR/audit files + phase summaries) |
 | Bytes written | ~380 KB |
-| FRs authored | 30 |
-| FRs roadmapped | 13 |
+| FRs authored | 31 |
+| FRs roadmapped | 11 |
 | Total FRs planned | 42 |
 | Effort sum (authored P0–P2 + P3 drafts) | ~199 hours |
 | Effort sum (all 5 phases) | ~346 hours (~22 person-weeks calendar) |
@@ -79,7 +79,7 @@
 | Average pre-revision score | 8.3 / 10 |
 | Final score (audited FRs) | 10 / 10 |
 | Critical issues remaining | 0 |
-| P3 drafts in progress | 2 |
+| P3 draft in progress | 1 |
 | Plan PDF pages covered | 34 / 34 |
 
 ---
@@ -116,9 +116,9 @@ Notable completion work:
 - Added missing Chrome extension and Web Push icon assets referenced by the manifest/service worker.
 - Added Auth session-family listing/revoke route and real gateway checkout creation paths for Stripe, VNPay, and MoMo when production credentials are present.
 
-### Current transition — 2026-05-18
+### Current transition — 2026-05-26
 
-P0-P2 are now the shipped baseline. The team is shifting into P3 re-batch and authoring mode, and the remaining first P3 draft is `FR-AFF-006` for TikTok Shop affiliate discovery. `FR-AFF-005` for Lazada Affiliate API integration has now been implemented in `apps/api/src/affiliate/lazada/` and test-verified in code. `FR-AFF-007` for the AccessTrade publisher failover path and `FR-AFF-008` for the `platform` schema pivot have both cleared audit round 2 and are marked accepted.
+P0-P2 are the shipped baseline. `FR-AFF-005` through `FR-AFF-008` and `FR-WATCH-004` are completed in the P3 cluster, `FR-NOTIF-004` is now the next draft in progress, and the remaining P3/P4 rows stay roadmap-only until re-batching completes.
 
 Verification checkpoint:
 
@@ -144,6 +144,22 @@ Known local runner caveat:
 - `AffiliateModule` exports `LazadaAffiliateClient` alongside the existing affiliate clients.
 - Lazada provider tests pass in the API package once Node webcrypto is bootstrapped for Vitest on Windows.
 - The next draft to pick up in the P3 sequence is `FR-AFF-006`.
+
+### Implementation checkpoint — 2026-05-21 (mobile scaffold)
+
+- Scaffolded `apps/mobile` as an Expo blank-typescript app using `npx create-expo-app@4.0.0` because the current shell Node 16 runtime cannot run `pnpm create`.
+- Replaced the placeholder screen with Search / Track / Watchlists / Settings tabs backed by local API helpers for product search, tracking, and watchlist CRUD.
+- Reused the canonical disclosure copy and five ethical principles from `@salenoti/disclosure-copy` so the mobile surface matches the web and extension firewall.
+- Swapped the mobile tsconfig off `expo/tsconfig.base` and verified `get_errors` on `apps/mobile` is clean.
+- The next concrete follow-up is Node 18+ install/run validation plus auth/persistence polish if the product needs it.
+
+### Implementation checkpoint — 2026-05-25 (mobile auth/persistence)
+
+- Added `expo-secure-store` to `apps/mobile` and declared a local module shim so the app typechecks before package install.
+- Created `apps/mobile/src/persistence.ts` with a `MobileSessionSnapshot` store for auth + UI state, backed by SecureStore on device and `localStorage` on web.
+- Wired `App.tsx` to hydrate on launch, autosave on state changes, and expose a `Forget this device` action in Settings.
+- Kept `get_errors` on `apps/mobile` green after the wiring change.
+- FR-WATCH-004 is now the active P3 focus; the next concrete follow-up is mobile-native polish and runtime install/run validation on a compatible Node shell if we want to verify Expo behavior end to end.
 
 ---
 
