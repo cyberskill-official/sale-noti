@@ -10,6 +10,7 @@ milestone: "P3 - slice 1 - Mobile push"
 slice: 1
 owner: "Senior Tech Lead + Intern #2 (BE) + Intern #1 (mobile)"
 created: 2026-05-26
+last_revised: 2026-05-26
 related_frs:
   - FR-WATCH-004
   - FR-NOTIF-001
@@ -63,14 +64,14 @@ The platform MUST support native mobile push notifications as the primary alert 
 1. The mobile client MUST request notification permission only after the user taps an explicit "Enable mobile notifications" action in Settings. The app MUST NOT prompt on launch, on background resume, or during session hydration.
 2. The mobile client MUST use the Expo mobile notification stack or an equivalent native push helper to obtain a platform push token after permission is granted. The helper MUST treat the token as opaque and MUST NEVER log the token, device ID, or provider response payload.
 3. The app MUST expose a reusable push helper in `apps/mobile/src/push.ts` and `apps/mobile/src/notifications.ts` that can register, refresh, and clear the mobile push token without coupling the UI to provider details.
-4. The backend MUST expose `POST /v1/me/mobile-push/subscribe` with body `{ token: string; platform: "android" | "ios"; deviceId?: string; appVersion?: string }`. The endpoint MUST validate input with a schema, rate-limit to 5 calls/min/user, and persist the token as an opaque mobile push credential.
-5. The backend MUST store tokens in `users.mobilePushTokens[]` with at least `{ token, platform, deviceId, appVersion, addedAt, lastSeenAt }`. It MUST enforce a maximum of 5 devices per user using FIFO eviction by `addedAt` and MUST set `users.notificationChannels.mobilePush = true` whenever at least one valid token remains.
+4. The backend MUST expose `POST /v1/me/mobile-push/subscribe` with body `{ token: string; platform: "android" | "ios"; deviceId?: string; appVersion?: string }`. The endpoint MUST validate input with a schema, rate-limit to 5 calls/min/user, and persist the token as an opaque mobile push credential. `deviceId` and `appVersion` are metadata only; the token string is the credential identity.
+5. The backend MUST store tokens in `users.mobilePushTokens[]` with at least `{ token, platform, deviceId, appVersion, addedAt, lastSeenAt }`. It MUST enforce a maximum of 5 devices per user using FIFO eviction by `addedAt`. Re-registering the same token MUST upsert the existing record, refresh `lastSeenAt`, and preserve the original `addedAt`; `deviceId` MUST be treated as optional metadata, not unique identity. It MUST set `users.notificationChannels.mobilePush = true` whenever at least one valid token remains.
 6. The backend MUST expose `POST /v1/me/mobile-push/unsubscribe` to remove a specific token/device or clear all mobile tokens for the current user. If no tokens remain, it MUST flip `users.notificationChannels.mobilePush = false`.
-7. The notify service MUST add `@Processor("alert-dispatch", { name: "mobilePush" })` and dispatch mobile alerts only when `notificationChannels.mobilePush` is enabled and at least one token exists. The worker MUST reuse the same `alertIdem`, `reserveSend`, and `dailyCount` helpers used by FR-NOTIF-001/002/003.
-8. The mobile push payload MUST include `title`, `body`, `data.url`, `data.idem`, and `tag` fields. The `data.url` MUST deep-link back into the mobile app (not the web app) and MUST carry `utm=mobilePush&idem=...` for attribution.
-9. The mobile app MUST handle a notification open/tap event by navigating to the deep-linked screen and MUST emit a click beacon to `POST /v1/me/mobile-push/clicked` with the alert idempotency key so `notifications.clickedAt` can be updated.
+7. The notify service MUST add `@Processor("alert-dispatch", { name: "mobilePush" })` and dispatch mobile alerts only when `notificationChannels.mobilePush` is enabled and at least one token exists. The worker MUST reuse the same `alertIdem`, `reserveSend`, and `dailyCount` helpers used by FR-NOTIF-001/002/003, with `channel: "mobilePush"` in the notifications row and idempotency derivation.
+8. The mobile push payload MUST include `title`, `body`, `data.url`, `data.idem`, and `tag` fields. The `data.url` MUST deep-link back into the mobile app (not the web app) and MUST carry `utm=mobilePush&idem=...` for attribution. For the initial Expo slice, the deep-link MUST use the `salenoti://watchlists/<watchlistId>?utm=mobilePush&idem=...` custom scheme declared in `apps/mobile/app.json` so the app can open the watchlists surface without a webview.
+9. The mobile app MUST handle a notification open/tap event by navigating to the deep-linked watchlists screen and MUST emit a click beacon to `POST /v1/me/mobile-push/clicked` with the alert idempotency key so `notifications.clickedAt` can be updated for the matching `mobilePush` notification row.
 10. The mobile push flow MUST share the combined daily cap of 20 alerts/day/user across email, web push, Telegram, and mobile push. A user cannot bypass the cap by enabling multiple channels.
-11. The backend MUST remove expired or invalid tokens when the provider returns an invalid-credential signal, and MUST clear `notificationChannels.mobilePush` when the last token is removed.
+11. The backend MUST remove expired or invalid tokens when the provider returns an invalid-credential signal, and MUST clear `notificationChannels.mobilePush` when the last token is removed. Token cleanup MUST target the token value, not `deviceId` alone.
 12. The platform MUST emit PostHog events `mobile_push_sent` and `mobile_push_clicked`. Events MUST include counts and the idempotency tail, but MUST NOT include raw token strings or full device identifiers.
 13. The mobile surface MUST render an in-app disclosure banner when the app opens from a push deep link, so the user sees the affiliate disclosure before they interact with the deal.
 14. The implementation MUST remain compatible with the current Expo-managed mobile app and MUST not require a separate native app rewrite to register the first device token.
@@ -143,6 +144,8 @@ Content-Type: application/json
 { "idem": "abc123def456..." }
 ```
 
+The click beacon MUST update `notifications.clickedAt` for the row where `idem` matches and `channel` is `mobilePush`.
+
 ### Push payload
 
 ```json
@@ -150,7 +153,7 @@ Content-Type: application/json
   "title": "🔥 Áo thun nam basic",
   "body": "SaleNoti · Giảm 31% — 89.000 ₫",
   "data": {
-    "url": "salenoti://watchlists/65f7...?utm=mobilePush&idem=abc123",
+    "url": "salenoti://watchlists/<watchlistId>?utm=mobilePush&idem=abc123",
     "idem": "abc123def456..."
   },
   "tag": "abc123def456..."
@@ -184,6 +187,7 @@ Content-Type: application/json
 10. Android and iOS both use the same subscribe/unsubscribe API shape even if the native token source differs underneath.
 11. The implementation stays within the current Expo-managed mobile app and does not require ejecting the app or splitting the repository into a separate native project.
 12. Subscribe rate-limit: 6th token-registration call in a minute for the same user returns 429.
+12. Re-registering the same token refreshes `lastSeenAt` and metadata without increasing `users.mobilePushTokens.length`.
 
 ## §5 - Verification
 
@@ -250,5 +254,6 @@ describe("FR-NOTIF-004 — mobile push", () => {
 
 - This FR assumes the mobile app will remain on Expo-managed workflow for the initial P3 slice.
 - Push token handling is opaque by design; the server should not depend on provider-specific token shapes beyond platform classification.
-- The deep-link target can remain the same watchlist/product routes already used by the app.
+- Token identity is the raw push token; `deviceId` and `appVersion` are metadata only, and repeated subscribe calls for the same token must be idempotent.
+- The initial deep-link target is the watchlists surface via the `salenoti://` scheme declared in `apps/mobile/app.json`, not a web URL or a separate native-only route.
 - If a future native rewrite becomes necessary, this FR still preserves the same token-registration and dispatch contract.

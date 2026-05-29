@@ -1,0 +1,123 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { dashboardService } from '@/server/admin/dashboard.service';
+import { z } from 'zod';
+import { createHash } from 'crypto';
+
+/**
+ * GET /api/admin/products/:productId/analytics?range=7d|30d|90d
+ *
+ * Calculate KPI cards: floor price, volatility, trend, alerts, competitors.
+ * Row-level security: seller only sees own products
+ * Cached: 6 hours
+ * FR-ADMIN-002 §1 #4, #10
+ */
+
+const AnalyticsQuerySchema = z.object({
+  range: z.enum(['7d', '30d', '90d']).default('7d'),
+});
+
+type AnalyticsQuery = z.infer<typeof AnalyticsQuerySchema>;
+
+function hashValue(value: string): string {
+  return createHash('sha256').update(value).digest('hex').substring(0, 16);
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { productId: string } }
+) {
+  try {
+    // Auth check
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+    const sellerId = session.user.sellerId || userId;
+    const userTier = (session.user as any)?.tier || 'starter';
+    const subscriptionId = (session.user as any)?.subscriptionId;
+    const productId = params.productId;
+
+    if (!productId) {
+      return NextResponse.json(
+        { error: 'BAD_REQUEST', message: 'Missing productId' },
+        { status: 400 }
+      );
+    }
+
+    if (!subscriptionId) {
+      return NextResponse.json(
+        { error: 'FORBIDDEN', message: 'No active subscription' },
+        { status: 403 }
+      );
+    }
+
+    // Check monthly quota
+    const quotaCheck = await dashboardService.checkApiQuota(subscriptionId, userTier as any);
+    if (quotaCheck.exceeded) {
+      return NextResponse.json(
+        { error: 'QUOTA_EXCEEDED', remaining: 0, limit: quotaCheck.limit },
+        { status: 429 }
+      );
+    }
+
+    // Parse query params
+    const { searchParams } = new URL(request.url);
+    const parseResult = AnalyticsQuerySchema.safeParse({
+      range: searchParams.get('range'),
+    });
+
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: 'BAD_REQUEST', details: parseResult.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { range } = parseResult.data;
+
+    // Execute analytics query
+    const result = await dashboardService.getProductAnalytics(
+      sellerId,
+      productId,
+      range,
+      userTier as any
+    );
+
+    // Log audit trail (async, non-blocking)
+    const ipHash = hashValue(request.ip || 'unknown');
+    const userAgentHash = hashValue(request.headers.get('user-agent') || 'unknown');
+    dashboardService
+      .logB2bAccess(subscriptionId, userId, sellerId, 'api_analytics', productId, ipHash, userAgentHash)
+      .catch((e) => console.error('[audit] analytics error:', e));
+
+    return NextResponse.json(result, {
+      status: 200,
+      headers: {
+        'Cache-Control': 'public, max-age=21600',
+        'X-Quota-Remaining': Math.max(0, quotaCheck.remaining - 1).toString(),
+        'X-Quota-Limit': quotaCheck.limit.toString(),
+      },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+
+    // Row-level security: return 403 not 404 (per FR-ADMIN-002 §1 #11)
+    if (
+      message.includes('unauthorized') ||
+      message.includes('Unauthorized') ||
+      message.includes('not found') ||
+      message.includes('FORBIDDEN')
+    ) {
+      return NextResponse.json(
+        { error: 'FORBIDDEN', message: 'Access denied' },
+        { status: 403 }
+      );
+    }
+
+    console.error('[analytics] Error:', error);
+    return NextResponse.json({ error: 'INTERNAL_ERROR' }, { status: 500 });
+  }
+}

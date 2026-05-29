@@ -4,17 +4,21 @@ import { AffiliateModule } from "../affiliate/affiliate.module";
 import { NotifyEmailProcessor } from "./notify-email.processor";
 import { NotifyPushProcessor } from "./notify-push.processor";
 import { NotifyTelegramProcessor } from "./notify-telegram.processor";
+import { NotifyMobileProcessor } from "./notify-mobile.processor";
 import { ResendWebhookController } from "./resend-webhook.controller";
 import { TelegramWebhookController } from "./telegram-webhook.controller";
 import { UnsubscribeController } from "./unsubscribe.controller";
 import { NotificationIndexService } from "./idempotency";
 
 @Module({
-  imports: [
-    AffiliateModule,
-    BullModule.registerQueue({ name: "alert-dispatch" }),
-  ],
+  imports: [AffiliateModule, BullModule.registerQueue({ name: "alert-dispatch" })],
   controllers: [ResendWebhookController, TelegramWebhookController, UnsubscribeController],
-  providers: [NotifyEmailProcessor, NotifyPushProcessor, NotifyTelegramProcessor, NotificationIndexService],
+  providers: [
+    NotifyEmailProcessor,
+    NotifyPushProcessor,
+    NotifyTelegramProcessor,
+    NotifyMobileProcessor,
+    NotificationIndexService,
+  ],
 })
 export class NotifyModule {}

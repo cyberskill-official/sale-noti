@@ -5,6 +5,7 @@
   "dependencies": {
     "@salenoti/disclosure-copy": "file:../../packages/disclosure-copy",
     "expo": "~56.0.3",
+    "expo-notifications": "~56.0.5",
     "expo-secure-store": "~56.0.4",
     "expo-status-bar": "~56.0.4",
     "react": "19.2.3",

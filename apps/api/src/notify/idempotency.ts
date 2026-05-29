@@ -5,7 +5,7 @@ import crypto from "node:crypto";
 import { Injectable, OnModuleInit } from "@nestjs/common";
 import { mongo } from "../db/mongo";
 
-export type Channel = "email" | "push" | "webPush" | "telegram";
+export type Channel = "email" | "push" | "webPush" | "telegram" | "mobilePush";
 
 export function alertIdem(args: {
   userId: string;

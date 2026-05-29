@@ -22,6 +22,16 @@ import {
   updateWatchlist,
 } from './src/api';
 import {
+  requestNotificationPermission,
+  setupNotificationResponseHandler,
+} from './src/notifications';
+import {
+  subscribePushToken,
+  unsubscribePushToken,
+  emitPushClickBeacon,
+  extractIdemFromDeepLink,
+} from './src/push';
+import {
   type MobileConfig,
   type SearchResult,
   type SearchSort,
@@ -181,6 +191,10 @@ export default function App() {
   const [sessionReady, setSessionReady] = useState(false);
   const [sessionNotice, setSessionNotice] = useState<string | null>(null);
 
+  // FR-NOTIF-004: Mobile push notification state
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
+
   useEffect(() => {
     Animated.parallel([
       Animated.timing(heroOpacity, {
@@ -202,6 +216,31 @@ export default function App() {
     }
     void loadWatchlists();
   }, [activeTab, sessionReady]);
+
+  // FR-NOTIF-004: Setup notification response handler on mount.
+  useEffect(() => {
+    const unsubscribe = setupNotificationResponseHandler((notification) => {
+      // Extract deep-link URL and idem from notification data.
+      const url = notification.request.content.data?.url as string | undefined;
+      const idem = extractIdemFromDeepLink(url || '');
+
+      if (url) {
+        // Deep link to watchlists tab with the watchlist ID from the URL.
+        // The URL shape is salenoti://watchlists/<watchlistId>?utm=mobilePush&idem=...
+        const match = url.match(/watchlists\/([^?]+)/);
+        if (match?.[1]) {
+          setActiveTab('watchlists');
+        }
+      }
+
+      // Emit click beacon if idem was present.
+      if (idem && config.apiBaseUrl) {
+        void emitPushClickBeacon(config.apiBaseUrl, idem);
+      }
+    });
+
+    return unsubscribe;
+  }, [config.apiBaseUrl]);
 
   useEffect(() => {
     let cancelled = false;
@@ -395,6 +434,56 @@ export default function App() {
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: () => void removeWatchlist(item) },
     ]);
+  }
+
+  // FR-NOTIF-004: Enable mobile push — request permission + subscribe token.
+  async function enableMobilePush(): Promise<void> {
+    setPushLoading(true);
+    try {
+      const granted = await requestNotificationPermission();
+      if (!granted) {
+        setBanner('Notification permission denied.');
+        setPushLoading(false);
+        return;
+      }
+
+      const success = await subscribePushToken(
+        config.apiBaseUrl,
+        config.userId,
+        config.bearerToken,
+        '1.0.0', // appVersion placeholder
+      );
+
+      if (success) {
+        setPushEnabled(true);
+        setBanner('Mobile notifications enabled.');
+      } else {
+        setBanner('Failed to register push token.');
+      }
+    } catch (error) {
+      setBanner('Error enabling mobile push.');
+      console.error('[push] enableMobilePush error:', error);
+    } finally {
+      setPushLoading(false);
+    }
+  }
+
+  async function disableMobilePush(): Promise<void> {
+    setPushLoading(true);
+    try {
+      const success = await unsubscribePushToken(config.apiBaseUrl, config.userId, config.bearerToken);
+      if (success) {
+        setPushEnabled(false);
+        setBanner('Mobile notifications disabled.');
+      } else {
+        setBanner('Failed to disable mobile push.');
+      }
+    } catch (error) {
+      setBanner('Error disabling mobile push.');
+      console.error('[push] disableMobilePush error:', error);
+    } finally {
+      setPushLoading(false);
+    }
   }
 
   async function removeWatchlist(item: WatchlistItem): Promise<void> {
@@ -770,16 +859,25 @@ export default function App() {
 
                 <View style={styles.rowGap}>
                   <View style={styles.flexHalf}>
+                    <ActionButton
+                      label={pushLoading ? 'Enabling...' : pushEnabled ? 'Disable push' : 'Enable mobile push'}
+                      onPress={() => (pushEnabled ? void disableMobilePush() : void enableMobilePush())}
+                      disabled={pushLoading}
+                      variant={pushEnabled ? 'secondary' : 'primary'}
+                    />
+                  </View>
+                  <View style={styles.flexHalf}>
                     <ActionButton label='Go to Search' onPress={() => setActiveTab('search')} variant='secondary' />
                   </View>
                 </View>
 
-                <HelperText text='Bearer token and the rest of the session are stored locally on this device. Clearing this device removes the saved auth snapshot.' />
+                <HelperText text='Bearer token and the rest of the session are stored locally on this device. Clearing this device removes the saved auth snapshot. Mobile notifications require permission and your device token to be registered with the backend.' />
 
                 <View style={styles.statusCard}>
                   <StatPill label='Base' value={normalizeApiBaseUrl(config.apiBaseUrl)} tone='ink' />
                   <StatPill label='Auth' value={authStatus} tone={config.bearerToken.trim() || config.userId.trim() ? 'success' : 'warning'} />
                   <StatPill label='Persist' value={sessionReady ? 'Synced' : 'Loading'} tone={sessionReady ? 'success' : 'warning'} />
+                  <StatPill label='Push' value={pushEnabled ? 'Enabled' : 'Disabled'} tone={pushEnabled ? 'success' : 'warning'} />
                 </View>
 
                 <DisclosurePanel />
