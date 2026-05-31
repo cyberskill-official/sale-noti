@@ -70,8 +70,8 @@
 |---|---:|
 | Files written | 65+ (backlog + manifest + FR/audit files + phase summaries + P3 shipments) |
 | Bytes written | ~450 KB |
-| FRs authored | 32 |
-| FRs shipped | 32 (26 P0-P2 + 6 P3) |
+| FRs authored | 33 |
+| FRs shipped | 33 (26 P0-P2 + 7 P3) |
 | FRs roadmapped | 10 |
 | Total FRs planned | 42 |
 | Effort sum (shipped P0-P2-P3) | ~220 hours |
@@ -104,6 +104,53 @@
 ---
 
 ## §4 — Next steps
+
+### Implementation checkpoint — 2026-05-31 (FR-ADMIN-004 web slice)
+
+- Added `apps/web/src/lib/mongo-region.ts` to normalize SG/US region selection.
+- Upgraded `apps/web/src/server/db/mongo.ts` to pick the Mongo client from `x-mongo-region` / `x-vercel-ip-country`, with safe SG fallback when request context is missing.
+- Updated `apps/web/src/middleware.ts` to stamp `x-mongo-region` on dashboard/admin traffic.
+- Added `apps/web/src/app/api/admin/health/db-regions/route.ts` plus a dedicated route test in `apps/web/src/app/api/admin/health/__tests__/db-regions.route.spec.ts`.
+- Added `apps/api/src/db/mongo.ts` + `apps/api/src/health/health.controller.ts` fallback to `MONGO_URI_SG` so the backend honors the new primary env too.
+- Added `docs/ops/MULTI_REGION_RUNBOOK.md` and moved `FR-ADMIN-004` / `BACKLOG.md` to `building`.
+- Validation: `pnpm --filter @salenoti/web test -- src/app/api/admin/health/__tests__/db-regions.route.spec.ts` → 2/2 pass.
+
+### Audit checkpoint — 2026-05-31 (FR-ADMIN-004 vòng 1)
+
+- Created `docs/feature-requests/admin/FR-ADMIN-004-multi-region-routing-singapore.audit.md`.
+- Audit result: **NEEDS_CHANGES** (score 6.5/10).
+- Main findings:
+  - Terraform still lacks a real US-East secondary topology.
+  - Mobile app has no locale-based region routing yet.
+  - Read preference / majority write / failover write path are not enforced at operation level.
+  - Runbook failover steps need DNS cutover and reconfiguration detail.
+- Validation reused during audit:
+  - `pnpm --filter @salenoti/api test -- src/db/__tests__/mongo.multi-region.spec.ts` → 27/27 pass.
+  - `pnpm --filter @salenoti/web test -- src/app/api/admin/health/__tests__/db-regions.route.spec.ts` → 2/2 pass.
+
+### Implementation checkpoint — 2026-05-31 (FR-ADMIN-004 infra + mobile routing)
+
+- `infra/mongodb-atlas-sg-cluster.tf` đã được nâng lên replica set đa vùng thật với `replication_specs` cho SG và US-East.
+- `apps/mobile/src/api.ts` giờ chọn API base URL theo locale của thiết bị, ưu tiên vùng SEA cho `vi_VN`, `th_TH`, `fil_PH`, `id_ID`, `ms_MY`, `km_KH`.
+- `apps/mobile/App.tsx` khôi phục session qua bộ chọn base URL theo locale để không bị khóa vào URL cũ của session.
+- `.env.example` đã bổ sung biến môi trường API base URL theo vùng cho mobile.
+- Validation hiện tại: `get_errors` trên ba file mobile đã sạch; `pnpm --dir apps/mobile typecheck` vẫn bị chặn bởi lỗi không liên quan trong `apps/mobile/src/notifications.ts`.
+- Còn lại trong FR-ADMIN-004: làm rõ semantics read/write cấp operation và mở rộng runbook failover/cutover.
+
+### Implementation checkpoint — 2026-05-31 (FR-ADMIN-004 operation semantics)
+
+- `apps/api/src/db/mongo.multi-region.ts` đã có helper rõ ràng cho read, analytics, và write: `resolveMongoDbOptions`, `resolveMongoRegionForOperation`, `getMongoReadDb`, `getMongoAnalyticsDb`, `getMongoWriteDb`.
+- Write path dùng `w: "majority"` + `journal: true`; read path dùng `primaryPreferred`; analytics path dùng `secondary`.
+- Failover write path đi qua primary đang active nhờ `getActivePrimaryRegion()` thay vì cố định SG.
+- Validation: `pnpm --filter @salenoti/api test -- src/db/__tests__/mongo.multi-region.spec.ts` → 32/32 pass.
+- Remaining gap: mở rộng `docs/ops/MULTI_REGION_RUNBOOK.md` thành procedure cutover đủ chi tiết để thao tác trong sự cố.
+
+### Completion checkpoint — 2026-05-31 (FR-ADMIN-004 shipped)
+
+- `docs/ops/MULTI_REGION_RUNBOOK.md` đã được mở rộng thành procedure vận hành đủ chi tiết: quiesce writes, promote, DNS cutover, rotate secrets, smoke-test, và monitor sau cutover.
+- `FR-ADMIN-004` đã được chuyển sang `shipped` trong FR source file và backlog.
+- Audit vòng 4 kết luận **APPROVED** sau khi toàn bộ gap đã được đóng.
+- Validation cuối cùng giữ nguyên: `pnpm --filter @salenoti/api test -- src/db/__tests__/mongo.multi-region.spec.ts` → 32/32 pass.
 
 ### Completion status — 2026-05-29
 

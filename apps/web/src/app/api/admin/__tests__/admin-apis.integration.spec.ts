@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
-import { GET as searchGET } from '../../../../../app/api/admin/products/search/route';
-import { GET as historyGET } from '../../../../../app/api/admin/products/[productId]/history/route';
-import { GET as analyticsGET } from '../../../../../app/api/admin/products/[productId]/analytics/route';
+import { GET as searchGET } from "../../../../app/api/admin/products/search/route";
+import { GET as historyGET } from "../../../../app/api/admin/products/[productId]/history/route";
+import { GET as analyticsGET } from "../../../../app/api/admin/products/[productId]/analytics/route";
 import { auth } from '@/lib/auth';
 import { rateLimitFixed } from '@/lib/rate-limit';
 import { dashboardService } from '../dashboard.service';
@@ -309,4 +309,5 @@ describe('B2B Admin API Routes', () => {
       expect(json.recommendedPricePoint).toBe(9500);
     });
   });
+
 });

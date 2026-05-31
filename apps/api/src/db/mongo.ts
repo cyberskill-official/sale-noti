@@ -7,9 +7,10 @@ declare global {
 }
 
 function getClient(): MongoClient {
-  if (!process.env.MONGODB_URI) throw new Error("MONGODB_URI not set");
+  const uri = process.env.MONGO_URI_SG ?? process.env.MONGODB_URI;
+  if (!uri) throw new Error("MONGO_URI_SG or MONGODB_URI not set");
   if (!globalThis.__salenotiApiMongo) {
-    globalThis.__salenotiApiMongo = new MongoClient(process.env.MONGODB_URI, {
+    globalThis.__salenotiApiMongo = new MongoClient(uri, {
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 5000,
     });

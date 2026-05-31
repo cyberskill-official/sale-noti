@@ -31,13 +31,13 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 | **P0 — Pre-MVP Foundation** (week 0-2)        | AUTH · LEGAL · OBS · WORKER                                                        |       **8** |       **8** |                            ~2.0 | PDPL Art. 24/28 ready · DPO appointed · A05 báo cáo (CA05) wired                           |
 | **P1 — MVP Core + Extension Lite** (week 2-8) | AFF · WATCH · PRICE · NOTIF · EXT                                                  |      **12** |      **12** |                            ~6.0 | 1,000 signups · 10,000 products tracked · D7 ≥ 25% · CTR ≥ 25% · Chrome Web Store approved |
 | **P2 — Growth & Monetization** (week 8-18)    | BILL · NOTIF (Telegram) · GROW · ADMIN                                             |       **6** |       **6** |                            ~3.0 | MRR 30M ₫ ($1.2K) · D30 ≥ 35% · Free→Pro ≥ 5%                                              |
-| **P3 — Power, Multi-platform, B2B** (M+5..12) | AFF (Lazada/TikTok) · WATCH (mobile) · ADMIN (B2B dashboard) · NOTIF (mobile push) |         ~10 |       **6** |                            ~6.0 | MAU 100K · ARPU $0.5 · LTV/CAC ≥ 1.8                                                       |
+| **P3 — Power, Multi-platform, B2B** (M+5..12) | AFF (Lazada/TikTok) · WATCH (mobile) · ADMIN (B2B dashboard) · NOTIF (mobile push) |         ~10 |       **7** |                            ~6.0 | MAU 100K · ARPU $0.5 · LTV/CAC ≥ 1.8                                                       |
 | **P4 — Regional + AI** (M+12..24)             | AFF (regional) · PRICE (ML scoring) · WATCH (smart wishlist)                       |          ~6 |       **0** |                            ~5.0 | +1 country (TH or PH) · ML deal-score AUC ≥ 0.85                                           |
-| **Total**                                     | 12 modules · 5 phases                                                              |     **~42** |      **32** |            **~22 person-weeks** | 5 gated milestones                                                                         |
+| **Total**                                     | 12 modules · 5 phases                                                              |     **~42** |      **33** |            **~22 person-weeks** | 5 gated milestones                                                                         |
 
 **Effort budget reality-check:** 42 FRs × 8h average = 336h ≈ 8.4 person-weeks of pure coding. The 22 person-weeks total accounts for design + legal review + QA + Chrome Web Store + Shopee Affiliate compliance + integration. Maps to ~22 weeks for one full-time Senior Tech Lead, which is consistent with the roadmap in plan §J.
 
-**Phase-1 fundables only — what this backlog locks down today:** all P0-P2 FRs (rows 1-26) are shipped as of 2026-05-17. P3 shipped: 6 FRs (AFF-005/006/007/008, WATCH-004, NOTIF-004, ADMIN-002). Remaining P3 rows stay roadmap-only until re-batching completes.
+**Phase-1 fundables only — what this backlog locks down today:** all P0-P2 FRs (rows 1-26) are shipped as of 2026-05-17. P3 shipped: 7 FRs (AFF-005/006/007/008, WATCH-004, NOTIF-004, ADMIN-002, ADMIN-004). Remaining P3 rows stay roadmap-only until re-batching completes.
 
 ---
 
@@ -190,7 +190,7 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 **Phase goal:** prove the architecture scales horizontally (Lazada + TikTok Shop) and that the B2B Price Intelligence pivot is a fundable wedge. Mobile app (React Native) goes out so non-extension users can convert.
 
-**Status:** P3 milestone achieved — 6 FRs shipped (FR-AFF-005, 006, 007, 008, WATCH-004, NOTIF-004), 1 FR complete (FR-ADMIN-002 backend APIs with 358 tests passing). The remaining P3 rows stay roadmap-only until re-batching completes. Plan refs: §J Phase 3.
+**Status:** P3 milestone achieved — 7 FRs shipped (FR-AFF-005, 006, 007, 008, WATCH-004, NOTIF-004, FR-ADMIN-002 backend APIs with 358 tests passing, FR-ADMIN-004 multi-region routing). The remaining P3 rows stay roadmap-only until re-batching completes. Plan refs: §J Phase 3.
 
 | FR-ID (planned) | Title                                                                               |  Pri   | Status |
 | --------------- | ----------------------------------------------------------------------------------- | :----: | --------- |
@@ -200,7 +200,7 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 | FR-NOTIF-004    | Mobile push (FCM) — primary channel for mobile users                                |  MUST  | shipped |
 | FR-ADMIN-002    | B2B Price Intelligence Dashboard — historical pricing for sellers/brands            |  MUST  | shipped |
 | FR-ADMIN-003    | Coupon aggregator (Honey-trap-aware design — disclosure-first, no override)         | COULD  | ready_to_implement |
-| FR-ADMIN-004    | Multi-region routing — Singapore primary, SG MongoDB Atlas region                   |  MUST  | ready_to_implement |
+| FR-ADMIN-004    | Multi-region routing — Singapore primary, SG MongoDB Atlas region                   |  MUST  | shipped |
 | FR-AFF-007      | Generic Affiliate Network fallback (AccessTrade publisher) when Shopee direct fails |  MUST  | shipped |
 | FR-AFF-008      | Pivot-ready architecture — `platform` field on PriceHistory + Product collections   |  MUST  | shipped |
 | FR-OBS-002      | Tail-sampling 10/100% + tenant-aware Grafana scoping for B2B customers              |  MUST  | ready_to_implement |
@@ -254,4 +254,4 @@ When adding a new FR:
 
 ---
 
-_End of SaleNoti backlog v0.1.0. 32 FRs authored (26 shipped P0-P2 + 5 P3 completed + 1 P3 draft in progress), 10 roadmapped-only. Re-generate after every status change in the FR files._
+_End of SaleNoti backlog v0.1.0. 33 FRs authored (26 shipped P0-P2 + 7 P3 completed), 9 roadmapped-only. Re-generate after every status change in the FR files._

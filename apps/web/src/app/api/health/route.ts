@@ -12,9 +12,13 @@ export async function GET() {
   const started = Date.now();
   const checks = {
     mongo: await withTimeout(
-      process.env.MONGODB_URI
-        ? mongo.db("salenoti").command({ ping: 1 }).then(() => true).catch(() => false)
-        : Promise.resolve(false)
+      process.env.MONGO_URI_SG || process.env.MONGODB_URI
+        ? mongo
+            .db("salenoti")
+            .command({ ping: 1 })
+            .then(() => true)
+            .catch(() => false)
+        : Promise.resolve(false),
     ),
     redis: await withTimeout(
       process.env.REDIS_URL
@@ -28,7 +32,7 @@ export async function GET() {
                 return false;
               });
           })()
-        : Promise.resolve(false)
+        : Promise.resolve(false),
     ),
     resend: Boolean(process.env.RESEND_API_KEY),
     timescale: Boolean(process.env.TIMESCALE_DB_URL),

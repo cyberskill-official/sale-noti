@@ -81,7 +81,7 @@ const HIGHLIGHT_FONT = Platform.select({ ios: 'Georgia', android: 'serif', defau
 
 function createDefaultConfig(): MobileConfig {
   return {
-    apiBaseUrl: normalizeApiBaseUrl(process.env.EXPO_PUBLIC_SALENOTI_API_BASE_URL?.trim() || defaultApiBaseUrl()),
+    apiBaseUrl: defaultApiBaseUrl(),
     userId: process.env.EXPO_PUBLIC_SALENOTI_USER_ID?.trim() || '',
     bearerToken: process.env.EXPO_PUBLIC_SALENOTI_BEARER_TOKEN?.trim() || '',
   };
@@ -93,6 +93,29 @@ function createEmptyConfig(): MobileConfig {
     userId: '',
     bearerToken: '',
   };
+}
+
+function localFallbackApiBaseUrl(): string {
+  return Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
+}
+
+function canonicalizeConfiguredApiBaseUrl(raw: string | undefined): string | null {
+  if (!raw || !raw.trim()) return null;
+  return normalizeApiBaseUrl(raw);
+}
+
+function resolveRestoredApiBaseUrl(apiBaseUrl: string): string {
+  const normalizedApiBaseUrl = normalizeApiBaseUrl(apiBaseUrl);
+  const managedBaseUrls = new Set(
+    [
+      canonicalizeConfiguredApiBaseUrl(process.env.EXPO_PUBLIC_SALENOTI_API_BASE_URL),
+      canonicalizeConfiguredApiBaseUrl(process.env.EXPO_PUBLIC_SALENOTI_API_BASE_URL_SG),
+      canonicalizeConfiguredApiBaseUrl(process.env.EXPO_PUBLIC_SALENOTI_API_BASE_URL_US),
+      localFallbackApiBaseUrl(),
+    ].filter((value): value is string => Boolean(value))
+  );
+
+  return managedBaseUrls.has(normalizedApiBaseUrl) ? defaultApiBaseUrl() : normalizedApiBaseUrl;
 }
 
 const DEFAULT_SEARCH_QUERY = process.env.EXPO_PUBLIC_SALENOTI_DEFAULT_QUERY?.trim() || 'áo thun';
@@ -303,7 +326,10 @@ export default function App() {
   }
 
   function applySessionSnapshot(snapshot: MobileSessionSnapshot): void {
-    setConfig(snapshot.config);
+    setConfig({
+      ...snapshot.config,
+      apiBaseUrl: resolveRestoredApiBaseUrl(snapshot.config.apiBaseUrl),
+    });
     setActiveTab(snapshot.activeTab);
     setSearchQuery(snapshot.searchQuery);
     setSearchPage(snapshot.searchPage);

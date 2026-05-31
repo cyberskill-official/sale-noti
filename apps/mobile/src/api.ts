@@ -2,6 +2,9 @@ import { Platform } from 'react-native';
 import { ApiClientError, type ApiErrorPayload, type MobileConfig, type SearchResult, type SearchSort, type TrackResult, type WatchlistItem, type WatchlistListResult } from './types';
 
 type JsonPrimitive = string | number | boolean | null;
+type MobileRegion = "sg" | "us";
+
+const SEA_LOCALES = ["vi_VN", "th_TH", "fil_PH", "id_ID", "ms_MY", "km_KH"] as const;
 
 type RequestOptions = {
   query?: Record<string, JsonPrimitive | undefined>;
@@ -24,14 +27,46 @@ function buildUrl(baseUrl: string, path: string, query?: RequestOptions['query']
 
 export function normalizeApiBaseUrl(raw: string): string {
   const trimmed = raw.trim().replace(/\/+$/, '');
-  if (!trimmed) return defaultApiBaseUrl();
+  if (!trimmed) return fallbackApiBaseUrl();
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
   return `http://${trimmed}`;
 }
 
+function fallbackApiBaseUrl(): string {
+  if (Platform.OS === "android") return "http://10.0.2.2:3000";
+  return "http://localhost:3000";
+}
+
+function detectDeviceLocale(): string {
+  try {
+    const resolvedLocale = Intl.DateTimeFormat().resolvedOptions().locale;
+    if (resolvedLocale) return resolvedLocale;
+  } catch {
+    // Ignore locale detection failures and fall back below.
+  }
+
+  if (Platform.OS === "web" && typeof navigator !== "undefined") {
+    return navigator.language || "";
+  }
+
+  return "";
+}
+
+export function getMobileRegionFromLocale(locale: string = detectDeviceLocale()): MobileRegion {
+  const normalized = locale.replace(/-/g, "_");
+  return SEA_LOCALES.some((candidate) => normalized.startsWith(candidate)) ? "sg" : "us";
+}
+
+function regionSpecificApiBaseUrl(region: MobileRegion): string {
+  const sharedBaseUrl = process.env.EXPO_PUBLIC_SALENOTI_API_BASE_URL?.trim();
+  const sgBaseUrl = process.env.EXPO_PUBLIC_SALENOTI_API_BASE_URL_SG?.trim();
+  const usBaseUrl = process.env.EXPO_PUBLIC_SALENOTI_API_BASE_URL_US?.trim();
+  const rawBaseUrl = region === "sg" ? sgBaseUrl || sharedBaseUrl : usBaseUrl || sharedBaseUrl;
+  return normalizeApiBaseUrl(rawBaseUrl || fallbackApiBaseUrl());
+}
+
 export function defaultApiBaseUrl(): string {
-  if (Platform.OS === 'android') return 'http://10.0.2.2:3000';
-  return 'http://localhost:3000';
+  return regionSpecificApiBaseUrl(getMobileRegionFromLocale());
 }
 
 export function buildShopeeProductUrl(shopId: string | number, itemId: string | number): string {

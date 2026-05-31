@@ -26,8 +26,12 @@ export async function withTimeout(check: Promise<boolean>, timeoutMs = 1000): Pr
 }
 
 function mongoCheck(): Promise<boolean> {
-  return process.env.MONGODB_URI
-    ? mongo.db("salenoti").command({ ping: 1 }).then(() => true).catch(() => false)
+  return process.env.MONGO_URI_SG || process.env.MONGODB_URI
+    ? mongo
+        .db("salenoti")
+        .command({ ping: 1 })
+        .then(() => true)
+        .catch(() => false)
     : Promise.resolve(false);
 }
 

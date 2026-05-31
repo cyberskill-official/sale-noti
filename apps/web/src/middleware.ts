@@ -1,5 +1,6 @@
 // FR-AUTH-001/003 — protect /dashboard/* and /api/admin/** without importing Node-only Auth.js callbacks into Edge middleware.
-import type { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getMongoRegionFromCountry, normalizeMongoRegion } from "@/lib/mongo-region";
 
 export default function middleware(req: NextRequest) {
   const hasSession =
@@ -13,8 +14,20 @@ export default function middleware(req: NextRequest) {
   if (!hasSession && (isDashboard || isAdminApi)) {
     const signInUrl = new URL("/auth/sign-in", req.url);
     signInUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
-    return Response.redirect(signInUrl);
+    return NextResponse.redirect(signInUrl);
   }
+
+  const requestHeaders = new Headers(req.headers);
+  const explicitRegion = normalizeMongoRegion(requestHeaders.get("x-mongo-region"));
+  const detectedRegion =
+    explicitRegion ?? getMongoRegionFromCountry(req.geo?.country ?? requestHeaders.get("x-vercel-ip-country"));
+  requestHeaders.set("x-mongo-region", detectedRegion);
+
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {
