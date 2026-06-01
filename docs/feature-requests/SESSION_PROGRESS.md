@@ -4,6 +4,15 @@
 
 ---
 
+### Completion checkpoint — 2026-06-01 (FR-OBS-002 shipped)
+
+- Thêm slice tenant-aware observability cho web B2B: 10% public sampling, 100% B2B sampling, và tenant labels sẵn sàng cho Grafana.
+- `apps/web/src/server/obs/tenant.ts` chuẩn hóa scope/tags; `apps/web/src/server/obs/sentry.server.ts` chuyển sang `tracesSampler`.
+- `apps/web/src/middleware.ts` gắn `x-observability-scope` cho `/dashboard/**` và `/api/admin/**`.
+- B2B dashboard pages và 3 route API đã tag tenant context để trace/log có label ổn định.
+- Validation: `pnpm --filter @salenoti/web test -- src/server/obs/__tests__/tenant.spec.ts src/server/obs/__tests__/sentry.server.spec.ts` → 7/7 pass; `get_errors` trên slice đã sửa → clean.
+- Ghi chú: integration suite `src/app/api/admin/__tests__/admin-apis.integration.spec.ts` vẫn vướng lỗi import `next-auth`/`next/server` có sẵn, không liên quan trực tiếp slice này.
+
 ## §1 — What was produced this session
 
 ### Backlog + Manifest

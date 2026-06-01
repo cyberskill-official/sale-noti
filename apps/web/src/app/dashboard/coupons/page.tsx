@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { auth } from "@/auth";
 import { AFFILIATE_DISCLOSURE_VI, disclosureFor } from "@/lib/disclosure";
+import { sentry } from "@/server/obs/sentry.server";
+import { applyTenantObservabilityTags, type TenantTier } from "@/server/obs/tenant";
 import { couponService, type CouponStatusFilter } from "@/server/admin/coupon.service";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +32,13 @@ export default async function CouponAggregatorPage({
   searchParams: Promise<CouponSearchParams>;
 }) {
   const session = await auth();
+  applyTenantObservabilityTags(sentry, {
+    scope: "b2b",
+    tenantId: session?.user?.sellerId ?? null,
+    subscriptionId: (session?.user as any)?.subscriptionId ?? null,
+    tier: ((session?.user as any)?.tier ?? null) as TenantTier | null,
+  });
+
   const params = await searchParams;
   const result = await couponService.listCoupons({
     query: params.q,

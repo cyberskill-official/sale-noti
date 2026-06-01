@@ -203,7 +203,7 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 | FR-ADMIN-004    | Multi-region routing — Singapore primary, SG MongoDB Atlas region                   |  MUST  | shipped |
 | FR-AFF-007      | Generic Affiliate Network fallback (AccessTrade publisher) when Shopee direct fails |  MUST  | shipped |
 | FR-AFF-008      | Pivot-ready architecture — `platform` field on PriceHistory + Product collections   |  MUST  | shipped |
-| FR-OBS-002      | Tail-sampling 10/100% + tenant-aware Grafana scoping for B2B customers              |  MUST  | ready_to_implement |
+| FR-OBS-002      | Tail-sampling 10/100% + tenant-aware Grafana scoping for B2B customers              |  MUST  | shipped |
 
 ---
 

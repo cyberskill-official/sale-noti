@@ -4,7 +4,7 @@ SaleNoti uses two Sentry projects so browser noise and API incidents can be tria
 
 | Project | Runtime | DSN env | Required settings |
 |---|---|---|---|
-| `salenoti-web` | Next.js web, server, edge, browser | `SENTRY_DSN_WEB`, `NEXT_PUBLIC_SENTRY_DSN_WEB` | `tracesSampleRate=0.1`, `profilesSampleRate=0.05`, release from `GIT_COMMIT` |
+| `salenoti-web` | Next.js web, server, edge, browser | `SENTRY_DSN_WEB`, `NEXT_PUBLIC_SENTRY_DSN_WEB` | Public traffic samples at 0.1 via `SENTRY_TRACES_SAMPLE_RATE`; `/dashboard/**` and `/api/admin/**` are forced to 1.0 via the tenant observability sampler; `profilesSampleRate=0.05`, release from `GIT_COMMIT` |
 | `salenoti-api` | NestJS API and workers | `SENTRY_DSN_API` | `tracesSampleRate=0.1`, `profilesSampleRate=0.05`, release from `GIT_COMMIT` |
 
 Alert routing:

@@ -1,9 +1,18 @@
 // FR-AUTH-001 happy-path target.
 import { auth } from "@/auth";
+import { sentry } from "@/server/obs/sentry.server";
+import { applyTenantObservabilityTags, type TenantTier } from "@/server/obs/tenant";
 import Link from "next/link";
 
 export default async function DashboardPage() {
   const session = await auth();
+  applyTenantObservabilityTags(sentry, {
+    scope: "b2b",
+    tenantId: session?.user?.sellerId ?? null,
+    subscriptionId: (session?.user as any)?.subscriptionId ?? null,
+    tier: ((session?.user as any)?.tier ?? null) as TenantTier | null,
+  });
+
   return (
     <main style={{ maxWidth: 720, margin: "4rem auto", fontFamily: "system-ui" }}>
       <h1>Dashboard</h1>

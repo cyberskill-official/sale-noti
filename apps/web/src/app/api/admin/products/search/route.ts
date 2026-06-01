@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { Redis } from 'ioredis';
 import { dashboardService } from '@/server/admin/dashboard.service';
+import { sentry } from "@/server/obs/sentry.server";
+import { applyTenantObservabilityTags, type TenantTier } from "@/server/obs/tenant";
 import { z } from 'zod';
 import { createHash } from 'crypto';
 
@@ -38,8 +40,15 @@ export async function GET(request: NextRequest) {
 
     const userId = session.user.id;
     const sellerId = session.user.sellerId || userId; // b2b users have sellerId
-    const userTier = (session.user as any)?.tier || 'starter'; // default to starter
+    const userTier = ((session.user as any)?.tier || "starter") as TenantTier; // default to starter
     const subscriptionId = (session.user as any)?.subscriptionId;
+
+    applyTenantObservabilityTags(sentry, {
+      scope: "b2b",
+      tenantId: sellerId,
+      subscriptionId: subscriptionId ?? null,
+      tier: userTier,
+    });
 
     if (!subscriptionId) {
       return NextResponse.json(

@@ -1,6 +1,7 @@
 // FR-AUTH-001/003 — protect /dashboard/* and /api/admin/** without importing Node-only Auth.js callbacks into Edge middleware.
 import { NextRequest, NextResponse } from "next/server";
 import { getMongoRegionFromCountry, normalizeMongoRegion } from "@/lib/mongo-region";
+import { observabilityScopeFromPathname } from "@/server/obs/tenant";
 
 export default function middleware(req: NextRequest) {
   const hasSession =
@@ -22,6 +23,7 @@ export default function middleware(req: NextRequest) {
   const detectedRegion =
     explicitRegion ?? getMongoRegionFromCountry(req.geo?.country ?? requestHeaders.get("x-vercel-ip-country"));
   requestHeaders.set("x-mongo-region", detectedRegion);
+  requestHeaders.set("x-observability-scope", observabilityScopeFromPathname(req.nextUrl.pathname));
 
   return NextResponse.next({
     request: {
