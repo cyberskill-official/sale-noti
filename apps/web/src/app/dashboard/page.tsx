@@ -1,5 +1,6 @@
 // FR-AUTH-001 happy-path target.
 import { auth } from "@/auth";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -12,9 +13,13 @@ export default async function DashboardPage() {
       <p>
         <a href="/api/auth/signout">Sign out</a>
       </p>
+      <p>
+        <Link href="/dashboard/coupons">Coupon aggregator</Link>
+      </p>
       <p style={{ marginTop: 32, color: "#999" }}>
-        FR-WATCH-001 sẽ render watchlist UI ở đây trong tuần 3–4.
+        FR-ADMIN-003 sẽ render coupon aggregator UI ở đây trong nhánh admin.
       </p>
     </main>
   );
 }
+

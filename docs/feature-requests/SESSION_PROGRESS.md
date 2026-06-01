@@ -11,7 +11,7 @@
 - [`BACKLOG.md`](BACKLOG.md) — phase-by-phase index, 32 authored + 10 roadmapped = 42 FRs total.
 - [`MANIFEST.json`](MANIFEST.json) — state file, 7 batches recorded, 12 module FR counters.
 
-### FRs + Audits (26 shipped P0-P2, 5 P3 completed, 1 P3 draft in progress)
+### FRs + Audits (26 shipped P0-P2, 6 P3 completed, 1 P3 ready_to_implement)
 
 **P0 · Pre-MVP Foundation** (8 FRs · 8 audits)
 
@@ -70,8 +70,8 @@
 |---|---:|
 | Files written | 65+ (backlog + manifest + FR/audit files + phase summaries + P3 shipments) |
 | Bytes written | ~450 KB |
-| FRs authored | 33 |
-| FRs shipped | 33 (26 P0-P2 + 7 P3) |
+| FRs authored | 34 |
+| FRs shipped | 34 (26 P0-P2 + 8 P3) |
 | FRs roadmapped | 10 |
 | Total FRs planned | 42 |
 | Effort sum (shipped P0-P2-P3) | ~220 hours |
@@ -104,6 +104,15 @@
 ---
 
 ## §4 — Next steps
+
+### Completion checkpoint — 2026-06-01 (FR-ADMIN-003 shipped)
+
+- Tạo FR-ADMIN-003 coupon aggregator theo hướng disclosure-first, copy-paste only.
+- `apps/web/src/server/admin/coupon.service.ts` đọc `coupon_offers`, lọc private coupons, search theo code/title/store/source, và gắn disclosure canonical.
+- `apps/web/src/app/api/admin/coupons/route.ts` và `apps/web/src/app/dashboard/coupons/page.tsx` đã nối xong vào dashboard authenticated.
+- Tạo audit vòng 1 cho FR-ADMIN-003 và chốt trạng thái `shipped` cho spec/backlog.
+- Validation: `pnpm --filter @salenoti/web test -- src/server/admin/__tests__/coupon.service.spec.ts src/app/api/admin/coupons/__tests__/route.spec.ts` → 6/6 pass.
+- Bước kế tiếp nên làm: FR-OBS-002 nếu tiếp tục theo backlog.
 
 ### Implementation checkpoint — 2026-05-31 (FR-ADMIN-004 web slice)
 
@@ -316,4 +325,4 @@ The full authoring + audit process is self-contained in this project at `../feat
 
 ---
 
-*Session complete. 32 FRs authored and shipped (26 P0-P2 + 6 P3); 10 roadmap rows pending re-batch. Total effort: ~220 hours delivered. BRAIN ledger heartbeat emitted per AGENTS.md §14.*
+*Session complete. 34 FRs authored and shipped (26 P0-P2 + 8 P3); 10 roadmap rows pending re-batch. Total effort: ~220 hours delivered. BRAIN ledger heartbeat emitted per AGENTS.md §14.*
