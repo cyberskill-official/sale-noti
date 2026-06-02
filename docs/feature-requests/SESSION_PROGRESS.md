@@ -4,6 +4,50 @@
 
 ---
 
+### 2026-06-02 — FR-AFF-009 web runtime locale routing + onboarding
+
+- Thêm helper `resolveDisclosureLocaleFromHeaders()` ở web để suy ra locale từ request headers, ưu tiên `x-vercel-ip-country` rồi tới `accept-language`.
+- Nối locale runtime vào các surface disclosure trên web: home, business, affiliate legal, deal landing, coupon dashboard, pre-click interstitial, và sign-in onboarding.
+- Nối `OnboardingDisclosureStep` với locale runtime để luồng đăng nhập cũng hiển thị Thai disclosure + principles khi request đi vào từ TH.
+- Validation: `pnpm --dir apps/web exec vitest run src/components/disclosure/__tests__/disclosure.spec.tsx` → 22/22 pass; `get_errors` trên các file web vừa sửa → clean.
+
+---
+
+### 2026-06-02 — FR-AFF-009 implementation slice 1
+
+- Added Thai disclosure exports to `packages/disclosure-copy` and extended the web disclosure helper to support `th`.
+- Wired `apps/mobile/App.tsx` to a new locale-aware disclosure helper so Thai users can see the Thai disclosure branch instead of the hard-coded Vietnamese copy.
+- Added API localization helpers for Thailand in `apps/api/src/affiliate/shopee/localization/{th.ts,koc-roster.ts}` plus a focused helper test.
+- Validation: `pnpm --filter @salenoti/web test -- src/components/disclosure/__tests__/disclosure.spec.tsx` → 21/21 pass; `pnpm --filter @salenoti/api test -- src/affiliate/shopee/localization/__tests__/th.spec.ts` → 3/3 pass.
+- Note: `apps/mobile typecheck` still reports the pre-existing `src/notifications.ts` Notification typing issue, unrelated to this slice.
+
+---
+
+### 2026-06-02 — FR-AFF-009 audit vòng 2 approved
+
+- Đã đóng 2 finding của vòng 1: mobile runtime selector có helper riêng và mobile type-surface có test file thật.
+- `FR-AFF-009` hiện đạt `PASS` ở audit vòng 2.
+- Bước kế tiếp: bắt đầu implementation các file trong draft FR-AFF-009.
+
+---
+
+### 2026-06-02 — FR-AFF-009 audit vòng 1
+
+- Audit vòng 1 cho FR-AFF-009 ghi nhận 2 finding: thiếu đường chọn locale runtime cho mobile, và snippet test mobile type-surface ban đầu nằm sai chỗ.
+- Draft FR-AFF-009 đã được chỉnh để thêm helper mobile locale/disclosure, test file thật cho mobile, và shim contract cho `AFFILIATE_DISCLOSURE_TH` / `FIVE_PRINCIPLES_TH`.
+- Bước kế tiếp: audit vòng 2 cho FR-AFF-009 sau khi review lại draft đã sửa.
+
+---
+
+### 2026-06-02 — FR-AFF-009 started (Thailand)
+
+- Chốt thị trường SEA đầu tiên cho FR-AFF-009 là TH.
+- Đã mở draft spec cho Thai locale, THB currency, Thai disclosure copy, và KOC roster không chứa PII.
+- `BACKLOG.md` được gắn active draft note cho FR-AFF-009 để phản ánh đúng scope hiện tại.
+- Bước kế tiếp: hoàn thiện draft FR-AFF-009 và chuyển sang audit vòng 1.
+
+---
+
 ### Completion checkpoint — 2026-06-01 (FR-OBS-002 shipped)
 
 - Thêm slice tenant-aware observability cho web B2B: 10% public sampling, 100% B2B sampling, và tenant labels sẵn sàng cho Grafana.

@@ -1,9 +1,13 @@
 // FR-AUTH-001 — sign-in page (Google primary; magic-link comes with FR-AUTH-002).
 import { signIn } from "@/auth";
 import { OnboardingDisclosureStep } from "@/components/disclosure/OnboardingDisclosureStep";
+import { headers } from "next/headers";
+import { resolveDisclosureLocaleFromHeaders } from "@/lib/disclosure";
 import { MagicLinkForm } from "./magic-link-form";
 
 export default function SignInPage() {
+  const locale = resolveDisclosureLocaleFromHeaders(headers());
+
   async function signInWithGoogle() {
     "use server";
     await signIn("google", { redirectTo: "/dashboard" });
@@ -12,7 +16,7 @@ export default function SignInPage() {
   return (
     <main style={{ maxWidth: 480, margin: "4rem auto", fontFamily: "system-ui" }}>
       <h1>Đăng nhập SaleNoti</h1>
-      <OnboardingDisclosureStep>
+      <OnboardingDisclosureStep locale={locale}>
         <form action={signInWithGoogle}>
           <button type="submit">Sign in with Google</button>
         </form>

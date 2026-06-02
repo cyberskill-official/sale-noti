@@ -8,6 +8,9 @@ const AFFILIATE_DISCLOSURE_VI =
 const AFFILIATE_DISCLOSURE_EN =
   "SaleNoti is an affiliate price-tracker. When you click a deal in an alert or public page, we earn commission via the Shopee Affiliate Open API (1.5%–5% by category). You pay no extra. We DO NOT: auto-apply coupons, override affiliate cookies from other creators, or hide better deals to chase higher commissions.";
 
+const AFFILIATE_DISCLOSURE_TH =
+  "SaleNoti คือ price-tracker แบบ affiliate เมื่อคุณกดดีลใน alert หรือหน้า public เราได้รับค่าคอมมิชชันผ่าน Shopee Affiliate Open API (1.5%–5% ตามหมวดสินค้า) โดยคุณไม่จ่ายเพิ่ม เราไม่: ใช้คูปองอัตโนมัติ, override คุกกี้ affiliate ของครีเอเตอร์อื่น, หรือซ่อนดีลที่ดีกว่าเพื่อไล่คอมมิชชันที่สูงขึ้น";
+
 const FIVE_PRINCIPLES_VI = [
   { id: 1, title: "Minh bạch", body: "Disclosure xuất hiện ở mọi surface có affiliate." },
   { id: 2, title: "Người dùng khởi tạo", body: "Affiliate link chỉ kích hoạt khi user click; không auto-redirect." },
@@ -28,10 +31,20 @@ const FIVE_PRINCIPLES_EN = [
   { id: 5, title: "No hiding better deals", body: "Ranking uses user-value signals, never internal commission rate." },
 ];
 
+const FIVE_PRINCIPLES_TH = [
+  { id: 1, title: "ความโปร่งใส", body: "ต้องแสดง disclosure ในทุก surface ที่มี affiliate." },
+  { id: 2, title: "ผู้ใช้เป็นคนเริ่ม", body: "Affiliate link จะทำงานเมื่อผู้ใช้กดเองเท่านั้น ไม่มี auto-redirect." },
+  { id: 3, title: "เคารพคูปอง", body: "ไม่ใช้คูปองอัตโนมัติ; รหัสที่รู้จักจะแสดงแบบ copy-paste เท่านั้น" },
+  { id: 4, title: "เคารพคุกกี้", body: "ไม่ override คุกกี้ affiliate ของครีเอเตอร์หรือ KOC คนอื่น" },
+  { id: 5, title: "ไม่ซ่อนดีลที่ดีกว่า", body: "การจัดอันดับใช้สัญญาณคุณค่าต่อผู้ใช้ ไม่ใช้ commission rate ภายใน" },
+];
+
 module.exports = {
   DISCLOSURE_VERSION,
   AFFILIATE_DISCLOSURE_VI,
   AFFILIATE_DISCLOSURE_EN,
+  AFFILIATE_DISCLOSURE_TH,
   FIVE_PRINCIPLES_VI,
   FIVE_PRINCIPLES_EN,
+  FIVE_PRINCIPLES_TH,
 };

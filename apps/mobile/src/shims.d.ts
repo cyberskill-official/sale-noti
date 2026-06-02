@@ -42,12 +42,21 @@ declare module "expo-secure-store" {
 
 declare module "@salenoti/disclosure-copy" {
   export const DISCLOSURE_VERSION: string;
+  export const AFFILIATE_DISCLOSURE_EN: string;
   export const AFFILIATE_DISCLOSURE_VI: string;
+  export const AFFILIATE_DISCLOSURE_TH: string;
+  export type EthicalPrinciple = {
+    id: number;
+    title: string;
+    body: string;
+  };
+  export const FIVE_PRINCIPLES_EN: readonly EthicalPrinciple[];
   export const FIVE_PRINCIPLES_VI: readonly {
     id: number;
     title: string;
     body: string;
   }[];
+  export const FIVE_PRINCIPLES_TH: readonly EthicalPrinciple[];
 }
 
 declare namespace JSX {

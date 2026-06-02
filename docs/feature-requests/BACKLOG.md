@@ -211,11 +211,11 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 **Phase goal:** prove regional expansion (one new country first — TH or PH) with full localization, and start the ML deal-scoring + smart-wishlist + price-prediction work that turns SaleNoti into an "intelligent assistant" rather than a "price tracker."
 
-**Status:** roadmap rows only. Plan refs: §J Phase 4, §K2 Horizontal expansion SEA.
+**Status:** roadmap rows only. FR-AFF-009 is now building for Thailand (TH). Plan refs: §J Phase 4, §K2 Horizontal expansion SEA.
 
 | FR-ID (planned) | Title                                                                                            |  Pri   | ready_to_implement |
 | --------------- | ------------------------------------------------------------------------------------------------ | :----: | --------- |
-| FR-AFF-009      | Localize Shopee Affiliate to one of `{TH, PH, MY, ID}` — Thai language + currency + KOC roster   |  MUST  | ready_to_implement |
+| FR-AFF-009      | Localize Shopee Affiliate to Thailand — Thai language + THB currency + KOC roster              |  MUST  | building |
 | FR-PRICE-003    | ML deal-scoring model — classify each detected price drop as "real deal" vs "false alarm"        |  MUST  | ready_to_implement |
 | FR-WATCH-005    | Smart wishlist — recommend similar-product price targets from history embedding similarity       | SHOULD | ready_to_implement |
 | FR-PRICE-004    | Price prediction model — 7-day forward forecast (LightGBM baseline + LSTM upgrade)               | COULD  | ready_to_implement |

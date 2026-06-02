@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, it, expect, vi } from "vitest";
 import { renderMagicLinkEmail } from "@/server/email/templates/magic-link";
-import { AFFILIATE_DISCLOSURE_VI, AFFILIATE_DISCLOSURE_EN, DISCLOSURE_VERSION, disclosureFor } from "@/lib/disclosure";
+import { AFFILIATE_DISCLOSURE_VI, AFFILIATE_DISCLOSURE_EN, AFFILIATE_DISCLOSURE_TH, DISCLOSURE_VERSION, disclosureFor, principlesFor, resolveDisclosureLocaleFromHeaders } from "@/lib/disclosure";
 import { AffiliateDisclosureCard } from "../AffiliateDisclosureCard";
 import {
   DISCLOSURE_ACK_STORAGE_KEY,
@@ -53,6 +53,9 @@ describe("FR-LEGAL-002 — canonical disclosure", () => {
   it("returns locale-specific disclosure copy from the canonical helper", () => {
     expect(disclosureFor("vi")).toBe(AFFILIATE_DISCLOSURE_VI);
     expect(disclosureFor("en")).toBe(AFFILIATE_DISCLOSURE_EN);
+    expect(disclosureFor("th")).toBe(AFFILIATE_DISCLOSURE_TH);
+    expect(principlesFor("th")).toHaveLength(5);
+    expect(resolveDisclosureLocaleFromHeaders(new Headers({ "x-vercel-ip-country": "TH" }))).toBe("th");
   });
 });
 
@@ -84,6 +87,20 @@ describe("FR-LEGAL-002 — disclosure UI surfaces", () => {
     expect(gated).not.toContain("Track your first product");
     expect(accepted).toContain("Track your first product");
     expect(accepted).not.toContain("Trước khi bắt đầu");
+  });
+
+  it("renders Thai onboarding disclosure copy when locale is th", () => {
+    const html = renderToStaticMarkup(
+      createElement(OnboardingDisclosureStep, {
+        locale: "th",
+        children: createElement("span", null, "Track your first product"),
+      }),
+    );
+
+    expect(html).toContain(AFFILIATE_DISCLOSURE_TH);
+    expect(html).toContain("ก่อนเริ่มต้น");
+    expect(html).toContain("ฉันเข้าใจและยอมรับ");
+    expect(html).toContain("ดำเนินต่อ");
   });
 
   it("persists the onboarding acknowledgement locally and posts the contract payload", async () => {

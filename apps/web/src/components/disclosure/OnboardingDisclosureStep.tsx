@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useEffect, useState } from "react";
-import { AFFILIATE_DISCLOSURE_VI, DISCLOSURE_VERSION, FIVE_PRINCIPLES_VI } from "@/lib/disclosure";
+import { disclosureFor, principlesFor, type Locale, DISCLOSURE_VERSION } from "@/lib/disclosure";
 
 export const DISCLOSURE_ACK_STORAGE_KEY = `salenoti.${DISCLOSURE_VERSION}.affiliateDisclosureAccepted`;
 
@@ -60,9 +60,11 @@ export function createDisclosureCheckedHandler(setChecked: (checked: boolean) =>
 export function OnboardingDisclosureStep({
   children,
   initialAccepted = false,
+  locale = "vi",
 }: {
   children: React.ReactNode;
   initialAccepted?: boolean;
+    locale?: Locale;
 }) {
   const [accepted, setAccepted] = useState(initialAccepted);
   const [checked, setChecked] = useState(false);
@@ -76,10 +78,10 @@ export function OnboardingDisclosureStep({
       data-testid="onboarding-disclosure-step"
       style={{ border: "1px solid #FBD38D", background: "#FFFAF0", borderRadius: 8, padding: 16, marginTop: 24 }}
     >
-      <h2 style={{ marginTop: 0, fontSize: 18 }}>Trước khi bắt đầu</h2>
-      <p style={{ fontSize: 13, lineHeight: 1.5 }}>{AFFILIATE_DISCLOSURE_VI}</p>
+      <h2 style={{ marginTop: 0, fontSize: 18 }}>{locale === "th" ? "ก่อนเริ่มต้น" : "Trước khi bắt đầu"}</h2>
+      <p style={{ fontSize: 13, lineHeight: 1.5 }}>{disclosureFor(locale)}</p>
       <ol style={{ fontSize: 13, lineHeight: 1.5, paddingLeft: 20 }}>
-        {FIVE_PRINCIPLES_VI.map((principle) => (
+        {principlesFor(locale).map((principle) => (
           <li key={principle.id}>
             <b>{principle.title}:</b> {principle.body}
           </li>
@@ -87,7 +89,7 @@ export function OnboardingDisclosureStep({
       </ol>
       <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
         <input type="checkbox" checked={checked} onChange={createDisclosureCheckedHandler(setChecked)} />
-        Tôi đã hiểu và đồng ý
+        {locale === "th" ? "ฉันเข้าใจและยอมรับ" : "Tôi đã hiểu và đồng ý"}
       </label>
       <button
         type="button"
@@ -95,7 +97,7 @@ export function OnboardingDisclosureStep({
         onClick={createDisclosureAcceptHandler(setAccepted)}
         style={{ marginTop: 12, padding: "10px 14px" }}
       >
-        Tiếp tục
+        {locale === "th" ? "ดำเนินต่อ" : "Tiếp tục"}
       </button>
     </section>
   );

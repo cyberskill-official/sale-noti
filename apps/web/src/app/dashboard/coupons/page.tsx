@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 
 import { auth } from "@/auth";
-import { AFFILIATE_DISCLOSURE_VI, disclosureFor } from "@/lib/disclosure";
+import { disclosureFor, resolveDisclosureLocaleFromHeaders } from "@/lib/disclosure";
 import { sentry } from "@/server/obs/sentry.server";
 import { applyTenantObservabilityTags, type TenantTier } from "@/server/obs/tenant";
 import { couponService, type CouponStatusFilter } from "@/server/admin/coupon.service";
@@ -31,6 +32,7 @@ export default async function CouponAggregatorPage({
 }: {
   searchParams: Promise<CouponSearchParams>;
 }) {
+  const locale = resolveDisclosureLocaleFromHeaders(headers());
   const session = await auth();
   applyTenantObservabilityTags(sentry, {
     scope: "b2b",
@@ -81,7 +83,7 @@ export default async function CouponAggregatorPage({
         }}
       >
         <p style={{ margin: 0, fontWeight: 700, color: "#9a3412" }}>Disclosure-first</p>
-        <p style={{ margin: "8px 0 0", whiteSpace: "pre-wrap" }}>{AFFILIATE_DISCLOSURE_VI}</p>
+        <p style={{ margin: "8px 0 0", whiteSpace: "pre-wrap" }}>{disclosureFor(locale)}</p>
         <p style={{ margin: "8px 0 0", color: "#7c2d12", fontWeight: 600 }}>
           Chỉ sao chép mã thủ công. Không có auto-apply, không override cookie affiliate.
         </p>
@@ -254,7 +256,7 @@ export default async function CouponAggregatorPage({
       </section>
 
       <p style={{ marginTop: 24, color: "#94a3b8", fontSize: 13 }}>
-        {disclosureFor("vi")} · Tất cả coupon chỉ được sao chép thủ công.
+        {disclosureFor(locale)} · Tất cả coupon chỉ được sao chép thủ công.
       </p>
     </main>
   );

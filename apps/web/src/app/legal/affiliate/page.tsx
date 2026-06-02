@@ -2,7 +2,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AffiliateDisclosureCard } from "@/components/disclosure/AffiliateDisclosureCard";
-import { FIVE_PRINCIPLES_VI } from "@/lib/disclosure";
+import { headers } from "next/headers";
+import { principlesFor, resolveDisclosureLocaleFromHeaders } from "@/lib/disclosure";
 
 export const metadata: Metadata = {
   title: "Affiliate Disclosure — SaleNoti",
@@ -12,17 +13,20 @@ export const metadata: Metadata = {
 export const revalidate = 3600;
 
 export default function AffiliatePage() {
+  const locale = resolveDisclosureLocaleFromHeaders(headers());
+  const principles = principlesFor(locale);
+
   return (
     <main style={{ maxWidth: 760, margin: "32px auto", padding: "0 16px", fontFamily: "system-ui", lineHeight: 1.6 }}>
       <p>
         <Link href="/">← Home</Link>
       </p>
       <h1>Affiliate Disclosure</h1>
-      <AffiliateDisclosureCard variant="card" locale="vi" />
+      <AffiliateDisclosureCard variant="card" locale={locale} />
 
       <h2 style={{ marginTop: 40 }}>5 nguyên tắc đạo đức (plan §A3)</h2>
       <ol>
-        {FIVE_PRINCIPLES_VI.map((principle) => (
+        {principles.map((principle) => (
           <li key={principle.id}>
             <b>{principle.title}.</b> {principle.body}
           </li>

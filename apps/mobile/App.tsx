@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Animated, FlatList, Image, Linking, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { AFFILIATE_DISCLOSURE_VI, DISCLOSURE_VERSION, FIVE_PRINCIPLES_VI } from '@salenoti/disclosure-copy';
+import { DISCLOSURE_VERSION } from '@salenoti/disclosure-copy';
 import {
   clearMobileSession,
   loadMobileSession,
@@ -39,6 +39,7 @@ import {
   type WatchlistItem,
   type WatchlistListResult,
 } from './src/types';
+import { detectMobileDisclosureLocale, mobileDisclosureFor, mobilePrinciplesFor, type MobileDisclosureLocale } from './src/disclosure';
 
 const TABS: Array<{ key: TabKey; label: string; description: string }> = [
   { key: 'search', label: 'Search', description: 'Tìm sản phẩm' },
@@ -186,6 +187,7 @@ function toInt(value: string, fallback: number): number {
 export default function App() {
   const heroOpacity = useRef(new Animated.Value(0)).current;
   const heroOffset = useRef(new Animated.Value(18)).current;
+  const disclosureLocale = detectMobileDisclosureLocale();
 
   const [activeTab, setActiveTab] = useState<TabKey>('search');
   const [banner, setBanner] = useState<string | null>(null);
@@ -906,7 +908,7 @@ export default function App() {
                   <StatPill label='Push' value={pushEnabled ? 'Enabled' : 'Disabled'} tone={pushEnabled ? 'success' : 'warning'} />
                 </View>
 
-                <DisclosurePanel />
+                <DisclosurePanel locale={disclosureLocale} />
               </WebFormBoundary>
             </SectionCard>
           ) : null}
@@ -916,15 +918,18 @@ export default function App() {
   );
 }
 
-function DisclosurePanel() {
+function DisclosurePanel({ locale }: { locale: MobileDisclosureLocale }) {
+  const disclosureCopy = mobileDisclosureFor(locale);
+  const principles = mobilePrinciplesFor(locale);
+
   return (
     <View style={styles.disclosureCard}>
       <Text style={styles.sectionHeading}>Disclosure</Text>
-      <Text style={styles.disclosureText}>{AFFILIATE_DISCLOSURE_VI}</Text>
+      <Text style={styles.disclosureText}>{disclosureCopy}</Text>
       <View style={{ height: 12 }} />
       <Text style={styles.sectionHeading}>5 principles</Text>
       <View style={styles.principleList}>
-        {FIVE_PRINCIPLES_VI.map((principle: (typeof FIVE_PRINCIPLES_VI)[number]) => (
+        {principles.map((principle) => (
           <View key={principle.id} style={styles.principleItem}>
             <View style={styles.principleBadge}>
               <Text style={styles.principleBadgeText}>{principle.id}</Text>

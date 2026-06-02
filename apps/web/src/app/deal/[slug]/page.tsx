@@ -1,8 +1,10 @@
 // FR-GROW-002 §3 — public share-deal landing page. SSG with 5-min revalidate.
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { mongo } from "@/server/db/mongo";
 import { AffiliateDisclosureCard } from "@/components/disclosure/AffiliateDisclosureCard";
+import { resolveDisclosureLocaleFromHeaders } from "@/lib/disclosure";
 import { DealAffiliateActions } from "./DealAffiliateActions";
 
 export const revalidate = 300; // 5 minutes per FR-GROW-002 §1 #9
@@ -44,6 +46,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 }
 
 export default async function DealPage({ params, searchParams }: Props) {
+  const locale = resolveDisclosureLocaleFromHeaders(headers());
   const { slug } = await params;
   const { s } = await searchParams;
   const product = await loadProductBySlug(slug);
@@ -88,10 +91,10 @@ export default async function DealPage({ params, searchParams }: Props) {
       </div>
 
       <div style={{ margin: "24px 0" }}>
-        <AffiliateDisclosureCard variant="card" />
+        <AffiliateDisclosureCard variant="card" locale={locale} />
       </div>
 
-      <DealAffiliateActions productId={productId} productName={product.name} clickHref={clickHref} />
+      <DealAffiliateActions productId={productId} productName={product.name} clickHref={clickHref} locale={locale} />
 
       <hr style={{ margin: "32px 0", border: "none", borderTop: "1px solid #eee" }} />
 

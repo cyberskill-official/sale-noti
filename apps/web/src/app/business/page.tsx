@@ -1,6 +1,8 @@
 // FR-ADMIN-001 §1 #1 — public B2B landing with lead form. SSG.
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { AffiliateDisclosureCard } from "@/components/disclosure/AffiliateDisclosureCard";
+import { resolveDisclosureLocaleFromHeaders } from "@/lib/disclosure";
 import { B2BLeadForm } from "./B2BLeadForm";
 
 export const metadata: Metadata = {
@@ -11,6 +13,8 @@ export const metadata: Metadata = {
 export const revalidate = 3600;
 
 export default function BusinessPage() {
+  const locale = resolveDisclosureLocaleFromHeaders(headers());
+
   return (
     <main style={{ maxWidth: 760, margin: "32px auto", padding: "0 16px", fontFamily: "system-ui", lineHeight: 1.6 }}>
       <h1 style={{ color: "#C05621" }}>SaleNoti for Business</h1>
@@ -37,7 +41,7 @@ export default function BusinessPage() {
       <B2BLeadForm />
 
       <hr style={{ margin: "48px 0", border: "none", borderTop: "1px solid #eee" }} />
-      <AffiliateDisclosureCard variant="footer" />
+      <AffiliateDisclosureCard variant="footer" locale={locale} />
       <p style={{ fontSize: 11, color: "#666" }}>B2B data licensing là rev stream riêng biệt — không xung đột.</p>
     </main>
   );

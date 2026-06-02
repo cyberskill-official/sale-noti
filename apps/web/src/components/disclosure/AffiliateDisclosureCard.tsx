@@ -44,7 +44,7 @@ export function AffiliateDisclosureCard({
         href="/legal/affiliate"
         style={{ display: "inline-block", marginTop: 6, fontSize: "12px", color: "#C05621", textDecoration: "underline" }}
       >
-        {locale === "vi" ? "Đọc đầy đủ →" : "Read full disclosure →"}
+        {locale === "th" ? "อ่านฉบับเต็ม →" : locale === "vi" ? "Đọc đầy đủ →" : "Read full disclosure →"}
       </a>
     </div>
   );

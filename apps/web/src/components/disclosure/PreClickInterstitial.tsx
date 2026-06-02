@@ -2,6 +2,7 @@
 "use client";
 import React from "react";
 import { useEffect, useState } from "react";
+import type { Locale } from "@/lib/disclosure";
 import { AffiliateDisclosureCard } from "./AffiliateDisclosureCard";
 
 export const PRE_CLICK_COOKIE_NAME = "salenoti.pre_click_v1";
@@ -64,9 +65,11 @@ export function useDeeplinkWithInterstitial() {
 export function PreClickInterstitial({
   pending,
   onClose,
+  locale = "vi",
 }: {
   pending: { url: string; productName: string } | null;
   onClose: () => void;
+    locale?: Locale;
 }) {
   useEffect(() => {
     if (pending) document.body.style.overflow = "hidden";
@@ -93,9 +96,9 @@ export function PreClickInterstitial({
     >
       <div style={{ background: "white", maxWidth: 480, padding: 24, borderRadius: 12 }}>
         <h2 id="aff-interstitial-title" style={{ marginTop: 0 }}>
-          Bạn sắp chuyển sang Shopee
+          {locale === "th" ? "คุณกำลังจะไปยัง Shopee" : "Bạn sắp chuyển sang Shopee"}
         </h2>
-        <AffiliateDisclosureCard variant="card" />
+        <AffiliateDisclosureCard variant="card" locale={locale} />
         <p style={{ margin: "12px 0", fontSize: 14 }}>
           Sản phẩm: <b>{pending.productName}</b>
         </p>
@@ -110,14 +113,14 @@ export function PreClickInterstitial({
             }}
             style={{ background: "#FAA227", color: "white", border: 0, padding: "10px 16px", borderRadius: 8, fontWeight: 600 }}
           >
-            Continue to Shopee →
+            {locale === "th" ? "ไปยัง Shopee →" : "Continue to Shopee →"}
           </button>
           <button
             type="button"
             onClick={onClose}
             style={{ background: "white", color: "#333", border: "1px solid #ccc", padding: "10px 16px", borderRadius: 8 }}
           >
-            Hủy
+            {locale === "th" ? "ยกเลิก" : "Hủy"}
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 export const DISCLOSURE_VERSION: "v1";
 export const AFFILIATE_DISCLOSURE_VI: string;
 export const AFFILIATE_DISCLOSURE_EN: string;
+export const AFFILIATE_DISCLOSURE_TH: string;
 export type EthicalPrinciple = {
   id: number;
   title: string;
@@ -8,3 +9,4 @@ export type EthicalPrinciple = {
 };
 export const FIVE_PRINCIPLES_VI: readonly EthicalPrinciple[];
 export const FIVE_PRINCIPLES_EN: readonly EthicalPrinciple[];
+export const FIVE_PRINCIPLES_TH: readonly EthicalPrinciple[];

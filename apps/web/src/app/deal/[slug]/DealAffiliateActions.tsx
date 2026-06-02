@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import type { Locale } from "@/lib/disclosure";
 import { PreClickInterstitial, useDeeplinkWithInterstitial } from "@/components/disclosure/PreClickInterstitial";
 
 const trackStyle: React.CSSProperties = {
@@ -40,10 +41,12 @@ export function DealAffiliateActions({
   productId,
   productName,
   clickHref,
+  locale = "vi",
 }: {
   productId: string;
   productName: string;
   clickHref: string;
+    locale?: Locale;
 }) {
   const { open, pending, setPending } = useDeeplinkWithInterstitial();
 
@@ -55,7 +58,7 @@ export function DealAffiliateActions({
       <button type="button" onClick={createAffiliateClickHandler(open, clickHref, productName)} style={buyStyle}>
         Mua ngay trên Shopee →
       </button>
-      <PreClickInterstitial pending={pending} onClose={createAffiliateInterstitialClose(setPending)} />
+      <PreClickInterstitial pending={pending} onClose={createAffiliateInterstitialClose(setPending)} locale={locale} />
     </div>
   );
 }

@@ -1,6 +1,10 @@
 import { AffiliateDisclosureCard } from "@/components/disclosure/AffiliateDisclosureCard";
+import { headers } from "next/headers";
+import { resolveDisclosureLocaleFromHeaders } from "@/lib/disclosure";
 
 export default function HomePage() {
+  const locale = resolveDisclosureLocaleFromHeaders(headers());
+
   return (
     <main style={{ maxWidth: 720, margin: "4rem auto", fontFamily: "system-ui" }}>
       <h1>SaleNoti</h1>
@@ -11,7 +15,7 @@ export default function HomePage() {
         <a href="/dashboard">Dashboard</a>
       </p>
       <hr />
-      <AffiliateDisclosureCard variant="footer" />
+      <AffiliateDisclosureCard variant="footer" locale={locale} />
     </main>
   );
 }
