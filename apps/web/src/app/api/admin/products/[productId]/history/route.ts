@@ -78,7 +78,7 @@ export async function GET(
     // Parse query params
     const { searchParams } = new URL(request.url);
     const parseResult = HistoryQuerySchema.safeParse({
-      range: searchParams.get('range'),
+      range: searchParams.get("range") ?? undefined,
     });
 
     if (!parseResult.success) {

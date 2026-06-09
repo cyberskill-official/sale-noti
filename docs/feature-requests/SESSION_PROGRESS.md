@@ -4,6 +4,48 @@
 
 ---
 
+### 2026-06-09 — FR-PRICE-003 implementation shipped
+
+- Hoàn thiện package deal-scoring dùng chung `@salenoti/deal-scoring` và nối vào worker price-check, dashboard B2B, cùng analytics route.
+- Sửa default query handling để các admin route giữ đúng giá trị mặc định `7d` / `50` / `0` khi tham số bị thiếu.
+- Khóa validation hẹp cho scorer, worker, dashboard service, và admin integration route; toàn bộ test hẹp đã pass.
+- Bước kế tiếp: đồng bộ status trong backlog, manifest, và work log cho trạng thái shipped.
+
+### 2026-06-09 — FR-PRICE-003 audit vòng 1
+
+- FR-PRICE-003 hiện có audit vòng 1 với 2 finding mở.
+- Finding chính: market VN/TH chưa được neo vào ingest path live, và threshold dùng model-backed recommendation trong dashboard chưa được định nghĩa rõ.
+- Bước kế tiếp: sửa draft FR-PRICE-003 rồi audit vòng 2.
+
+---
+
+### 2026-06-09 — FR-PRICE-003 audit vòng 2 approved
+
+- FR-PRICE-003 đã qua audit vòng 2 với PASS.
+- Market source cho scorer và ngưỡng `confidence >= 0.80` cho dashboard đã được khóa trong spec.
+- Bước kế tiếp: triển khai package deal-scoring hoặc chuyển sang FR tiếp theo sau khi implementation bắt đầu.
+
+---
+
+### 2026-06-09 — FR-PRICE-003 draft started
+
+- FR-PRICE-003 đã được author thành draft đầu tiên cho deal-scoring model.
+- Scope hiện tại là package deal-scoring dùng chung, được worker price-check và dashboard analytics cùng tiêu thụ.
+- `BACKLOG.md` đã đổi row FR-PRICE-003 sang `draft`; FR-AFF-009 vẫn là `shipped`.
+- Bước kế tiếp: audit vòng 1 cho FR-PRICE-003.
+
+---
+
+### 2026-06-09 — FR-AFF-009 shipped (Thailand)
+
+- FR-AFF-009 đã được chốt là `shipped` trong FR spec, backlog, và manifest.
+- Helper web/mobile/API cho TH đã được rà lại; `web disclosure spec` pass 22/22, `apps/api/src/affiliate/shopee/localization/__tests__/th.spec.ts` pass 3/3, và các helper tĩnh đều clean.
+- `apps/mobile` không có Vitest runner local, nên phần mobile được chốt bằng static clean trên disclosure helper surface.
+- `BACKLOG.md` đã ghi P4 shipped = 1 cho FR-AFF-009, và `MANIFEST.json` đã thêm batch TH.
+- Bước kế tiếp: nếu tiếp tục theo backlog, chuyển sang `FR-PRICE-003`.
+
+---
+
 ### 2026-06-02 — FR-AFF-009 web runtime locale routing + onboarding
 
 - Thêm helper `resolveDisclosureLocaleFromHeaders()` ở web để suy ra locale từ request headers, ưu tiên `x-vercel-ip-country` rồi tới `accept-language`.

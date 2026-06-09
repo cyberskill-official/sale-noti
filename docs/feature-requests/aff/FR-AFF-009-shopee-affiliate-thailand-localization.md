@@ -3,7 +3,7 @@ id: FR-AFF-009
 title: "Shopee Affiliate Thailand localization — Thai locale, THB currency, and KOC roster"
 module: AFF
 priority: MUST
-status: draft
+status: shipped
 verify: T
 phase: P4
 milestone: "P4 - slice 1 - Thailand launch"

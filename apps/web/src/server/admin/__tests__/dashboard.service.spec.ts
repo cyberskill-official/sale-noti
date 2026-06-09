@@ -286,16 +286,32 @@ describe('B2BDashboardService', () => {
         findOne: vi.fn().mockResolvedValue({
           productId,
           sellerId,
-          category: 'shirts',
+          category: "shirts",
         }),
-        countDocuments: vi.fn()
+        find: vi.fn().mockReturnValue({
+          project: vi.fn().mockReturnValue({
+            toArray: vi
+              .fn()
+              .mockResolvedValue([{ currentPrice: 9000 }, { currentPrice: 10000 }, { currentPrice: 11000 }]),
+          }),
+        }),
+        countDocuments: vi
+          .fn()
           .mockResolvedValueOnce(5) // alerts count
           .mockResolvedValueOnce(12), // competitors in category
       };
 
       vi.mocked(mongodb.db.collection).mockReturnValue(mockCollection as any);
       vi.mocked(redis.get).mockResolvedValue(null);
-      vi.mocked(timescale.client.query).mockResolvedValueOnce({
+      const tsQuery = vi.mocked(timescale.client.query);
+      tsQuery.mockResolvedValueOnce({
+        rows: [
+          { observed_at: new Date("2026-05-28T00:00:00Z"), avg_price: 10400, any_flash_sale: false },
+          { observed_at: new Date("2026-05-29T00:00:00Z"), avg_price: 10350, any_flash_sale: false },
+          { observed_at: new Date("2026-05-30T00:00:00Z"), avg_price: 10300, any_flash_sale: false },
+        ],
+      });
+      tsQuery.mockResolvedValueOnce({
         rows: [
           {
             floor_price: 9500,
@@ -305,10 +321,6 @@ describe('B2BDashboardService', () => {
           },
         ],
       });
-
-      // Mock subsequent queries for trend and competitor category
-      const tsQuery = vi.mocked(timescale.client.query);
-      tsQuery.mockResolvedValueOnce({ rows: [{ avg_price: 10300 }] }); // last price
       tsQuery.mockResolvedValueOnce({ rows: [{ category_avg: 10000 }] }); // category avg
 
       const result = await service.getProductAnalytics(sellerId, productId, '7d');
@@ -337,16 +349,32 @@ describe('B2BDashboardService', () => {
         findOne: vi.fn().mockResolvedValue({
           productId,
           sellerId,
-          category: 'shirts',
+          category: "shirts",
         }),
-        countDocuments: vi.fn()
+        find: vi.fn().mockReturnValue({
+          project: vi.fn().mockReturnValue({
+            toArray: vi
+              .fn()
+              .mockResolvedValue([{ currentPrice: 9000 }, { currentPrice: 10000 }, { currentPrice: 11000 }]),
+          }),
+        }),
+        countDocuments: vi
+          .fn()
           .mockResolvedValueOnce(5) // alerts count
           .mockResolvedValueOnce(12), // competitors in category
       };
 
       vi.mocked(mongodb.db.collection).mockReturnValue(mockCollection as any);
       vi.mocked(redis.get).mockResolvedValue(null);
-      vi.mocked(timescale.client.query).mockResolvedValue({
+      const tsQuery = vi.mocked(timescale.client.query);
+      tsQuery.mockResolvedValueOnce({
+        rows: [
+          { observed_at: new Date("2026-05-28T00:00:00Z"), avg_price: 10400, any_flash_sale: false },
+          { observed_at: new Date("2026-05-29T00:00:00Z"), avg_price: 10350, any_flash_sale: false },
+          { observed_at: new Date("2026-05-30T00:00:00Z"), avg_price: 10300, any_flash_sale: false },
+        ],
+      });
+      tsQuery.mockResolvedValueOnce({
         rows: [
           {
             floor_price: 10000,
@@ -356,9 +384,6 @@ describe('B2BDashboardService', () => {
           },
         ],
       });
-
-      const tsQuery = vi.mocked(timescale.client.query);
-      tsQuery.mockResolvedValueOnce({ rows: [{ avg_price: 10300 }] }); // last price
       tsQuery.mockResolvedValueOnce({ rows: [{ category_avg: 10000 }] }); // category avg
 
       await service.getProductAnalytics(sellerId, productId, '7d');
@@ -376,7 +401,14 @@ describe('B2BDashboardService', () => {
         findOne: vi.fn().mockResolvedValue({
           productId,
           sellerId,
-          category: 'shirts',
+          category: "shirts",
+        }),
+        find: vi.fn().mockReturnValue({
+          project: vi.fn().mockReturnValue({
+            toArray: vi
+              .fn()
+              .mockResolvedValue([{ currentPrice: 9000 }, { currentPrice: 10000 }, { currentPrice: 11000 }]),
+          }),
         }),
         countDocuments: vi.fn().mockResolvedValue(5),
       };
@@ -386,7 +418,15 @@ describe('B2BDashboardService', () => {
       vi.mocked(redis.get).mockResolvedValueOnce(null); // no cache for analytics itself
       vi.mocked(redis.get).mockResolvedValueOnce('12'); // cached competitor count
 
-      vi.mocked(timescale.client.query).mockResolvedValue({
+      const tsQuery = vi.mocked(timescale.client.query);
+      tsQuery.mockResolvedValueOnce({
+        rows: [
+          { observed_at: new Date("2026-05-28T00:00:00Z"), avg_price: 10400, any_flash_sale: false },
+          { observed_at: new Date("2026-05-29T00:00:00Z"), avg_price: 10350, any_flash_sale: false },
+          { observed_at: new Date("2026-05-30T00:00:00Z"), avg_price: 10300, any_flash_sale: false },
+        ],
+      });
+      tsQuery.mockResolvedValueOnce({
         rows: [
           {
             floor_price: 10000,
@@ -396,9 +436,6 @@ describe('B2BDashboardService', () => {
           },
         ],
       });
-
-      const tsQuery = vi.mocked(timescale.client.query);
-      tsQuery.mockResolvedValueOnce({ rows: [{ avg_price: 10300 }] });
       tsQuery.mockResolvedValueOnce({ rows: [{ category_avg: 10000 }] });
 
       const result = await service.getProductAnalytics(sellerId, productId, '7d');
@@ -413,14 +450,29 @@ describe('B2BDashboardService', () => {
         findOne: vi.fn().mockResolvedValue({
           productId,
           sellerId,
-          category: 'shirts',
+          category: "shirts",
+        }),
+        find: vi.fn().mockReturnValue({
+          project: vi.fn().mockReturnValue({
+            toArray: vi
+              .fn()
+              .mockResolvedValue([{ currentPrice: 9000 }, { currentPrice: 10000 }, { currentPrice: 11000 }]),
+          }),
         }),
         countDocuments: vi.fn().mockResolvedValue(5),
       };
 
       vi.mocked(mongodb.db.collection).mockReturnValue(mockCollection as any);
       vi.mocked(redis.get).mockResolvedValue(null);
-      vi.mocked(timescale.client.query).mockResolvedValue({
+      const tsQuery = vi.mocked(timescale.client.query);
+      tsQuery.mockResolvedValueOnce({
+        rows: [
+          { observed_at: new Date("2026-05-28T00:00:00Z"), avg_price: 10400, any_flash_sale: false },
+          { observed_at: new Date("2026-05-29T00:00:00Z"), avg_price: 10350, any_flash_sale: false },
+          { observed_at: new Date("2026-05-30T00:00:00Z"), avg_price: 10300, any_flash_sale: false },
+        ],
+      });
+      tsQuery.mockResolvedValueOnce({
         rows: [
           {
             floor_price: 10000,
@@ -430,9 +482,6 @@ describe('B2BDashboardService', () => {
           },
         ],
       });
-
-      const tsQuery = vi.mocked(timescale.client.query);
-      tsQuery.mockResolvedValueOnce({ rows: [{ avg_price: 10300 }] });
       tsQuery.mockResolvedValueOnce({ rows: [{ category_avg: 10000 }] });
 
       await service.getProductAnalytics(sellerId, productId, '7d');
@@ -449,9 +498,17 @@ describe('B2BDashboardService', () => {
         findOne: vi.fn().mockResolvedValue({
           productId,
           sellerId,
-          category: 'shirts',
+          category: "shirts",
         }),
-        countDocuments: vi.fn()
+        find: vi.fn().mockReturnValue({
+          project: vi.fn().mockReturnValue({
+            toArray: vi
+              .fn()
+              .mockResolvedValue([{ currentPrice: 9000 }, { currentPrice: 10000 }, { currentPrice: 11000 }]),
+          }),
+        }),
+        countDocuments: vi
+          .fn()
           .mockResolvedValueOnce(0) // alerts count
           .mockResolvedValueOnce(5), // competitors count
       };
@@ -459,8 +516,15 @@ describe('B2BDashboardService', () => {
       vi.mocked(mongodb.db.collection).mockReturnValue(mockCollection as any);
       vi.mocked(redis.get).mockResolvedValue(null);
 
-      // First query: main KPI stats
-      vi.mocked(timescale.client.query).mockResolvedValueOnce({
+      const tsQuery = vi.mocked(timescale.client.query);
+      tsQuery.mockResolvedValueOnce({
+        rows: [
+          { observed_at: new Date("2026-05-28T00:00:00Z"), avg_price: 10600, any_flash_sale: false },
+          { observed_at: new Date("2026-05-29T00:00:00Z"), avg_price: 10550, any_flash_sale: false },
+          { observed_at: new Date("2026-05-30T00:00:00Z"), avg_price: 10500, any_flash_sale: false },
+        ],
+      });
+      tsQuery.mockResolvedValueOnce({
         rows: [
           {
             floor_price: 8000,
@@ -470,10 +534,6 @@ describe('B2BDashboardService', () => {
           },
         ],
       });
-
-      // Subsequent queries
-      const tsQuery = vi.mocked(timescale.client.query);
-      tsQuery.mockResolvedValueOnce({ rows: [{ avg_price: 10500 }] }); // last price
       tsQuery.mockResolvedValueOnce({ rows: [{ category_avg: 10000 }] }); // category avg
 
       const result = await service.getProductAnalytics(sellerId, productId, '7d');

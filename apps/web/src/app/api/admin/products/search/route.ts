@@ -82,9 +82,9 @@ export async function GET(request: NextRequest) {
     // Parse query params
     const { searchParams } = new URL(request.url);
     const parseResult = SearchQuerySchema.safeParse({
-      q: searchParams.get('q'),
-      limit: searchParams.get('limit'),
-      offset: searchParams.get('offset'),
+      q: searchParams.get("q"),
+      limit: searchParams.get("limit") ?? undefined,
+      offset: searchParams.get("offset") ?? undefined,
     });
 
     if (!parseResult.success) {

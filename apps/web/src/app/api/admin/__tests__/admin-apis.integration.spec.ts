@@ -5,19 +5,44 @@ import { GET as historyGET } from "../../../../app/api/admin/products/[productId
 import { GET as analyticsGET } from "../../../../app/api/admin/products/[productId]/analytics/route";
 import { auth } from '@/lib/auth';
 import { rateLimitFixed } from '@/lib/rate-limit';
-import { dashboardService } from '../dashboard.service';
+
+const authMock = vi.hoisted(() => vi.fn());
+const rateLimitFixedMock = vi.hoisted(() => vi.fn());
+const redisMock = vi.hoisted(() => ({
+  incr: vi.fn(),
+  expire: vi.fn(),
+}));
+const dashboardServiceMock = vi.hoisted(() => ({
+  checkApiQuota: vi.fn(),
+  logB2bAccess: vi.fn().mockResolvedValue(undefined),
+  searchProducts: vi.fn(),
+  getProductHistory: vi.fn(),
+  getProductAnalytics: vi.fn(),
+}));
 
 // Mock dependencies
-vi.mock('@/lib/auth');
-vi.mock('@/lib/rate-limit');
-vi.mock('../dashboard.service');
+vi.mock("@/lib/auth", () => ({
+  auth: authMock,
+}));
+vi.mock("@/lib/rate-limit", () => ({
+  rateLimitFixed: rateLimitFixedMock,
+}));
+vi.mock("ioredis", () => ({
+  Redis: vi.fn(() => redisMock),
+}));
+vi.mock("@/server/admin/dashboard.service", () => ({
+  dashboardService: dashboardServiceMock,
+}));
+
+const dashboardService = dashboardServiceMock;
 
 describe('B2B Admin API Routes', () => {
   const mockSession = {
     user: {
-      id: 'user_123',
-      sellerId: 'seller_123',
-      email: 'seller@example.com',
+      id: "user_123",
+      sellerId: "seller_123",
+      subscriptionId: "sub_123",
+      email: "seller@example.com",
     },
   };
 
@@ -25,6 +50,13 @@ describe('B2B Admin API Routes', () => {
     vi.clearAllMocks();
     vi.mocked(auth).mockResolvedValue(mockSession as any);
     vi.mocked(rateLimitFixed).mockResolvedValue(false); // Not rate-limited
+    vi.mocked(redisMock.incr).mockResolvedValue(1 as any);
+    vi.mocked(redisMock.expire).mockResolvedValue(undefined as any);
+    vi.mocked(dashboardService.checkApiQuota).mockResolvedValue({
+      exceeded: false,
+      limit: 100,
+      remaining: 90,
+    } as any);
   });
 
   // =========================================================================
@@ -44,7 +76,7 @@ describe('B2B Admin API Routes', () => {
     });
 
     it('should return 429 when rate-limited', async () => {
-      vi.mocked(rateLimitFixed).mockResolvedValue(true); // Rate-limited
+      vi.mocked(redisMock.incr).mockResolvedValue(11 as any);
 
       const request = new NextRequest(new URL('http://localhost/api/admin/products/search?q=test&limit=50'));
       const response = await searchGET(request);
@@ -123,12 +155,7 @@ describe('B2B Admin API Routes', () => {
       const request = new NextRequest(new URL('http://localhost/api/admin/products/search?q=test'));
       await searchGET(request);
 
-      expect(rateLimitFixed).toHaveBeenCalledWith(
-        'user_123',
-        'b2b_search',
-        10, // max 10 calls
-        60 // per 60 seconds
-      );
+      expect(redisMock.incr).toHaveBeenCalledWith("b2b:ratelimit:user_123:search");
     });
 
     it('should return 403 when service raises authorization error', async () => {
@@ -186,7 +213,7 @@ describe('B2B Admin API Routes', () => {
       const request = new NextRequest(new URL('http://localhost/api/admin/products/prod_123/history'));
       const response = await historyGET(request, { params: { productId: 'prod_123' } });
 
-      expect(dashboardService.getProductHistory).toHaveBeenCalledWith('seller_123', 'prod_123', '7d');
+      expect(dashboardService.getProductHistory).toHaveBeenCalledWith("seller_123", "prod_123", "7d", "starter");
       expect(response.status).toBe(200);
     });
 
@@ -212,7 +239,7 @@ describe('B2B Admin API Routes', () => {
         const response = await historyGET(request, { params: { productId: 'prod_123' } });
 
         expect(response.status).toBe(200);
-        expect(dashboardService.getProductHistory).toHaveBeenCalledWith('seller_123', 'prod_123', range);
+        expect(dashboardService.getProductHistory).toHaveBeenCalledWith("seller_123", "prod_123", range, "starter");
       }
     });
 
@@ -253,20 +280,24 @@ describe('B2B Admin API Routes', () => {
 
     it('should default range to 7d', async () => {
       const mockResponse: any = {
-        productId: 'prod_123',
+        productId: "prod_123",
         floorPrice: 10000,
         priceVolatility: 0.1,
-        estimatedSalesTrend: '→ stable',
+        estimatedSalesTrend: "→ stable",
         alertsTriggered: 2,
         competitorCountInCategory: 5,
         recommendedPricePoint: 9500,
+        dealScore: 0.58,
+        dealLabel: "uncertain",
+        dealConfidence: 0.61,
+        dealReasons: ["sustained_discount"],
       };
       vi.mocked(dashboardService.getProductAnalytics).mockResolvedValue(mockResponse);
 
       const request = new NextRequest(new URL('http://localhost/api/admin/products/prod_123/analytics'));
       const response = await analyticsGET(request, { params: { productId: 'prod_123' } });
 
-      expect(dashboardService.getProductAnalytics).toHaveBeenCalledWith('seller_123', 'prod_123', '7d');
+      expect(dashboardService.getProductAnalytics).toHaveBeenCalledWith("seller_123", "prod_123", "7d", "starter");
       expect(response.status).toBe(200);
     });
 
@@ -285,13 +316,17 @@ describe('B2B Admin API Routes', () => {
 
     it('should include all KPI fields in response', async () => {
       const mockResponse: any = {
-        productId: 'prod_123',
+        productId: "prod_123",
         floorPrice: 10000,
         priceVolatility: 0.15,
-        estimatedSalesTrend: '↓ decreasing',
+        estimatedSalesTrend: "↓ decreasing",
         alertsTriggered: 3,
         competitorCountInCategory: 12,
         recommendedPricePoint: 9500,
+        dealScore: 0.83,
+        dealLabel: "real_deal",
+        dealConfidence: 0.9,
+        dealReasons: ["persistent_discount", "low_volatility"],
       };
       vi.mocked(dashboardService.getProductAnalytics).mockResolvedValue(mockResponse);
 

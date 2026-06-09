@@ -32,12 +32,12 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 | **P1 — MVP Core + Extension Lite** (week 2-8) | AFF · WATCH · PRICE · NOTIF · EXT                                                  |      **12** |      **12** |                            ~6.0 | 1,000 signups · 10,000 products tracked · D7 ≥ 25% · CTR ≥ 25% · Chrome Web Store approved |
 | **P2 — Growth & Monetization** (week 8-18)    | BILL · NOTIF (Telegram) · GROW · ADMIN                                             |       **6** |       **6** |                            ~3.0 | MRR 30M ₫ ($1.2K) · D30 ≥ 35% · Free→Pro ≥ 5%                                              |
 | **P3 — Power, Multi-platform, B2B** (M+5..12) | AFF (Lazada/TikTok) · WATCH (mobile) · ADMIN (B2B dashboard) · NOTIF (mobile push) |         ~10 |       **7** |                            ~6.0 | MAU 100K · ARPU $0.5 · LTV/CAC ≥ 1.8                                                       |
-| **P4 — Regional + AI** (M+12..24)             | AFF (regional) · PRICE (ML scoring) · WATCH (smart wishlist)                       |          ~6 |       **0** |                            ~5.0 | +1 country (TH or PH) · ML deal-score AUC ≥ 0.85                                           |
-| **Total**                                     | 12 modules · 5 phases                                                              |     **~42** |      **34** |            **~22 person-weeks** | 5 gated milestones                                                                         |
+| **P4 — Regional + AI** (M+12..24)             | AFF (regional) · PRICE (ML scoring) · WATCH (smart wishlist)                       |          ~6 |       **2** |                            ~5.0 | +1 country (TH or PH) · ML deal-score AUC ≥ 0.85                                           |
+| **Total**                                     | 12 modules · 5 phases                                                              |     **~42** |      **35** |            **~22 person-weeks** | 5 gated milestones                                                                         |
 
 **Effort budget reality-check:** 42 FRs × 8h average = 336h ≈ 8.4 person-weeks of pure coding. The 22 person-weeks total accounts for design + legal review + QA + Chrome Web Store + Shopee Affiliate compliance + integration. Maps to ~22 weeks for one full-time Senior Tech Lead, which is consistent with the roadmap in plan §J.
 
-**Phase-1 fundables only — what this backlog locks down today:** all P0-P2 FRs (rows 1-26) are shipped as of 2026-05-17. P3 shipped: 8 FRs (AFF-005/006/007/008, WATCH-004, NOTIF-004, ADMIN-002/003/004). Remaining P3 rows stay roadmap/ready-to-implement until re-batching completes.
+**Phase-1 fundables only — what this backlog locks down today:** all P0-P2 FRs (rows 1-26) are shipped as of 2026-05-17. P3 shipped: 8 FRs (AFF-005/006/007/008, WATCH-004, NOTIF-004, ADMIN-002/003/004). P4 shipped: FR-AFF-009, FR-PRICE-003. Remaining P3/P4 rows stay roadmap/ready-to-implement until re-batching completes.
 
 ---
 
@@ -211,12 +211,12 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 **Phase goal:** prove regional expansion (one new country first — TH or PH) with full localization, and start the ML deal-scoring + smart-wishlist + price-prediction work that turns SaleNoti into an "intelligent assistant" rather than a "price tracker."
 
-**Status:** roadmap rows only. FR-AFF-009 is now building for Thailand (TH). Plan refs: §J Phase 4, §K2 Horizontal expansion SEA.
+**Status:** FR-AFF-009 is shipped for Thailand (TH); FR-PRICE-003 is shipped; the remaining P4 rows stay roadmap/ready-to-implement. Plan refs: §J Phase 4, §K2 Horizontal expansion SEA.
 
-| FR-ID (planned) | Title                                                                                            |  Pri   | ready_to_implement |
+| FR-ID (planned) | Title                                                                                            |  Pri   | Status |
 | --------------- | ------------------------------------------------------------------------------------------------ | :----: | --------- |
-| FR-AFF-009      | Localize Shopee Affiliate to Thailand — Thai language + THB currency + KOC roster              |  MUST  | building |
-| FR-PRICE-003    | ML deal-scoring model — classify each detected price drop as "real deal" vs "false alarm"        |  MUST  | ready_to_implement |
+| FR-AFF-009      | Localize Shopee Affiliate to Thailand — Thai language + THB currency + KOC roster              |  MUST  | shipped |
+| FR-PRICE-003    | ML deal-scoring model — classify each detected price drop as "real deal" vs "false alarm"        |  MUST  | shipped |
 | FR-WATCH-005    | Smart wishlist — recommend similar-product price targets from history embedding similarity       | SHOULD | ready_to_implement |
 | FR-PRICE-004    | Price prediction model — 7-day forward forecast (LightGBM baseline + LSTM upgrade)               | COULD  | ready_to_implement |
 | FR-ADMIN-005    | Sponsored deals — paid "Top deal hôm nay" placement; labelled "Tài trợ" with disclosure          | COULD  | ready_to_implement |
@@ -254,4 +254,4 @@ When adding a new FR:
 
 ---
 
-_End of SaleNoti backlog v0.1.0. 33 FRs authored (26 shipped P0-P2 + 7 P3 completed), 9 roadmapped-only. Re-generate after every status change in the FR files._
+_End of SaleNoti backlog v0.1.0. 34 FRs authored (26 shipped P0-P2 + 7 P3 completed + 1 P4 shipped), 8 roadmapped-only. Re-generate after every status change in the FR files._

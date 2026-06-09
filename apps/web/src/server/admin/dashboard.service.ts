@@ -2,6 +2,12 @@ import { z } from 'zod';
 import { mongodb, timescale } from '@/lib/db';
 import { redis } from '@/lib/redis';
 import { ObjectId } from 'mongodb';
+import {
+  extractDealScoreWindow,
+  normalizeDealScoreMarket,
+  scoreDeal,
+  type DealScoreObservation,
+} from "@salenoti/deal-scoring";
 
 /**
  * B2B Dashboard Service — row-level security for seller self-service access
@@ -55,10 +61,14 @@ export const AnalyticsResponseSchema = z.object({
   productId: z.string(),
   floorPrice: z.number(),
   priceVolatility: z.number().min(0).max(1), // coefficient of variation
-  estimatedSalesTrend: z.enum(['↑ increasing', '→ stable', '↓ decreasing']),
+  estimatedSalesTrend: z.enum(["↑ increasing", "→ stable", "↓ decreasing"]),
   alertsTriggered: z.number(),
   competitorCountInCategory: z.number(),
   recommendedPricePoint: z.number().optional(),
+  dealScore: z.number().min(0).max(1).optional(),
+  dealLabel: z.enum(["real_deal", "false_alarm", "uncertain"]).optional(),
+  dealConfidence: z.number().min(0).max(1).optional(),
+  dealReasons: z.array(z.string()).optional(),
 });
 
 export type SearchResponse = z.infer<typeof SearchResponseSchema>;
@@ -381,6 +391,23 @@ export class B2BDashboardService {
 
     // Query TimescaleDB for KPI calculations
     const { client: tsClient } = timescale;
+    const dealScoreHistory = await tsClient.query(
+      `SELECT
+         bucket AS observed_at,
+         avg_price,
+         any_flash_sale
+       FROM price_history_30min_agg
+       WHERE product_id = $1 AND bucket >= $2
+       ORDER BY bucket ASC`,
+      [productId, startDate],
+    );
+
+    const dealScoreObservations: DealScoreObservation[] = dealScoreHistory.rows.map((row: any) => ({
+      observedAt: row.observed_at,
+      price: Number(row.avg_price ?? 0),
+      flashSale: Boolean(row.any_flash_sale),
+    }));
+
     const query = `
       SELECT
         min(avg_price) as floor_price,
@@ -394,29 +421,46 @@ export class B2BDashboardService {
 
     const row = result.rows?.[0];
     const floorPrice = row?.floor_price || 0;
+    const ceilingPrice = row?.ceiling_price || 0;
     const meanPrice = row?.mean_price || 0;
     const stddevPrice = row?.stddev_price || 0;
+    const latestPrice = dealScoreObservations.at(-1)?.price ?? 0;
+    const baselinePrice = Math.max(ceilingPrice, meanPrice, floorPrice, latestPrice);
+    const currentDiscountPct =
+      baselinePrice > 0 ? Math.max(0, Math.min(100, Math.round((1 - latestPrice / baselinePrice) * 100))) : 0;
+    const market = normalizeDealScoreMarket((product as any)?.region ?? (product as any)?.market) ?? "VN";
+    const shopeeCategory = (product.category as string) || "unknown";
+    const categoryMedianPrice = await this.getCategoryMedianPrice(shopeeCategory);
+    const reboundWithin24h = this.detectReboundWithin24h(dealScoreObservations, baselinePrice, now);
+    const daysSinceLastStrongDrop = this.findDaysSinceLastStrongDrop(dealScoreObservations, baselinePrice, now);
+
+    const dealScoreWindow = extractDealScoreWindow({
+      productId,
+      market,
+      range,
+      observations: dealScoreObservations,
+      baselinePrice,
+      last30dMin: floorPrice || latestPrice || baselinePrice,
+      currentDiscountPct,
+      categoryMedianPrice,
+      reboundWithin24h,
+      daysSinceLastStrongDrop,
+    });
+    const dealScore = scoreDeal(dealScoreWindow);
 
     // Price volatility: coefficient of variation (CV = stddev / mean)
     const priceVolatility = meanPrice > 0 ? stddevPrice / meanPrice : 0;
 
     // Estimated sales trend: placeholder (requires FR-WORKER-002 sales data)
     // For now, use simple heuristic: if latest price > avg, assume decreasing trend
-    let estimatedSalesTrend: 'increasing' | 'stable' | 'decreasing' = 'stable';
-    const lastPriceQuery = await tsClient.query(
-      `SELECT avg_price FROM price_history_30min_agg
-       WHERE product_id = $1
-       ORDER BY bucket DESC LIMIT 1`,
-      [productId]
-    );
-    if (lastPriceQuery.rows?.length > 0) {
-      const lastPrice = lastPriceQuery.rows[0].avg_price;
-      if (lastPrice < meanPrice * 0.95) estimatedSalesTrend = 'decreasing';
-      else if (lastPrice > meanPrice * 1.05) estimatedSalesTrend = 'increasing';
+    let estimatedSalesTrend: "increasing" | "stable" | "decreasing" = "stable";
+    if (latestPrice > 0) {
+      if (latestPrice < meanPrice * 0.95) estimatedSalesTrend = "decreasing";
+      else if (latestPrice > meanPrice * 1.05) estimatedSalesTrend = "increasing";
     }
 
     // Alerts triggered: count from alerts collection
-    const alertsTriggered = await db.collection('alerts').countDocuments({
+    const alertsTriggered = await db.collection("alerts").countDocuments({
       productId,
       sellerId: new ObjectId(sellerId),
       triggeredAt: { $gte: startDate },
@@ -424,7 +468,6 @@ export class B2BDashboardService {
 
     // Competitor count: use cached competitor count per category
     // FR-ADMIN-002 §1 #4 implementation note
-    const shopeeCategory = (product.category as string) || 'unknown';
     let competitorCount = 0;
     const competitorCacheKey = `b2b:competitor_count:${shopeeCategory}`;
     const cachedCompetitors = await redis.get(competitorCacheKey);
@@ -432,7 +475,7 @@ export class B2BDashboardService {
       competitorCount = parseInt(cachedCompetitors, 10);
     } else {
       // Count all sellers in same category (not filtered to direct competitors)
-      competitorCount = await db.collection('products').countDocuments({
+      competitorCount = await db.collection("products").countDocuments({
         category: shopeeCategory,
         sellerId: { $ne: new ObjectId(sellerId) },
       });
@@ -453,7 +496,7 @@ export class B2BDashboardService {
            AND p.category = $1
        )
        AND ph.bucket >= $2`,
-      [shopeeCategory, thirtyDaysAgo]
+      [shopeeCategory, thirtyDaysAgo],
     );
     let recommendedPricePoint: number | undefined;
     if (categoryAvgQuery.rows?.length > 0) {
@@ -461,20 +504,24 @@ export class B2BDashboardService {
       recommendedPricePoint = Math.round(categoryAvg * 0.95);
     }
 
+    if (dealScore.modelSource === "ml" && dealScore.confidence >= 0.8 && dealScore.recommendedPricePoint != null) {
+      recommendedPricePoint = dealScore.recommendedPricePoint;
+    }
+
     const response: AnalyticsResponse = {
       productId,
       floorPrice: Math.round(floorPrice * 100) / 100,
       priceVolatility: Math.min(Math.round(priceVolatility * 1000) / 1000, 1),
       estimatedSalesTrend: `${
-        estimatedSalesTrend === 'increasing'
-          ? '↑'
-          : estimatedSalesTrend === 'decreasing'
-            ? '↓'
-            : '→'
+        estimatedSalesTrend === "increasing" ? "↑" : estimatedSalesTrend === "decreasing" ? "↓" : "→"
       } ${estimatedSalesTrend}`,
       alertsTriggered,
       competitorCountInCategory: competitorCount,
       recommendedPricePoint,
+      dealScore: dealScore.score,
+      dealLabel: dealScore.label,
+      dealConfidence: dealScore.confidence,
+      dealReasons: [...dealScore.reasons],
     };
 
     // Cache for 6 hours
@@ -518,6 +565,73 @@ export class B2BDashboardService {
     const exceeded = callCount >= limit;
 
     return { remaining, limit, exceeded };
+  }
+
+  private async getCategoryMedianPrice(category: string): Promise<number | null> {
+    if (!category || category === 'unknown') return null;
+
+    const { db } = mongodb;
+    const prices = await db
+      .collection('products')
+      .find({ category, currentPrice: { $type: 'number', $gt: 0 } })
+      .project({ currentPrice: 1 })
+      .toArray();
+
+    const sorted = prices
+      .map((product) => Number(product.currentPrice))
+      .filter((price) => Number.isFinite(price) && price > 0)
+      .sort((left, right) => left - right);
+
+    if (sorted.length === 0) return null;
+
+    const middle = Math.floor(sorted.length / 2);
+    if (sorted.length % 2 === 1) {
+      return Math.round(sorted[middle] ?? 0);
+    }
+
+    const left = sorted[middle - 1];
+    const right = sorted[middle];
+    if (left == null || right == null) return null;
+    return Math.round((left + right) / 2);
+  }
+
+  private detectReboundWithin24h(
+    observations: DealScoreObservation[],
+    baselinePrice: number,
+    now: Date,
+  ): boolean {
+    if (observations.length < 3) return false;
+
+    const recent = observations.filter(
+      (observation) => now.getTime() - new Date(observation.observedAt).getTime() <= 86_400_000,
+    );
+    if (recent.length < 3) return false;
+
+    let recentFloor = recent[0]?.price ?? baselinePrice;
+    for (const observation of recent.slice(1)) {
+      if (recentFloor > 0 && observation.price >= recentFloor * 1.08 && recentFloor <= baselinePrice * 0.85) {
+        return true;
+      }
+      recentFloor = Math.min(recentFloor, observation.price);
+    }
+
+    return false;
+  }
+
+  private findDaysSinceLastStrongDrop(
+    observations: DealScoreObservation[],
+    baselinePrice: number,
+    now: Date,
+  ): number | null {
+    for (let index = observations.length - 1; index >= 0; index -= 1) {
+      const observation = observations[index];
+      if (!observation) continue;
+      if (observation.price <= baselinePrice * 0.85) {
+        return Math.max(0, Math.round((now.getTime() - new Date(observation.observedAt).getTime()) / 86_400_000));
+      }
+    }
+
+    return null;
   }
 
   /**
