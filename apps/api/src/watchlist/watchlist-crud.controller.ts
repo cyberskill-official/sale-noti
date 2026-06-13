@@ -12,16 +12,19 @@ import {
   Patch,
   Query,
   Res,
+  Optional,
 } from "@nestjs/common";
 import type { Response } from "express";
 import { z } from "zod";
 import { redis } from "../queue/redis.client";
 import { WatchlistService } from "./watchlist.service";
+import { SmartWishlistService } from "./smart-wishlist.service";
 
 const ListQuery = z.object({
   status: z.enum(["active", "paused", "all"]).optional(),
   page: z.coerce.number().int().min(1).max(1000).optional(),
   size: z.coerce.number().int().min(1).optional(),
+  includeSmartWishlist: z.literal("summary").optional(),
 });
 
 const PatchBody = z.object({
@@ -31,7 +34,10 @@ const PatchBody = z.object({
 
 @Controller("v1/watchlists")
 export class WatchlistCrudController {
-  constructor(private readonly watch: WatchlistService) {}
+  constructor(
+    private readonly watch: WatchlistService,
+    @Optional() private readonly smartWishlist?: SmartWishlistService,
+  ) {}
 
   @Get()
   async list(
@@ -43,8 +49,26 @@ export class WatchlistCrudController {
     await assertCrudRateLimit(userIdHeader, res);
     const parsed = ListQuery.safeParse(raw);
     if (!parsed.success)
-      throw new HttpException({ ok: false, error: "validation_failed", issues: parsed.error.issues }, HttpStatus.BAD_REQUEST);
-    return this.watch.list({ userId: userIdHeader, ...parsed.data });
+      throw new HttpException(
+        { ok: false, error: "validation_failed", issues: parsed.error.issues },
+        HttpStatus.BAD_REQUEST,
+      );
+    const response = await this.watch.list({
+      userId: userIdHeader,
+      status: parsed.data.status,
+      page: parsed.data.page,
+      size: parsed.data.size,
+    });
+    if (parsed.data.includeSmartWishlist === "summary" && this.smartWishlist) {
+      const items = await this.smartWishlist.enrichWatchlistRows({
+        userId: userIdHeader,
+        rows: response.items ?? [],
+        range: "30d",
+        limit: 3,
+      });
+      return { ...response, items };
+    }
+    return response;
   }
 
   @Patch(":id")
@@ -59,8 +83,16 @@ export class WatchlistCrudController {
     await assertCrudRateLimit(userIdHeader, res);
     const parsed = PatchBody.safeParse(raw);
     if (!parsed.success)
-      throw new HttpException({ ok: false, error: "validation_failed", issues: parsed.error.issues }, HttpStatus.BAD_REQUEST);
-    return this.watch.patch({ userId: userIdHeader, watchlistId: id, ...parsed.data, source: sourceHeader === "ext" ? "ext" : "web" });
+      throw new HttpException(
+        { ok: false, error: "validation_failed", issues: parsed.error.issues },
+        HttpStatus.BAD_REQUEST,
+      );
+    return this.watch.patch({
+      userId: userIdHeader,
+      watchlistId: id,
+      ...parsed.data,
+      source: sourceHeader === "ext" ? "ext" : "web",
+    });
   }
 
   @Delete(":id")
@@ -73,7 +105,11 @@ export class WatchlistCrudController {
   ) {
     if (!userIdHeader) throw new HttpException({ ok: false, error: "unauthenticated" }, HttpStatus.UNAUTHORIZED);
     await assertCrudRateLimit(userIdHeader, res);
-    return this.watch.softDelete({ userId: userIdHeader, watchlistId: id, source: sourceHeader === "ext" ? "ext" : "web" });
+    return this.watch.softDelete({
+      userId: userIdHeader,
+      watchlistId: id,
+      source: sourceHeader === "ext" ? "ext" : "web",
+    });
   }
 }
 

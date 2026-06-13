@@ -1,5 +1,15 @@
 import { Platform } from 'react-native';
-import { ApiClientError, type ApiErrorPayload, type MobileConfig, type SearchResult, type SearchSort, type TrackResult, type WatchlistItem, type WatchlistListResult } from './types';
+import {
+  ApiClientError,
+  type ApiErrorPayload,
+  type MobileConfig,
+  type SearchResult,
+  type SearchSort,
+  type TrackResult,
+  type WatchlistItem,
+  type WatchlistListResult,
+  type SmartWishlistSummary,
+} from "./types";
 
 type JsonPrimitive = string | number | boolean | null;
 type MobileRegion = "sg" | "us";
@@ -149,14 +159,29 @@ export async function trackProduct(
 
 export async function fetchWatchlists(
   config: MobileConfig,
-  input: { status?: 'active' | 'paused' | 'all'; page?: number; size?: number },
+  input: { status?: "active" | "paused" | "all"; page?: number; size?: number; includeSmartWishlist?: "summary" },
 ): Promise<WatchlistListResult> {
-  return requestJson<WatchlistListResult>(config, '/v1/watchlists', {
-    method: 'GET',
+  return requestJson<WatchlistListResult>(config, "/v1/watchlists", {
+    method: "GET",
     query: {
       status: input.status,
       page: input.page,
       size: input.size,
+      includeSmartWishlist: input.includeSmartWishlist,
+    },
+  });
+}
+
+export async function fetchWatchlistSmartWishlist(
+  config: MobileConfig,
+  watchlistId: string,
+  input: { range?: "30d" | "90d"; limit?: number } = {},
+): Promise<SmartWishlistSummary> {
+  return requestJson<SmartWishlistSummary>(config, `/v1/watchlists/${watchlistId}/smart-wishlist`, {
+    method: "GET",
+    query: {
+      range: input.range,
+      limit: input.limit,
     },
   });
 }

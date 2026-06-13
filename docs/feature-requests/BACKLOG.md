@@ -37,7 +37,7 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 **Effort budget reality-check:** 42 FRs × 8h average = 336h ≈ 8.4 person-weeks of pure coding. The 22 person-weeks total accounts for design + legal review + QA + Chrome Web Store + Shopee Affiliate compliance + integration. Maps to ~22 weeks for one full-time Senior Tech Lead, which is consistent with the roadmap in plan §J.
 
-**Phase-1 fundables only — what this backlog locks down today:** all P0-P2 FRs (rows 1-26) are shipped as of 2026-05-17. P3 shipped: 8 FRs (AFF-005/006/007/008, WATCH-004, NOTIF-004, ADMIN-002/003/004). P4 shipped: FR-AFF-009, FR-PRICE-003. Remaining P3/P4 rows stay roadmap/ready-to-implement until re-batching completes.
+**Phase-1 fundables only — what this backlog locks down today:** all P0-P2 FRs (rows 1-26) are shipped as of 2026-05-17. P3 shipped: 8 FRs (AFF-005/006/007/008, WATCH-004, NOTIF-004, ADMIN-002/003/004). P4 shipped: FR-AFF-009, FR-PRICE-003, FR-WATCH-005. Remaining P3/P4 rows stay roadmap/ready-to-implement until re-batching completes.
 
 ---
 
@@ -211,13 +211,13 @@ This document is the **single source of truth** for what SaleNoti is going to bu
 
 **Phase goal:** prove regional expansion (one new country first — TH or PH) with full localization, and start the ML deal-scoring + smart-wishlist + price-prediction work that turns SaleNoti into an "intelligent assistant" rather than a "price tracker."
 
-**Status:** FR-AFF-009 is shipped for Thailand (TH); FR-PRICE-003 is shipped; the remaining P4 rows stay roadmap/ready-to-implement. Plan refs: §J Phase 4, §K2 Horizontal expansion SEA.
+**Status:** FR-AFF-009 is shipped for Thailand (TH); FR-PRICE-003 is shipped; FR-WATCH-005 is shipped; the remaining P4 rows stay roadmap/ready-to-implement. Plan refs: §J Phase 4, §K2 Horizontal expansion SEA.
 
 | FR-ID (planned) | Title                                                                                            |  Pri   | Status |
 | --------------- | ------------------------------------------------------------------------------------------------ | :----: | --------- |
 | FR-AFF-009      | Localize Shopee Affiliate to Thailand — Thai language + THB currency + KOC roster              |  MUST  | shipped |
 | FR-PRICE-003    | ML deal-scoring model — classify each detected price drop as "real deal" vs "false alarm"        |  MUST  | shipped |
-| FR-WATCH-005    | Smart wishlist — recommend similar-product price targets from history embedding similarity       | SHOULD | ready_to_implement |
+| FR-WATCH-005    | Smart wishlist — recommend similar-product price targets from history embedding similarity       | SHOULD | shipped |
 | FR-PRICE-004    | Price prediction model — 7-day forward forecast (LightGBM baseline + LSTM upgrade)               | COULD  | ready_to_implement |
 | FR-ADMIN-005    | Sponsored deals — paid "Top deal hôm nay" placement; labelled "Tài trợ" with disclosure          | COULD  | ready_to_implement |
 | FR-ADMIN-006    | Data licensing API — sell price-history aggregates to market research firms (~$1K/mo per client) | COULD  | ready_to_implement |

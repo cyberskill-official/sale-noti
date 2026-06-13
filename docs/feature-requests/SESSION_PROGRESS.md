@@ -4,6 +4,23 @@
 
 ---
 
+### 2026-06-13 — FR-WATCH-005 shipped
+
+- Hoàn tất audit PASS và implementation cho smart wishlist: package `@salenoti/smart-wishlist`, API route detail, summary enrichment cho watchlist list, và badge target price trên mobile.
+- Validation đã chạy sạch trên package/runtime check, `apps/api/src/watchlist/__tests__/smart-wishlist.spec.ts`, và `apps/api/src/watchlist/__tests__/patch.spec.ts`.
+- Spec/backlog đã được nâng sang `shipped` để đồng bộ trạng thái cuối.
+
+---
+
+### 2026-06-13 — FR-WATCH-005 draft started
+
+- Chọn FR-WATCH-005 là task tiếp theo theo backlog P4 và khởi tạo draft spec cho smart wishlist.
+- Chốt hướng triển khai là history-embedding heuristic trên dữ liệu price-history/product-level, không dùng PII hay commission rate, và có route summary để mobile render badge target price.
+- Đồng bộ backlog sang `draft` cho FR-WATCH-005 để phản ánh đúng trạng thái authoring hiện tại.
+- Bước kế tiếp: audit vòng 1 cho FR-WATCH-005.
+
+---
+
 ### 2026-06-09 — FR-PRICE-003 implementation shipped
 
 - Hoàn thiện package deal-scoring dùng chung `@salenoti/deal-scoring` và nối vào worker price-check, dashboard B2B, cùng analytics route.

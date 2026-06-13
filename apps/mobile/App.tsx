@@ -433,6 +433,7 @@ export default function App() {
         status: watchlistFilter,
         page: toInt(watchlistPage, 1),
         size: toInt(watchlistSize, 12),
+        includeSmartWishlist: 'summary',
       });
       setWatchlistResult(result);
       setBanner(`Đã tải ${result.items.length} watchlist.`);
@@ -1166,6 +1167,9 @@ function WatchlistCard({
             <MiniBadge text={formatVnd(item.currentPrice)} tone='accent' />
             <MiniBadge text={`${formatPercent(item.currentDiscountPct)} off`} tone='neutral' />
             <MiniBadge text={`30d min ${formatVnd(item.last30dMin)}`} tone='neutral' />
+            {item.smartWishlistSnapshot ? (
+              <MiniBadge text={`Target ${formatVnd(item.smartWishlistSnapshot.recommendedTargetPrice)}`} tone='success' />
+            ) : null}
           </View>
           <Text style={styles.resultBody}>Updated {formatDate(item.updatedAt)} | Track baseline {formatVnd(item.baselineAtTrack)}</Text>
         </View>

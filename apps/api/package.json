@@ -27,6 +27,7 @@
     "@nestjs/throttler": "^6.2.0",
     "@salenoti/deal-scoring": "workspace:*",
     "@salenoti/disclosure-copy": "workspace:*",
+    "@salenoti/smart-wishlist": "workspace:*",
     "@sentry/nestjs": "^8.30.0",
     "@sentry/node": "^8.30.0",
     "bullmq": "^5.13.0",

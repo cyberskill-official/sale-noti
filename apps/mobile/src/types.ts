@@ -63,10 +63,37 @@ export type TrackResult = {
   last30dMin: number | null;
 };
 
+export type SmartWishlistMarket = "VN" | "TH";
+export type SmartWishlistRange = "30d" | "90d";
+
+export type SmartWishlistCandidate = {
+  productId: string;
+  name: string | null;
+  imageUrl: string | null;
+  currentPrice: number | null;
+  recommendedTargetPrice: number | null;
+  similarity: number;
+  reasons: string[];
+};
+
+export type SmartWishlistSummary = {
+  watchlistId: string;
+  productId: string;
+  market: SmartWishlistMarket;
+  range: SmartWishlistRange;
+  recommendedTargetPrice: number | null;
+  confidence: number;
+  similarProducts: SmartWishlistCandidate[];
+  reasons: string[];
+  modelVersion: string;
+  modelSource: "heuristic" | "ml";
+  generatedAt: string;
+};
+
 export type WatchlistItem = {
   watchlistId: string;
   productId: string;
-  status: 'active' | 'paused' | 'deleted';
+  status: "active" | "paused" | "deleted";
   alertConfig: unknown;
   triggerCooldowns: Record<string, unknown>;
   baselineAtTrack: number;
@@ -81,6 +108,7 @@ export type WatchlistItem = {
   currentDiscountPct: number | null;
   lastObservedAt: string | null;
   last30dMin: number | null;
+  smartWishlistSnapshot?: SmartWishlistSummary | null;
 };
 
 export type WatchlistListResult = {
